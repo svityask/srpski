@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!--app-head-->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Srpski">
+<meta name="theme-color" content="#f3f5f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1424" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<!--/app-head-->
+<title>Сербский для русских</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<main id="main" class="wrap"></main>
+
+<nav id="tabs" aria-label="Разделы">
+  <button data-view="course" data-icon="route">Курс</button>
+  <button data-view="review" data-icon="cycle">Повтор</button>
+  <button data-view="dict" data-icon="book">Разговорник</button>
+  <button data-view="more" data-icon="more">Ещё</button>
+</nav>
+
+<section id="play" hidden aria-label="Урок">
+  <header class="play-top">
+    <button id="quit" class="ic" aria-label="Закрыть урок"></button>
+    <div class="track"><i id="bar"></i></div>
+    <span id="count"></span>
+  </header>
+  <div id="stage"></div>
+  <footer id="foot"></footer>
+</section>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
