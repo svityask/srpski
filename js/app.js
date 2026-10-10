@@ -163,13 +163,13 @@
 
   // ---------- главные экраны ----------
   let view = 'course';
-  try { view = sessionStorage.getItem('srpski.view') || 'course'; } catch (e) { /* по умолчанию курс */ }
+  try { view = localStorage.getItem('srpski.view') || 'course'; } catch (e) { /* по умолчанию курс */ }
   let dictTab = 'words', dictQ = '';
   const main = $('#main');
 
   function render() {
     document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-current', b.dataset.view === view ? 'page' : 'false'));
-    try { sessionStorage.setItem('srpski.view', view); } catch (e) { /* не важно */ }
+    try { localStorage.setItem('srpski.view', view); } catch (e) { /* не важно */ }
     main.innerHTML = { course: vCourse, review: vReview, dict: vDict, more: vMore }[view]();
     if (view === 'dict') bindDict();
   }
@@ -181,7 +181,12 @@
       '<div class="chips"><span class="chip ' + (st ? 'hot' : '') + '" title="Дней подряд">' + I.flame + st + '</span><span class="chip" title="Очки опыта">' + S.xp + ' XP</span></div></header>';
     h += '<div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="' + LESSONS.length + '" aria-valuenow="' + doneL + '"><i style="width:' + (doneL / LESSONS.length) * 100 + '%"></i></div>' +
       '<p class="meter-cap">Пройдено ' + doneL + ' из ' + LESSONS.length + ' ' + plural(LESSONS.length, 'урока', 'уроков', 'уроков') + '</p>';
-    if (nx) {
+    const run = loadRun();
+    if (run) {
+      const total = run.q.length, at = Math.min(run.i + 1 + (run.answered ? 1 : 0), total);
+      const lab = run.kind === 'lesson' ? 'Урок ' + run.ref + ' · ' + run.title : run.title;
+      h += '<button class="next" data-act="resume"><span class="eyebrow">Продолжить с места остановки</span><span class="next-t">' + esc(lab) + '</span><span class="next-go">' + (run.intro ? 'Начать' : at + '/' + total) + '</span></button>';
+    } else if (nx) {
       const lab = nx.kind === 'lesson' ? 'Урок ' + nx.l.id + ' · ' + nx.l.title : 'Тест юнита ' + nx.u.n + ' · ' + nx.u.title;
       h += '<button class="next" data-' + (nx.kind === 'lesson' ? 'lesson="' + nx.l.id : 'test="' + nx.u.id) + '"><span class="eyebrow">Дальше по курсу</span><span class="next-t">' + esc(lab) + '</span><span class="next-go">Начать</span></button>';
     } else h += '<div class="next done"><span class="eyebrow">Курс пройден</span><span class="next-t">Bravo! Повторяйте слова во вкладке «Повтор».</span></div>';
@@ -289,6 +294,41 @@
     m.forEach((x, k) => rest.splice(Math.min(rest.length, 2 + k * 5), 0, x));
     return q.concat(rest);
   }
+  // ---------- незаконченный урок: сохраняется после каждого шага ----------
+  const RUN = 'srpski.run';
+  function persistRun(open = true) {
+    if (!P) return;
+    const run = {
+      kind: P.kind, ref: P.l ? P.l.id : P.u ? P.u.id : null, title: P.title,
+      q: P.q.map((x) => (x.t === 'match' ? { t: 'match', ids: x.items.map((y) => y.id) } : { t: x.t, id: x.it.id })),
+      i: P.i, ok: P.ok, n: P.n, wrong: [...P.wrong], retried: [...P.retried], answered: !!P.answered, intro: !!P.intro, open,
+    };
+    try { localStorage.setItem(RUN, JSON.stringify(run)); } catch (e) { /* хранилище недоступно */ }
+  }
+  function loadRun() {
+    try {
+      const r = JSON.parse(localStorage.getItem(RUN) || 'null');
+      if (!r || !r.q || !r.q.length) return null;
+      // курс могли обновить: задания с исчезнувшими словами выбрасываем
+      r.q = r.q.map((x) => (x.t === 'match' ? { t: 'match', items: x.ids.map((id) => BY_ID[id]).filter(Boolean) } : { t: x.t, it: BY_ID[x.id] }))
+        .filter((x) => (x.t === 'match' ? x.items.length >= 2 : x.it));
+      if (r.kind === 'lesson' && !LESSONS.find((l) => l.id === r.ref)) return null;
+      if (r.kind === 'test' && !COURSE.find((u) => u.id === r.ref)) return null;
+      return r.q.length ? r : null;
+    } catch (e) { return null; }
+  }
+  const dropRun = () => { try { localStorage.removeItem(RUN); } catch (e) { /* не важно */ } };
+  function resume(r) {
+    P = { kind: r.kind, title: r.title, q: r.q, i: Math.min(r.i, r.q.length), ok: r.ok, n: r.n, wrong: new Set(r.wrong), retried: new Set(r.retried), t0: Date.now() };
+    if (r.kind === 'lesson') P.l = LESSONS.find((l) => l.id === r.ref);
+    if (r.kind === 'test') P.u = COURSE.find((u) => u.id === r.ref);
+    openPlay();
+    if (r.intro) return showIntro();
+    if (r.answered) P.i++; // ответ уже засчитан — сразу следующее задание
+    if (P.i >= P.q.length) return finish();
+    renderTask();
+  }
+
   function start(kind, ref) {
     let q, title;
     if (kind === 'lesson') { const l = LESSONS.find((x) => x.id === ref); q = lessonQueue(l); title = l.title; P = { kind, l }; }
@@ -306,15 +346,17 @@
       title = 'Повтор'; P = { kind };
     }
     Object.assign(P, { title, q, i: 0, ok: 0, n: 0, wrong: new Set(), retried: new Set(), t0: Date.now() });
+    openPlay();
     if (kind === 'lesson') return showIntro();
-    openPlay(); renderTask();
+    renderTask();
   }
   function openPlay() { play.hidden = false; document.body.classList.add('playing'); play.scrollTop = 0; }
-  function closePlay() { play.hidden = true; document.body.classList.remove('playing'); P = null; if (tts.has) speechSynthesis.cancel(); render(); }
+  function closePlay() { if (P) persistRun(false); play.hidden = true; document.body.classList.remove('playing'); P = null; if (tts.has) speechSynthesis.cancel(); render(); }
 
   function showIntro() {
     const l = P.l;
-    openPlay(); setBar(0);
+    P.intro = true; persistRun();
+    setBar(0);
     cnt.textContent = '';
     stage.innerHTML = '<p class="eyebrow">Урок ' + l.id + ' · ' + esc(l.unit.title) + '</p><h2 class="t-h">' + esc(l.title) + '</h2><p class="tip">' + esc(l.tip) + '</p>' +
       '<ul class="list compact">' + l.items.map((it) => '<li><button data-say="' + esc(it.say) + '"><span lang="sr">' + esc(sr(it.sr)) + '</span><small>' + esc(it.ru) + '</small></button></li>').join('') + '</ul>';
@@ -324,6 +366,7 @@
   function setBar(f) { bar.style.width = Math.round(f * 100) + '%'; }
   function renderTask() {
     const x = P.q[P.i];
+    P.intro = false; P.answered = false; persistRun();
     setBar(P.i / P.q.length);
     cnt.textContent = (P.i + 1) + '/' + P.q.length;
     foot.innerHTML = '';
@@ -419,7 +462,7 @@
         const ok = x.miss === 0;
         P.n++; if (ok) P.ok++;
         x.items.forEach((y) => mark(y, !x.missed || !x.missed.has(y.id)));
-        S.xp += ok ? 2 : 1; save();
+        S.xp += ok ? 2 : 1; save(); P.answered = true; persistRun();
         feedback(ok, null, ok ? 'Все пары верно!' : 'Готово, ошибок: ' + x.miss);
       }
     } else {
@@ -442,7 +485,7 @@
       if (alt.t === x.t) alt.t = x.t === 'pickRu' ? 'pickSr' : 'pickRu';
       P.q.push(alt);
     }
-    save();
+    save(); P.answered = true; persistRun();
     beep(ok);
     feedback(ok, x.it, exactNote);
     if (S.autoplay && x.t !== 'listen') speak(x.it.say);
@@ -484,6 +527,7 @@
     renderTask();
   }
   function finish() {
+    dropRun();
     setBar(1);
     cnt.textContent = '';
     const pct = P.n ? Math.round((P.ok / P.n) * 100) : 100;
@@ -511,10 +555,10 @@
     foot.innerHTML = '<div class="duo"><button class="btn" ' + again + '>Ещё раз</button><button class="btn primary" data-act="done">Готово</button></div>';
   }
 
+  // крестик просто закрывает: урок сохранён и продолжится с того же места
   function askQuit() {
-    if (!P || P.i >= P.q.length || (P.kind === 'lesson' && P.n === 0 && P.i === 0)) return closePlay();
-    foot.dataset.prev = foot.innerHTML;
-    foot.innerHTML = '<div class="fb warn"><p class="fb-h">Выйти из урока?</p><p class="fb-a">Ответы сохранятся для повторения, но урок не будет засчитан.</p><div class="duo"><button class="btn" data-act="stay">Остаться</button><button class="btn danger" data-act="quit">Выйти</button></div></div>';
+    if (P && P.i >= P.q.length) P = null; // итоги уже показаны
+    closePlay();
   }
 
   // ---------- события ----------
@@ -562,9 +606,8 @@
       case 'begin': renderTask(); break;
       case 'next': next(); break;
       case 'check': check(); break;
-      case 'done': closePlay(); break;
-      case 'stay': foot.innerHTML = foot.dataset.prev || ''; break;
-      case 'quit': save(); closePlay(); break;
+      case 'done': P = null; closePlay(); break;
+      case 'resume': { const r = loadRun(); if (r) resume(r); else render(); break; }
     }
   });
   document.addEventListener('change', (e) => {
@@ -577,6 +620,9 @@
   $('#quit').innerHTML = I.close;
 
   render();
+  { const r = loadRun(); if (r && r.open) resume(r); }
+  // просим браузер не чистить данные приложения
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* не важно */ }
   if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|anthropic/.test(location.hostname)) {
     navigator.serviceWorker.register('sw.js').catch(() => { /* офлайн недоступен — не страшно */ });
   }
