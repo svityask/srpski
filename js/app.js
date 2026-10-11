@@ -91,7 +91,7 @@
 
   // ---------- состояние ----------
   const KEY = 'srpski.v1';
-  const DEF = { script: 'lat', both: true, autoplay: true, sfx: true, rate: 0.9, xp: 0, days: [], lessons: {}, tests: {}, words: {} };
+  const DEF = { script: 'lat', both: true, autoplay: true, sfx: true, rate: 0.9, theme: 'system', goal: 20, xp: 0, xpd: {}, days: [], lessons: {}, tests: {}, words: {} };
   let S;
   try { S = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { S = Object.assign({}, DEF); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* хранилище недоступно — работаем без него */ } };
@@ -99,6 +99,17 @@
   const sr = (t) => (S.script === 'cyr' ? toCyr(t) : t);
   const sr2 = (t) => (S.script === 'cyr' ? t : toCyr(t));
 
+  function addXP(n) {
+    S.xp += n;
+    S.xpd = S.xpd || {};
+    S.xpd[today()] = (S.xpd[today()] || 0) + n;
+    const keys = Object.keys(S.xpd).sort(); while (keys.length > 60) delete S.xpd[keys.shift()];
+  }
+  const xpToday = () => (S.xpd && S.xpd[today()]) || 0;
+  function applyTheme() {
+    const r = document.documentElement;
+    if (S.theme === 'light' || S.theme === 'dark') r.dataset.theme = S.theme; else delete r.dataset.theme;
+  }
   function streak() {
     const set = new Set(S.days);
     let d = new Date(); let n = 0;
@@ -186,19 +197,35 @@
   const main = $('#main');
 
   function render() {
+    applyTheme();
     document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-current', b.dataset.view === view ? 'page' : 'false'));
     try { localStorage.setItem('srpski.view', view); } catch (e) { /* не важно */ }
     main.innerHTML = { course: vCourse, review: vReview, dict: vDict, more: vMore }[view]();
     if (view === 'dict') bindDict();
   }
 
+  // приветствие по времени суток — сразу по-сербски
+  function greet() {
+    const h = new Date().getHours();
+    return h < 5 ? ['Laku noć', 'Спокойной ночи'] : h < 11 ? ['Dobro jutro', 'Доброе утро'] : h < 18 ? ['Dobar dan', 'Добрый день'] : ['Dobro veče', 'Добрый вечер'];
+  }
+  // слово дня — одно на всех в этот день, как в соцсетях
+  const DAILY = ITEMS.filter((it) => words(it.say) <= 3 && !/\(\d+\)/.test(it.ru));
+  const wordOfDay = () => DAILY[Math.floor(Date.now() / 864e5 + 3) % DAILY.length];
+  function ring(val, max, inner) {
+    const r = 26, c = 2 * Math.PI * r, f = Math.min(1, val / max);
+    return '<div class="ring" role="img" aria-label="Цель дня: ' + val + ' из ' + max + ' XP"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="' + r + '" class="ring-bg"/><circle cx="32" cy="32" r="' + r + '" class="ring-fg' + (f >= 1 ? ' full' : '') + '" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + (c * (1 - f)).toFixed(1) + '"/></svg><span>' + inner + '</span></div>';
+  }
+
   function vCourse() {
     const st = streak(), nx = nextStep();
     const doneL = LESSONS.filter((l) => S.lessons[l.id]).length;
-    let h = '<header class="top"><div><p class="eyebrow">Курс</p><h1>Сербский для русских</h1></div>' +
-      '<div class="chips"><span class="chip ' + (st ? 'hot' : '') + '" title="Дней подряд">' + I.flame + st + '</span><span class="chip" title="Очки опыта">' + S.xp + ' XP</span></div></header>';
-    h += '<div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="' + LESSONS.length + '" aria-valuenow="' + doneL + '"><i style="width:' + (doneL / LESSONS.length) * 100 + '%"></i></div>' +
-      '<p class="meter-cap">Пройдено ' + doneL + ' из ' + LESSONS.length + ' ' + plural(LESSONS.length, 'урока', 'уроков', 'уроков') + '</p>';
+    const [g, gru] = greet(), xt = xpToday(), goal = S.goal || 20;
+    const wd = wordOfDay();
+    let h = '<header class="hello"><div class="hello-t"><p class="eyebrow">' + new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }) + '</p>' +
+      '<h1 lang="sr">' + esc(sr(g)) + '!</h1><p class="hello-ru">' + gru + ' · ' + (xt >= goal ? 'цель дня выполнена 🎉' : 'сегодня ' + xt + ' из ' + goal + ' XP') + '</p></div>' +
+      ring(xt, goal, I.flame + '<b>' + st + '</b>') + '</header>';
+    h += '<div class="stats"><span><b>' + st + '</b> ' + plural(st, 'день', 'дня', 'дней') + ' подряд</span><span><b>' + S.xp + '</b> XP всего</span><span><b>' + seenIds().length + '</b> ' + plural(seenIds().length, 'слово', 'слова', 'слов') + ' знакомо</span></div>';
     const run = loadRun();
     if (run) {
       const total = run.q.length, at = Math.min(run.i + 1 + (run.answered ? 1 : 0), total);
@@ -206,12 +233,16 @@
       h += '<button class="next" data-act="resume"><span class="eyebrow">Продолжить с места остановки</span><span class="next-t">' + esc(lab) + '</span><span class="next-go">' + (run.intro ? 'Начать' : at + '/' + total) + '</span></button>';
     } else if (nx) {
       const lab = nx.kind === 'lesson' ? 'Урок ' + nx.l.id + ' · ' + nx.l.title : 'Тест юнита ' + nx.u.n + ' · ' + nx.u.title;
-      h += '<button class="next" data-' + (nx.kind === 'lesson' ? 'lesson="' + nx.l.id : 'test="' + nx.u.id) + '"><span class="eyebrow">Дальше по курсу</span><span class="next-t">' + esc(lab) + '</span><span class="next-go">Начать</span></button>';
+      h += '<button class="next" data-' + (nx.kind === 'lesson' ? 'lesson="' + nx.l.id : 'test="' + nx.u.id) + '"><span class="eyebrow">' + (doneL ? 'Дальше по курсу' : 'Первый урок') + '</span><span class="next-t">' + esc(lab) + '</span><span class="next-go">Начать</span></button>';
     } else h += '<div class="next done"><span class="eyebrow">Курс пройден</span><span class="next-t">Bravo! Повторяйте слова во вкладке «Повтор».</span></div>';
+    h += '<section class="wod"><div class="wod-h"><p class="eyebrow">Слово дня</p>' + sayBtns(wd.say) + '</div>' + plate(wd.sr, 'sm') +
+      '<p class="wod-ru">' + esc(wd.ru) + '</p><p class="wod-pr">[' + esc(pron(wd.say)) + '] · урок «' + esc(wd.lesson.title) + '»</p></section>';
+    h += '<div class="course-h"><h2>Маршрут курса</h2><span>' + doneL + ' / ' + LESSONS.length + '</span></div>' +
+      '<div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="' + LESSONS.length + '" aria-valuenow="' + doneL + '"><i style="width:' + (doneL / LESSONS.length) * 100 + '%"></i></div>';
     for (const u of COURSE) {
       const t = S.tests[u.id];
       const n = u.lessons.filter((l) => S.lessons[l.id]).length;
-      h += '<section class="unit" id="' + u.id + '"><div class="unit-h"><span class="line">' + u.n + '</span><div class="unit-t"><h2>' + esc(u.title) + '</h2><p lang="sr">' + esc(sr(u.sr)) + ' · ' + n + '/' + u.lessons.length + '</p></div></div><ol class="stops">';
+      h += '<section class="unit" id="' + u.id + '" style="--uc:var(--l' + u.n + ')"><div class="unit-h"><span class="line">' + u.n + '</span><div class="unit-t"><h2>' + esc(u.title) + '</h2><p lang="sr">' + esc(sr(u.sr)) + ' · ' + n + '/' + u.lessons.length + '</p></div>' + (t && t.passed ? '<span class="unit-ok">' + I.cup + '</span>' : '') + '</div><ol class="stops">';
       for (const l of u.lessons) {
         const r = S.lessons[l.id];
         h += '<li class="stop ' + (r ? 'done' : '') + '"><button data-lesson="' + l.id + '"><span class="dot">' + (r ? I.check : '') + '</span><span class="stop-t"><b>' + esc(l.title) + '</b><small>Урок ' + l.id + ' · ' + l.items.length + ' ' + plural(l.items.length, 'фраза', 'фразы', 'фраз') + '</small></span>' + (r ? stars(r.stars) : '') + '</button></li>';
@@ -282,6 +313,8 @@
     const seg = (name, val, lab) => '<button data-set="' + name + '" data-val="' + val + '" aria-pressed="' + (String(S[name]) === String(val)) + '">' + lab + '</button>';
     const tog = (name, lab, sub) => '<label class="row"><span><b>' + lab + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span><input type="checkbox" class="sw" id="set-' + name + '" data-tog="' + name + '"' + (S[name] ? ' checked' : '') + '></label>';
     return '<header class="top"><div><p class="eyebrow">Ещё</p><h1>Настройки</h1></div></header>' +
+      '<h3 class="sub">Оформление</h3><div class="seg">' + seg('theme', 'system', 'Как в системе') + seg('theme', 'light', 'Светлая') + seg('theme', 'dark', 'Тёмная') + '</div>' +
+      '<h3 class="sub">Цель дня</h3><div class="seg">' + seg('goal', 10, '10 XP') + seg('goal', 20, '20 XP') + seg('goal', 40, '40 XP') + '</div>' +
       '<h3 class="sub">Алфавит</h3><div class="seg">' + seg('script', 'lat', 'Latinica') + seg('script', 'cyr', 'Ћирилица') + '</div>' +
       '<div class="card">' + tog('both', 'Показывать второй алфавит', 'На табличке слова мелко под основным') + '</div>' +
       '<h3 class="sub">Звук</h3><div class="card">' + tog('autoplay', 'Озвучивать слова', 'Новые слова и правильные ответы') + tog('sfx', 'Сигналы ответа') +
@@ -488,7 +521,7 @@
         const ok = x.miss === 0;
         P.n++; if (ok) P.ok++;
         x.items.forEach((y) => mark(y, !x.missed || !x.missed.has(y.id)));
-        S.xp += ok ? 2 : 1; save(); P.answered = true; persistRun();
+        addXP(ok ? 2 : 1); save(); P.answered = true; persistRun();
         feedback(ok, null, ok ? 'Все пары верно!' : 'Готово, ошибок: ' + x.miss);
       }
     } else {
@@ -503,7 +536,7 @@
   function answer(ok, exactNote) {
     const x = P.q[P.i];
     P.n++;
-    if (ok) { P.ok++; S.xp += 1; } else P.wrong.add(x.it.id);
+    if (ok) { P.ok++; addXP(1); } else P.wrong.add(x.it.id);
     mark(x.it, ok);
     if (!ok && P.kind === 'lesson' && !P.retried.has(x.it.id)) {
       P.retried.add(x.it.id);
@@ -552,6 +585,20 @@
     if (P.i >= P.q.length) return finish();
     renderTask();
   }
+  function confetti() {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const cv = document.createElement('canvas'); cv.className = 'confetti'; document.body.appendChild(cv);
+    const dpr = window.devicePixelRatio || 1, W = cv.width = innerWidth * dpr, H = cv.height = innerHeight * dpr, cx = cv.getContext('2d');
+    const css = getComputedStyle(document.documentElement);
+    const cols = ['--l1', '--l3', '--l4', '--l6', '--gold'].map((v) => css.getPropertyValue(v).trim() || '#f0b73a');
+    const parts = Array.from({ length: 90 }, () => ({ x: W / 2, y: H * 0.35, vx: (Math.random() - 0.5) * 14 * dpr, vy: (-Math.random() * 12 - 4) * dpr, r: (4 + Math.random() * 5) * dpr, a: Math.random() * 6, va: (Math.random() - 0.5) * 0.3, c: cols[(Math.random() * cols.length) | 0] }));
+    const t0 = performance.now();
+    (function tick(t) {
+      const k = (t - t0) / 1600; cx.clearRect(0, 0, W, H);
+      parts.forEach((p) => { p.vy += 0.45 * dpr; p.x += p.vx; p.y += p.vy; p.a += p.va; cx.save(); cx.globalAlpha = Math.max(0, 1 - k); cx.translate(p.x, p.y); cx.rotate(p.a); cx.fillStyle = p.c; cx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); cx.restore(); });
+      if (k < 1) requestAnimationFrame(tick); else cv.remove();
+    })(t0);
+  }
   function finish() {
     dropRun();
     setBar(1);
@@ -569,7 +616,7 @@
       head = passed ? 'Тест сдан' : 'Пока не сдан'; sub = passed ? '<p class="res-sub">Юнит «' + esc(P.u.title) + '» закрыт.</p>' : '<p class="res-sub">Нужно 80%. Повторите уроки юнита и попробуйте снова.</p>';
       bonus = passed ? 15 : 0;
     } else { head = 'Повтор окончен'; bonus = 3; }
-    S.xp += bonus;
+    addXP(bonus);
     if (!S.days.includes(today())) S.days.push(today());
     S.days = S.days.slice(-400);
     save();
@@ -579,6 +626,7 @@
       (wrong.length ? '<h3 class="sub">Над этим стоит поработать</h3><ul class="list compact">' + wrong.map((it) => '<li><button data-say="' + esc(it.say) + '"><span lang="sr">' + esc(sr(it.sr)) + '</span><small>' + esc(it.ru) + '</small></button></li>').join('') + '</ul>' : '<p class="res-sub">Без единой ошибки. Svaka čast!</p>') + '</div>';
     const again = P.kind === 'lesson' ? 'data-lesson="' + P.l.id + '"' : P.kind === 'test' ? 'data-test="' + P.u.id + '"' : 'data-review="any"';
     foot.innerHTML = '<div class="duo"><button class="btn" ' + again + '>Ещё раз</button><button class="btn primary" data-act="done">Готово</button></div>';
+    if (pct >= 70 && !(P.kind === 'test' && pct < 80)) confetti();
   }
 
   // крестик просто закрывает: урок сохранён и продолжится с того же места
@@ -607,7 +655,7 @@
       if (b.closest('#ba')) x.ansT = x.ansT.filter((t) => t !== k); else { x.ansT.push(k); speak(x.bank[k].w); }
       drawBuild(x); return;
     }
-    if (d.set) { S[d.set] = d.val; save(); render(); return; }
+    if (d.set) { S[d.set] = d.set === 'goal' ? +d.val : d.val; save(); render(); return; }
     if (d.export !== undefined) {
       const code = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
       const ta = $('#imp');
@@ -647,6 +695,23 @@
 
   render();
   { const r = loadRun(); if (r && r.open) resume(r); }
+  if (!S.welcomed && !Object.keys(S.lessons).length && !loadRun()) showWelcome();
+  function showWelcome() {
+    const w = document.createElement('section'); w.id = 'welcome'; w.setAttribute('aria-label', 'Добро пожаловать');
+    const draw = () => {
+      w.innerHTML = '<div class="wel">' + plate('Ćao!', 'big') + '<h1>Сербский для русских</h1><p class="wel-lead">Слова и фразы, чтобы освоиться в Сербии. 5 минут в день.</p>' +
+        '<ul class="wel-list"><li><b>31 урок</b> — от «Zdravo» до врача и документов</li><li><b>Озвучка</b> каждого слова и упражнения</li><li><b>Повтор</b> в нужный момент, чтобы слова не забывались</li></ul>' +
+        '<p class="eyebrow">Каким алфавитом показывать слова?</p><div class="seg"><button data-wscript="lat" aria-pressed="' + (S.script === 'lat') + '">Latinica</button><button data-wscript="cyr" aria-pressed="' + (S.script === 'cyr') + '">Ћирилица</button></div>' +
+        '<p class="hint">Вывески и меню чаще на латинице. Поменять можно в «Ещё».</p>' +
+        '<button class="btn primary wide" data-wgo="start">Начать первый урок</button><button class="btn wide ghost" data-wgo="look">Сначала осмотрюсь</button></div>';
+    };
+    draw(); document.body.appendChild(w); document.body.classList.add('playing');
+    w.addEventListener('click', (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.wscript) { S.script = b.dataset.wscript; save(); draw(); return; }
+      if (b.dataset.wgo) { S.welcomed = true; save(); w.remove(); document.body.classList.remove('playing'); render(); if (b.dataset.wgo === 'start') start('lesson', LESSONS[0].id); }
+    });
+  }
   // просим браузер не чистить данные приложения
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* не важно */ }
   if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|anthropic/.test(location.hostname)) {
