@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@500;600;700&family=Unbounded:wght@700;800&display=swap">
+<style>
+  /* Рилс «Ты уже знаешь сербский»: кадр строится функцией render(t) — без CSS-анимаций, чтобы снимать покадрово.
+     Безопасная зона Reels: сверху ~250px, снизу ~420px (подпись), справа ~140px (кнопки). */
+  :root { --enamel: #1c3f8c; --enamel-2: #13306a; --ink: #142039; --ok: #2fbf7f; --bad: #ff5a63; --gold: #f0b73a;
+    --d: "Unbounded", sans-serif; --b: "Golos Text", sans-serif; }
+  * { box-sizing: border-box; margin: 0; }
+  body { margin: 0; background: #000; }
+  #f { width: 1080px; height: 1920px; position: relative; overflow: hidden; color: #fff; font-family: var(--b);
+    background: radial-gradient(120% 70% at 75% 15%, #2a55b8 0%, var(--enamel) 45%, var(--enamel-2) 100%); }
+  .abs { position: absolute; }
+  .eyebrow { font: 700 40px/1 var(--b); letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+  .h { font: 800 112px/1.04 var(--d); letter-spacing: -.02em; }
+  .plate { display: inline-flex; flex-direction: column; align-items: center; background: var(--enamel); color: #fff; border-radius: 34px; padding: 44px 76px 36px;
+    box-shadow: inset 0 0 0 10px var(--enamel), inset 0 0 0 16px rgba(255,255,255,.95), 0 40px 80px rgba(4,10,30,.45); }
+  .plate .a { font: 800 150px/1.02 var(--d); white-space: nowrap; }
+  .plate .c { margin-top: 18px; padding-top: 16px; border-top: 5px solid rgba(255,255,255,.55); font: 600 58px/1 var(--b); opacity: .92; }
+  .chip { display: inline-flex; align-items: center; gap: 22px; background: #fff; color: var(--ink); border-radius: 30px; padding: 28px 44px; font: 800 92px/1 var(--d); box-shadow: 0 30px 60px rgba(4,10,30,.35); white-space: nowrap; }
+  .chip svg { width: 76px; height: 76px; }
+  .wrong { font: 700 84px/1 var(--d); color: var(--bad); position: relative; white-space: nowrap; }
+  .wrong::after { content: ""; position: absolute; left: -10px; right: -10px; top: 50%; height: 10px; border-radius: 5px; background: var(--bad); transform: scaleX(var(--s, 1)); transform-origin: left; }
+  .dots { display: flex; gap: 14px; }
+  .dots i { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,.3); }
+  .dots i.on { background: var(--gold); }
+  .phone { width: 600px; border-radius: 82px; border: 18px solid #0b1328; background: #0b1328; overflow: hidden; box-shadow: 0 50px 90px rgba(4,10,30,.5); }
+  .phone img { display: block; width: 100%; border-radius: 64px; }
+  .cta { display: inline-flex; align-items: center; gap: 18px; background: #fff; color: var(--enamel); border-radius: 30px; padding: 32px 48px; font: 800 52px/1 var(--d); white-space: nowrap; box-shadow: 0 20px 40px rgba(4,10,30,.3); }
+  .handle { font: 600 40px/1 var(--b); opacity: .85; }
+</style>
+</head>
+<body>
+<div id="f"></div>
+<script>
+const W = 1080, f = document.getElementById('f');
+const clamp = (x) => Math.max(0, Math.min(1, x));
+const prog = (t, a, d) => clamp((t - a) / d);
+const outCubic = (x) => 1 - Math.pow(1 - x, 3);
+const outBack = (x) => { const c = 1.9; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const check = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#2fbf7f"/><path d="M6.5 12.5l3.5 3.5 7.5-8" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const arrow = '<svg viewBox="0 0 24 24" width="52" height="52"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const cyr = (s) => { const di = { lj: 'љ', nj: 'њ', 'dž': 'џ' }, m = { a:'а',b:'б',v:'в',g:'г',d:'д','đ':'ђ',e:'е','ž':'ж',z:'з',i:'и',j:'ј',k:'к',l:'л',m:'м',n:'н',o:'о',p:'п',r:'р',s:'с',t:'т','ć':'ћ',u:'у',f:'ф',h:'х',c:'ц','č':'ч','š':'ш' };
+  let o = ''; for (let i = 0; i < s.length; i++) { const two = s.substr(i, 2).toLowerCase(); if (di[two]) { o += s[i] !== s[i].toLowerCase() ? di[two].toUpperCase() : di[two]; i++; continue; } const c = m[s[i].toLowerCase()]; o += c ? (s[i] !== s[i].toLowerCase() ? c.toUpperCase() : c) : s[i]; } return o; };
+
+// сцены
+const HOOK = 2.4, STEP = 2.2;
+const FF = [['Sutra', 'утро', 'завтра'], ['Pravo', 'право', 'прямо'], ['Život', 'живот', 'жизнь'], ['Divan', 'диван', 'чудесный'], ['Ponos', 'понос', 'гордость']];
+const S2 = HOOK, S3 = S2 + FF.length * STEP, END = S3 + 4.3;
+window.DURATION = END;
+
+const plate = (w, x, y, sc, rot, op = 1) => `<div class="abs" style="left:0;right:0;top:${y}px;display:flex;justify-content:center;opacity:${op};transform:translateX(${x}px) scale(${sc}) rotate(${rot}deg)"><div class="plate"><span class="a">${w}</span><span class="c">${cyr(w)}</span></div></div>`;
+
+window.render = function (t) {
+  let h = '';
+  if (t < S2) {
+    const a = outCubic(prog(t, 0.05, 0.4)), b = outCubic(prog(t, 0.4, 0.4)), c = outCubic(prog(t, 0.9, 0.4));
+    h += `<div class="abs h" style="left:90px;top:290px;font-size:84px;white-space:nowrap;opacity:${a};transform:translateY(${(1 - a) * 40}px)">Сербы не поймут,</div>`;
+    h += `<div class="abs h" style="left:90px;top:390px;font-size:84px;white-space:nowrap;color:var(--gold);opacity:${b};transform:translateY(${(1 - b) * 40}px)">если скажешь…</div>`;
+    h += `<div class="abs" style="left:90px;right:140px;top:520px;font:600 50px/1.25 var(--b);opacity:${c * .9}">5 слов, которые в Сербии значат другое</div>`;
+    const p = prog(t, 1.2, 0.45);
+    h += plate('Sutra?', 0, 860, p ? outBack(p) : 0.001, -4 + 4 * outCubic(p), p ? 1 : 0);
+  } else if (t < S3) {
+    const k = Math.min(FF.length - 1, Math.floor((t - S2) / STEP)), lt = t - S2 - k * STEP;
+    const [sr, bad, good] = FF[k];
+    h += `<div class="abs eyebrow" style="left:90px;top:300px">Ложный друг ${k + 1} из ${FF.length}</div>`;
+    h += `<div class="abs dots" style="left:90px;top:372px">${FF.map((_, i) => `<i class="${i <= k ? 'on' : ''}"></i>`).join('')}</div>`;
+    const p = prog(lt, 0, 0.2);
+    const sh = lt > 0.75 && lt < 1.0 ? Math.sin((lt - 0.75) * 60) * 14 * (1 - (lt - 0.75) / 0.25) : 0;
+    h += plate(sr, sh, 560, 0.55 + 0.45 * outBack(p), (k % 2 ? 3 : -3) * (1 - p), 1);
+    const q = prog(lt, 0.35, 0.15), s = prog(lt, 0.75, 0.15);
+    h += `<div class="abs" style="left:0;right:0;top:1000px;text-align:center;font:600 44px/1 var(--b);opacity:${q * .8}">Думаешь:</div>`;
+    h += `<div class="abs" style="left:0;right:0;top:1070px;display:flex;justify-content:center;opacity:${q}"><span class="wrong" style="--s:${outCubic(s)}">${bad}</span></div>`;
+    const g = prog(lt, 1.05, 0.2);
+    h += `<div class="abs" style="left:0;right:0;top:1200px;text-align:center;font:600 44px/1 var(--b);opacity:${g * .8}">А серб поймёт:</div>`;
+    h += `<div class="abs" style="left:0;right:0;top:1270px;display:flex;justify-content:center;opacity:${g};transform:scale(${0.8 + 0.2 * outBack(g)})"><span class="chip">${check}${good}</span></div>`;
+  } else {
+    const lt = t - S3;
+    const a = outCubic(prog(lt, 0, 0.45)), b = outCubic(prog(lt, 0.25, 0.6)), c = prog(lt, 0.9, 0.35);
+    h += `<div class="abs h" style="left:90px;right:150px;top:290px;font-size:88px;opacity:${a};transform:translateY(${(1 - a) * 40}px)">Не попадайся!</div>`;
+    h += `<div class="abs" style="left:90px;right:150px;top:400px;font:600 54px/1.25 var(--b);opacity:${a}">Все ложные друзья — в бесплатном приложении <b style="color:var(--gold)">Srpski</b></div>`;
+    h += `<div class="abs" style="left:240px;top:${660 + (1 - b) * 700}px;transform:rotate(-4deg)"><div class="phone"><img src="app-course.png" alt=""></div></div>`;
+    h += `<div class="abs" style="left:0;right:0;top:0;bottom:0;background:linear-gradient(to top, var(--enamel-2) 30%, rgba(19,48,106,0) 52%)"></div>`;
+    const pulse = 1 + 0.04 * Math.sin(Math.max(0, lt - 1.3) * 7) * (lt > 1.3 ? 1 : 0);
+    h += `<div class="abs" style="left:90px;top:1330px;opacity:${c};transform:scale(${(0.85 + 0.15 * outBack(c)) * pulse});transform-origin:left center"><span class="cta">Ссылка в профиле ${arrow}</span></div>`;
+    h += `<div class="abs handle" style="left:90px;top:1460px;opacity:${c}">@srpski_coach</div>`;
+  }
+  f.innerHTML = h;
+};
+render(0);
+</script>
+</body>
+</html>
