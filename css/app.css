@@ -128,8 +128,14 @@ h2 { margin: 0; font: 700 17px/1.2 var(--f-display); text-wrap: balance; }
 .list button:active { background: var(--enamel-soft); }
 .list.compact button { padding-block: 9px; }
 
+.same { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.same button { display: flex; flex-direction: column; align-items: flex-start; gap: 0; padding: 8px 10px; text-align: left; border-radius: 12px; background: var(--ok-soft); border: 1px solid transparent; min-width: 0; }
+.same.near button { background: var(--surface); border-color: var(--line); }
+.same span { font-weight: 600; overflow-wrap: anywhere; }
+.same small { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.same button:active { border-color: var(--enamel); }
 .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; border-radius: 12px; background: var(--line); margin-bottom: 14px; }
-.seg button { min-height: 38px; border-radius: 9px; font-weight: 600; font-size: 15px; color: var(--muted); }
+.seg button { min-height: 38px; border-radius: 9px; font-weight: 600; font-size: 14px; color: var(--muted); }
 .seg button[aria-selected="true"], .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 
 .search input, .ans, textarea { width: 100%; font: inherit; font-size: 17px; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; }

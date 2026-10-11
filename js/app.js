@@ -42,10 +42,10 @@
       let r;
       if (two === 'lj' || two === 'nj') {
         const base = two === 'lj' ? 'л' : 'н', v = lo[i + 2] || '';
-        if (VOW.includes(v)) { r = base + { a: 'я', e: 'е', i: 'и', o: 'ё', u: 'ю' }[v]; i += 2; } else { r = base + 'ь'; i++; }
+        if (v && VOW.includes(v)) { r = base + { a: 'я', e: 'е', i: 'и', o: 'ё', u: 'ю' }[v]; i += 2; } else { r = base + 'ь'; i++; }
       } else if (two === 'dž') { r = 'дж'; i++; }
       else if (ch === 'j') {
-        if (VOW.includes(nx)) { r = (LETTER.test(prev) && !VOW.includes(prev) ? 'ь' : '') + { a: 'я', e: 'е', u: 'ю', o: 'йо', i: 'йи' }[nx]; i++; } else r = 'й';
+        if (nx && VOW.includes(nx)) { r = (LETTER.test(prev) && !VOW.includes(prev) ? 'ь' : '') + { a: 'я', e: 'е', u: 'ю', o: 'йо', i: 'йи' }[nx]; i++; } else r = 'й';
       } else if (ch === 'e') r = !LETTER.test(prev) || VOW.includes(prev) ? 'э' : 'е';
       else r = RU[ch] !== undefined ? RU[ch] : s[i];
       out += r;
@@ -70,6 +70,24 @@
     });
   });
   const LESSONS = COURSE.flatMap((u) => u.lessons);
+
+  // слова, которые звучат как русские: сравниваем подсказку произношения с переводом
+  const lev = (a, b) => {
+    let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) {
+      const cur = [i];
+      for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+    return prev[b.length];
+  };
+  const ruNorm = (s) => s.toLowerCase().replace(/ё/g, 'е').replace(/\(.*?\)/g, '').replace(/[^а-я ]/g, '').replace(/\s+/g, ' ').trim();
+  // кухня и названия — просто транслитерация, ложные друзья — ловушки, а не подсказки
+  const SAME_SKIP = new Set(['4.4', '10.2']);
+  const SAME = ITEMS.filter((it) => !SAME_SKIP.has(it.lesson.id) && !/Ловушка|Не «/.test(it.note) && !/\(/.test(it.ru.replace(/\(\d+\)/, '')))
+    .map((it) => { const p = ruNorm(pron(it.say)); return { it, d: Math.min(...it.ru.split('/').map(ruNorm).filter(Boolean).map((r) => lev(p, r))) }; })
+    .filter((x) => x.d <= 1)
+    .sort((a, b) => a.d - b.d);
 
   // ---------- состояние ----------
   const KEY = 'srpski.v1';
@@ -224,7 +242,14 @@
 
   function vDict() {
     let h = '<header class="top"><div><p class="eyebrow">Справочник</p><h1>Разговорник</h1></div></header>' +
-      '<div class="seg" role="tablist"><button role="tab" data-dtab="words" aria-selected="' + (dictTab === 'words') + '">Фразы</button><button role="tab" data-dtab="abc" aria-selected="' + (dictTab === 'abc') + '">Азбука</button></div>';
+      '<div class="seg" role="tablist"><button role="tab" data-dtab="same" aria-selected="' + (dictTab === 'same') + '">Как по-русски</button><button role="tab" data-dtab="words" aria-selected="' + (dictTab === 'words') + '">Фразы</button><button role="tab" data-dtab="abc" aria-selected="' + (dictTab === 'abc') + '">Азбука</button></div>';
+    if (dictTab === 'same') {
+      const card = (x) => '<button data-say="' + esc(x.it.say) + '"><span lang="sr">' + esc(sr(x.it.sr)) + '</span><small>' + esc(x.it.ru.replace(/ \(\d+\)/, '')) + '</small></button>';
+      const exact = SAME.filter((x) => !x.d), near = SAME.filter((x) => x.d);
+      return h + '<p class="hint">' + SAME.length + ' ' + plural(SAME.length, 'слово', 'слова', 'слов') + ' из курса вы уже знаете — они звучат как русские. Нажмите, чтобы послушать.</p>' +
+        '<h3 class="sub">Совпадают полностью · ' + exact.length + '</h3><div class="same">' + exact.map(card).join('') + '</div>' +
+        '<h3 class="sub">Отличаются одной буквой · ' + near.length + '</h3><div class="same near">' + near.map(card).join('') + '</div>';
+    }
     if (dictTab === 'abc') {
       h += '<p class="hint">Сербский пишется и кириллицей, и латиницей: одна буква — один звук. Вывески и меню чаще на латинице, документы — на кириллице.</p><div class="abc">' +
         window.ALPHABET.map((a) => '<button class="abc-c" data-say="' + esc(a[1]) + '"><b lang="sr">' + a[0] + '</b><span lang="sr">' + a[1] + '</span><small>' + esc(a[2]) + '</small></button>').join('') + '</div>';
@@ -235,9 +260,10 @@
   }
   function dictList() {
     const q = dictQ.trim().toLowerCase(), qb = q ? bare(q) : '';
+    const hit = (it) => !q || it.ru.toLowerCase().includes(q) || bare(it.sr).includes(qb);
     let h = '', total = 0;
     for (const u of COURSE) {
-      const its = u.lessons.flatMap((l) => l.items).filter((it) => !q || it.ru.toLowerCase().includes(q) || bare(it.sr).includes(qb));
+      const its = u.lessons.flatMap((l) => l.items).filter(hit);
       if (!its.length) continue;
       total += its.length;
       h += '<h3 class="sub">' + u.n + '. ' + esc(u.title) + '</h3><ul class="list">' + its.map((it) => '<li><button data-say="' + esc(it.say) + '"><span lang="sr">' + esc(sr(it.sr)) + '</span><small>' + esc(it.ru) + '</small>' + (S.words[it.id] ? '' : '<em class="new">новое</em>') + '</button></li>').join('') + '</ul>';
