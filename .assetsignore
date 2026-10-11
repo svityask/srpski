@@ -1,0 +1,8 @@
+# Cloudflare: не выкладывать служебное — только сам сайт
+.git
+.github
+.gitignore
+.assetsignore
+promo/tools
+promo/daily/plan.json
+*.md
