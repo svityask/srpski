@@ -1,0 +1,62 @@
+
+  /* Посты 2–3 и обложки «Актуального»: та же система, что у первой карусели (бумага + эмалевые таблички). */
+  :root { --paper: #f3f5f9; --ink: #142039; --muted: #5a6681; --line: #d8dee9; --enamel: #1c3f8c; --enamel-2: #13306a; --ok: #18825a; --ok-soft: #e1f3ea; --bad: #c3343c; --gold: #f0b73a;
+    --d: "Unbounded", sans-serif; --b: "Golos Text", sans-serif; }
+  * { box-sizing: border-box; margin: 0; }
+  body { margin: 0; background: #888; font-family: var(--b); color: var(--ink); display: grid; gap: 40px; padding: 40px; }
+  .s { width: 1080px; height: 1350px; background: var(--paper); position: relative; overflow: hidden; padding: 96px 88px; display: flex; flex-direction: column; }
+  .s.blue { background: radial-gradient(120% 80% at 80% 10%, #2a55b8 0%, var(--enamel) 45%, var(--enamel-2) 100%); color: #fff; }
+  .eyebrow { font: 700 28px/1 var(--b); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .blue .eyebrow { color: rgba(255,255,255,.8); }
+  h1 { font: 800 92px/1.04 var(--d); letter-spacing: -.02em; }
+  h2 { font: 800 60px/1.08 var(--d); letter-spacing: -.01em; }
+  .lead { font: 500 38px/1.35 var(--b); color: var(--muted); }
+  .blue .lead { color: rgba(255,255,255,.85); }
+  .foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; font: 600 28px/1 var(--b); color: var(--muted); }
+  .blue .foot { color: rgba(255,255,255,.75); }
+  .plate { display: inline-flex; flex-direction: column; align-items: center; background: var(--enamel); color: #fff; border-radius: 26px; padding: 34px 56px 28px;
+    box-shadow: inset 0 0 0 8px var(--enamel), inset 0 0 0 12px rgba(255,255,255,.95), 0 18px 40px rgba(20,32,57,.18); }
+  .plate .a { font: 800 92px/1.1 var(--d); }
+  .plate .c { margin-top: 14px; padding-top: 14px; border-top: 4px solid rgba(255,255,255,.55); font: 500 44px/1 var(--b); opacity: .9; }
+  /* фразы */
+  .ph { display: grid; gap: 16px; margin-top: 44px; }
+  .ph > div { display: grid; grid-template-columns: 64px 1fr; gap: 6px 22px; align-items: baseline; background: #fff; border: 2px solid var(--line); border-radius: 24px; padding: 24px 30px; }
+  .ph .n { grid-row: span 2; font: 800 40px/1 var(--d); color: var(--enamel); opacity: .35; font-variant-numeric: tabular-nums; }
+  .ph b { font: 800 46px/1.1 var(--d); color: var(--enamel); }
+  .ph b small { font: 500 30px/1 var(--b); color: var(--muted); margin-left: 12px; }
+  .ph span { font: 600 34px/1.2 var(--b); }
+  .ph em { font-style: normal; display: block; margin-top: 4px; font: 500 26px/1.25 var(--b); color: var(--muted); }
+  /* буквы */
+  .lt { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 44px; }
+  .lt > div { background: #fff; border: 2px solid var(--line); border-radius: 24px; padding: 26px 30px; display: grid; grid-template-columns: auto 1fr; gap: 4px 22px; align-items: center; }
+  .lt .big { grid-row: span 3; width: 120px; height: 140px; border-radius: 18px; background: var(--enamel); color: #fff; display: grid; place-items: center; font: 800 76px/1 var(--d);
+    box-shadow: inset 0 0 0 6px var(--enamel), inset 0 0 0 9px rgba(255,255,255,.95); }
+  .lt .lat { font: 800 40px/1 var(--d); color: var(--enamel); }
+  .lt .snd { font: 600 30px/1.15 var(--b); }
+  .lt .ex { font: 500 26px/1.2 var(--b); color: var(--muted); }
+  .lt .ex b { color: var(--ink); }
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
+  .vs > div { background: #fff; border: 2px solid var(--line); border-radius: 28px; padding: 28px 32px; display: grid; gap: 12px; justify-items: start; }
+  .vs .k { font: 800 100px/1 var(--d); color: var(--enamel); }
+  .vs p { font: 500 32px/1.3 var(--b); }
+  .vs .w { font: 700 40px/1.1 var(--b); }
+  .vs .w span { color: var(--muted); font-weight: 500; }
+  .tip { margin-top: 32px; padding: 28px 32px; border-radius: 24px; background: var(--ok-soft); font: 500 32px/1.35 var(--b); }
+  .badge { display: inline-block; background: #fff; color: var(--enamel); font: 800 36px/1 var(--d); padding: 26px 36px; border-radius: 20px; }
+  /* обложки «Актуального»: 1080×1920, значок в центральном круге */
+  .hl { width: 1080px; height: 1920px; display: grid; place-items: center; background: radial-gradient(90% 60% at 50% 45%, #2a55b8 0%, var(--enamel) 55%, var(--enamel-2) 100%); }
+  .hl .ring { width: 640px; height: 640px; border-radius: 50%; display: grid; place-items: center; border: 16px solid rgba(255,255,255,.95); }
+  .hl svg { width: 330px; height: 330px; color: #fff; }
+  .hl .txt { font: 800 230px/1 var(--d); color: #fff; letter-spacing: -.02em; }
+  .menu { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 48px; }
+  .menu > div { background: #fff; border: 2px solid var(--line); border-radius: 24px; padding: 32px 30px; }
+  .menu b { display: block; font: 800 42px/1.1 var(--d); color: var(--enamel); }
+  .menu span { display: block; margin-top: 10px; font: 600 34px/1.2 var(--b); }
+  .menu em { display: block; margin-top: 8px; font-style: normal; font: 500 28px/1.3 var(--b); color: var(--muted); }
+  .dlg { display: grid; gap: 18px; margin-top: 44px; }
+  .dlg > div { max-width: 82%; padding: 22px 28px; border-radius: 28px; }
+  .dlg .them { background: #fff; border: 2px solid var(--line); border-bottom-left-radius: 8px; }
+  .dlg .me { justify-self: end; background: var(--enamel); color: #fff; border-bottom-right-radius: 8px; }
+  .dlg small { display: block; font: 700 22px/1 var(--b); letter-spacing: .08em; text-transform: uppercase; opacity: .6; margin-bottom: 10px; }
+  .dlg b { display: block; font: 700 40px/1.15 var(--b); }
+  .dlg span { display: block; margin-top: 6px; font: 500 28px/1.2 var(--b); opacity: .75; }
