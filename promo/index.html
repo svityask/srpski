@@ -64,7 +64,7 @@
 const B = 'instagram/';
 const TAGS = '#сербскийязык #сербия #белград #русскиевсербии';
 const REELS = [
-  { title: 'Рилс №3 · Сербский сленг (мультперсонаж)', file: 'reel-3-sleng.mp4', cover: 'reel-3-cover.jpg', music: 'уже с голосом диктора; в Instagram можно подложить тихий балканский бит на 10–15 % громкости',
+  { title: 'Рилс №3 · Сербский сленг (мультперсонаж)', file: 'reel-3-sleng.mp4', cover: 'reel-3-cover.jpg', voice: 'reel-3-voice.mp3', music: 'уже с голосом диктора; в Instagram можно подложить тихий балканский бит на 10–15 % громкости',
     caption: `Сербский сленг, без которого ты не свой 😎\n\nBrate — братан\nAjde bre! — ну давай уже!\nPolako — спокойно, не спеши\nKakav smor! — какая скукота!\n\nKapiraš? 😉 Какое словечко ты уже слышал на улице? Пиши в комментариях 👇\n\nЕщё больше живого сербского — в бесплатном приложении Srpski, ссылка в профиле.\nTelegram: t.me/srpski_coach\n\n${TAGS} #сленг #сербскийсленг #изучениеязыков` },
   { title: 'Рилс №2 · Сербы не поймут, если скажешь…', file: 'reel-2-lozhnye-druzya.mp4', cover: 'reel-2-cover.jpg', music: 'Goran Bregović — «Gas Gas» или любые балканские духовые',
     caption: `Скажешь сербу «sutra» — а он придёт завтра, а не утром 😅\n\n5 слов, которые звучат как русские, но значат совсем другое. Особенно осторожно с последним 🙈\n\nСохрани, чтобы не попасть впросак 📌\nКакой ложный друг удивил тебя больше всего? Пиши в комментариях 👇\n\nВсе ложные друзья с озвучкой — в бесплатном приложении Srpski, ссылка в профиле.\n\n${TAGS} #ложныедрузья #изучениеязыков` },
@@ -98,7 +98,7 @@ const strip = (imgs, cls = '') => `<div class="strip ${cls}">${imgs.map((f) => `
 let h = '<section id="reels"><h3>Рилсы</h3>';
 for (const r of REELS) h += `<div class="card"><div class="card-h"><h2>${esc(r.title)}</h2>${r.done ? '<span class="badge">✓ выложен</span>' : ''}</div>
   <video controls playsinline preload="metadata" poster="${B}${r.cover}" src="${B}${r.file}"></video>
-  <div class="row"><a class="btn primary" href="${B}${r.file}" download>Скачать видео</a><a class="btn" href="${B}${r.cover}" download>Обложка</a></div>
+  <div class="row"><a class="btn primary" href="${B}${r.file}" download>Скачать видео</a><a class="btn" href="${B}${r.cover}" download>Обложка</a>${r.voice ? `<a class="btn" href="${B}${r.voice}" download>Голос отдельно</a>` : ''}</div>
   <p class="hint">Музыка: ${esc(r.music)}</p>${caption(r.caption)}</div>`;
 h += '</section><section id="posts"><h3>Посты</h3>';
 for (const p of POSTS) h += `<div class="card"><div class="card-h"><h2>${esc(p.title)}</h2>${p.done ? '<span class="badge">✓ выложен</span>' : ''}</div>${strip(p.imgs)}<p class="hint">Нажмите на слайд, чтобы открыть и сохранить.</p>${caption(p.caption)}</div>`;
