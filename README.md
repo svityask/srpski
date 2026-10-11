@@ -36,7 +36,7 @@
 ## Установка на iPhone
 
 1. Включить GitHub Pages: репозиторий → **Settings → Pages → Source: Deploy from a branch → `main` / `(root)`**.
-2. Открыть `https://zdravo.svityask.workers.dev/` в **Safari**.
+2. Открыть `https://zdravo.srpski.workers.dev/` в **Safari**.
 3. «Поделиться» → **«На экран „Домой“»**. Приложение откроется на весь экран и будет работать без интернета.
 
 ## Как добавить слова или урок
