@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700;800&display=swap">
+<style>
+  :root { --paper: #f3f5f9; --ink: #142039; --muted: #5a6681; --line: #d8dee9; --enamel: #1c3f8c; --ok: #18825a; --ok-soft: #e1f3ea; --bad: #c3343c; --gold: #f0b73a;
+    --d: "Unbounded", sans-serif; --b: "Golos Text", sans-serif; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #888; font-family: var(--b); color: var(--ink); display: grid; gap: 40px; padding: 40px; }
+  .s { width: 1080px; height: 1350px; background: var(--paper); position: relative; overflow: hidden; padding: 96px 88px; display: flex; flex-direction: column; }
+  .sq { width: 1080px; height: 1080px; }
+  .plate { display: inline-flex; flex-direction: column; align-items: center; background: var(--enamel); color: #fff; border-radius: 26px; padding: 34px 56px 28px;
+    box-shadow: inset 0 0 0 8px var(--enamel), inset 0 0 0 12px rgba(255,255,255,.95), 0 18px 40px rgba(20,32,57,.18); }
+  .plate .a { font: 800 92px/1.1 var(--d); }
+  .plate .c { margin-top: 14px; padding-top: 14px; border-top: 4px solid rgba(255,255,255,.55); font: 500 44px/1 var(--b); opacity: .9; }
+  .eyebrow { font: 700 28px/1 var(--b); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  h1 { font: 800 92px/1.04 var(--d); letter-spacing: -.02em; }
+  h2 { font: 800 64px/1.08 var(--d); letter-spacing: -.01em; }
+  .lead { font: 500 38px/1.35 var(--b); color: var(--muted); }
+  .foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; font: 600 28px/1 var(--b); color: var(--muted); }
+  .foot b { color: var(--enamel); }
+  .num { font-variant-numeric: tabular-nums; }
+  /* сетка слов */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 56px; }
+  .w { background: #fff; border: 2px solid var(--line); border-radius: 24px; padding: 30px 28px; }
+  .w.ok { background: var(--ok-soft); border-color: transparent; }
+  .w b { display: block; font: 700 50px/1.1 var(--b); }
+  .w span { display: block; margin-top: 8px; font: 500 34px/1.1 var(--b); color: var(--muted); }
+  .w i { font-style: normal; color: var(--bad); text-decoration: underline 4px; text-underline-offset: 6px; }
+  /* ложные друзья */
+  .ff { display: grid; gap: 14px; margin-top: 40px; }
+  .ff div { display: grid; grid-template-columns: 300px 1fr; align-items: baseline; gap: 24px; background: #fff; border: 2px solid var(--line); border-radius: 22px; padding: 18px 28px; }
+  .ff b { font: 800 44px/1 var(--d); color: var(--enamel); }
+  .ff span { font: 600 36px/1.2 var(--b); }
+  .ff em { font-style: normal; display: block; font: 500 26px/1.2 var(--b); color: var(--bad); margin-top: 6px; }
+  .phone { width: 430px; border-radius: 56px; border: 14px solid var(--ink); overflow: hidden; box-shadow: 0 30px 60px rgba(20,32,57,.25); }
+  .phone img { display: block; width: 100%; }
+  .badge { display: inline-block; background: var(--enamel); color: #fff; font: 700 30px/1 var(--b); padding: 18px 28px; border-radius: 16px; }
+  /* аватар */
+  .ava { width: 1080px; height: 1080px; background: var(--enamel); display: grid; place-items: center; position: relative; }
+  .ava .frame { width: 760px; height: 520px; border: 22px solid #fff; border-radius: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; }
+  .ava .a { font: 800 230px/1 var(--d); letter-spacing: -.01em; }
+  .ava .c { margin-top: 26px; padding-top: 18px; border-top: 6px solid rgba(255,255,255,.6); font: 600 84px/1 var(--b); opacity: .92; }
+  .ava2 .frame { width: 640px; height: 640px; }
+  .ava2 .a { font-size: 380px; }
+  .ava2 .c { font: 700 86px/1 var(--d); letter-spacing: .12em; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<!-- Аватар: табличка «Ćao!» — так приложение показывает каждое слово -->
+<div class="ava" id="avatar"><div class="frame"><span class="a">Ćao!</span><span class="c">Ћао!</span></div></div>
+<div class="ava ava2" id="avatar-alt"><div class="frame"><span class="a">Ћ</span><span class="c">SRPSKI</span></div></div>
+
+<!-- Карусель «Слова, которые вы уже знаете» -->
+<div class="s" id="slide-1">
+  <p class="eyebrow">Сербский для русских</p>
+  <h1 style="margin-top:40px">27 сербских слов, которые вы <span style="color:var(--enamel)">уже знаете</span></h1>
+  <div style="margin-top:64px; display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start">
+    <div class="plate"><span class="a">Voda</span><span class="c">Вода</span></div>
+    <div class="plate" style="transform:rotate(-3deg); margin-top:30px"><span class="a">Hleb</span><span class="c">Хлеб</span></div>
+    <div class="plate" style="transform:rotate(2deg); margin-left:120px"><span class="a">Ključ</span><span class="c">Кључ</span></div>
+  </div>
+  <p class="lead" style="margin-top:48px">Сербский и русский — родственники. Вот слова, которые звучат одинаково.</p>
+  <div class="foot"><span>@srpski_coach</span><span>листайте →</span></div>
+</div>
+
+<div class="s" id="slide-2">
+  <p class="eyebrow">Звучат точь-в-точь как по-русски · 1/2</p>
+  <h2 style="margin-top:28px">Еда, семья, город</h2>
+  <div class="grid">
+    <div class="w ok"><b>voda</b><span>вода</span></div>
+    <div class="w ok"><b>pivo</b><span>пиво</span></div>
+    <div class="w ok"><b>vino</b><span>вино</span></div>
+    <div class="w ok"><b>čaj</b><span>чай</span></div>
+    <div class="w ok"><b>sok</b><span>сок</span></div>
+    <div class="w ok"><b>hleb</b><span>хлеб</span></div>
+    <div class="w ok"><b>luk</b><span>лук</span></div>
+    <div class="w ok"><b>mama</b><span>мама</span></div>
+    <div class="w ok"><b>brat</b><span>брат</span></div>
+    <div class="w ok"><b>sestra</b><span>сестра</span></div>
+    <div class="w ok"><b>muž</b><span>муж</span></div>
+    <div class="w ok"><b>žena</b><span>жена</span></div>
+    <div class="w ok"><b>roditelji</b><span>родители</span></div>
+    <div class="w ok"><b>ulica</b><span>улица</span></div>
+    <div class="w ok"><b>daleko</b><span>далеко</span></div>
+  </div>
+  <div class="foot"><span>@srpski_coach</span><span>č = ч · ž = ж · j = й</span></div>
+</div>
+
+<div class="s" id="slide-3">
+  <p class="eyebrow">Звучат точь-в-точь как по-русски · 2/2</p>
+  <h2 style="margin-top:28px">Вежливость, числа, быт</h2>
+  <div class="grid">
+    <div class="w ok"><b>da</b><span>да</span></div>
+    <div class="w ok"><b>izvinite</b><span>извините</span></div>
+    <div class="w ok"><b>dva</b><span>два</span></div>
+    <div class="w ok"><b>tri</b><span>три</span></div>
+    <div class="w ok"><b>sto</b><span>сто</span></div>
+    <div class="w ok"><b>sreda</b><span>среда</span></div>
+    <div class="w ok"><b>tramvaj</b><span>трамвай</span></div>
+    <div class="w ok"><b>taksi</b><span>такси</span></div>
+    <div class="w ok"><b>ključ</b><span>ключ</span></div>
+    <div class="w ok"><b>policija</b><span>полиция</span></div>
+    <div class="w ok"><b>recept</b><span>рецепт</span></div>
+    <div class="w ok"><b>dinar</b><span>динар</span></div>
+  </div>
+  <div class="foot"><span>@srpski_coach</span><span>lj = ль · nj = нь · ć = ч</span></div>
+</div>
+
+<div class="s" id="slide-4">
+  <p class="eyebrow">А эти отличаются одной буквой</p>
+  <h2 style="margin-top:28px">Почти как дома</h2>
+  <div class="grid">
+    <div class="w"><b>riba</b><span>р<i>ы</i>ба</span></div>
+    <div class="w"><b>sir</b><span>с<i>ы</i>р</span></div>
+    <div class="w"><b>sin</b><span>с<i>ы</i>н</span></div>
+    <div class="w"><b>meso</b><span>м<i>я</i>со</span></div>
+    <div class="w"><b>šest</b><span>шест<i>ь</i></span></div>
+    <div class="w"><b>ne</b><span>не<i>т</i></span></div>
+    <div class="w"><b>bank<i>a</i></b><span>банк</span></div>
+    <div class="w"><b>sup<i>a</i></b><span>суп</span></div>
+    <div class="w"><b>tam<i>o</i></b><span>там</span></div>
+    <div class="w"><b>po<i>š</i>ta</b><span>по<i>ч</i>та</span></div>
+    <div class="w"><b>a<i>u</i>tobus</b><span>а<i>в</i>тобус</span></div>
+    <div class="w"><b>vet<i>a</i>r</b><span>вет<i>е</i>р</span></div>
+  </div>
+  <div class="foot"><span>@srpski_coach</span><span>листайте →</span></div>
+</div>
+
+<div class="s" id="slide-5">
+  <p class="eyebrow">Но осторожно</p>
+  <h2 style="margin-top:28px">Ложные друзья: похожи, но значат <span style="color:var(--bad)">другое</span></h2>
+  <div class="ff">
+    <div><b>sutra</b><span>завтра<em>а не «утро» — утро это jutro</em></span></div>
+    <div><b>pravo</b><span>прямо<em>направо — desno</em></span></div>
+    <div><b>stolica</b><span>стул<em>столица — glavni grad</em></span></div>
+    <div><b>život</b><span>жизнь<em>живот — stomak</em></span></div>
+    <div><b>divan</b><span>чудесный<em>не мебель</em></span></div>
+    <div><b>ponos</b><span>гордость<em>да-да, гордость</em></span></div>
+  </div>
+  <div class="foot"><span>@srpski_coach</span><span>сохраните, пригодится</span></div>
+</div>
+
+<div class="s" id="slide-6">
+  <p class="eyebrow">Учите дальше</p>
+  <h2 style="margin-top:28px">Все 50 слов — в приложении Srpski</h2>
+  <div style="display:flex; gap:48px; align-items:center; margin-top:56px">
+    <div class="phone"><img src="dict.png" alt=""></div>
+    <div style="display:grid; gap:28px; font: 500 34px/1.3 var(--b)">
+      <p>10 тем: от «Ćao» до врача и документов</p>
+      <p>Озвучка и упражнения 5 минут в день</p>
+      <p>Бесплатно, без регистрации</p>
+      <span class="badge">Ссылка в профиле</span>
+    </div>
+  </div>
+  <div class="foot"><span>@srpski_coach</span><span>Vidimo se!</span></div>
+</div>
+
+</body>
+</html>
