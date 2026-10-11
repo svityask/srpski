@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@500;600;700&family=Unbounded:wght@700;800&display=swap">
+<style>
+  /* Рилс «Сербский сленг»: мультяшный ведущий объясняет 4 словечка. Кадр строится render(t). */
+  :root { --enamel: #1c3f8c; --enamel-2: #13306a; --ink: #142039; --gold: #f0b73a; --ok: #2fbf7f; --d: "Unbounded", sans-serif; --b: "Golos Text", sans-serif; }
+  * { box-sizing: border-box; margin: 0; }
+  body { margin: 0; background: #000; }
+  #f { width: 1080px; height: 1920px; position: relative; overflow: hidden; color: #fff; font-family: var(--b);
+    background: radial-gradient(110% 60% at 50% 42%, #2a55b8 0%, var(--enamel) 48%, var(--enamel-2) 100%); }
+  .abs { position: absolute; }
+  .eyebrow { font: 700 38px/1 var(--b); letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+  .h { font: 800 88px/1.05 var(--d); letter-spacing: -.02em; }
+  .bubble { background: #fff; color: var(--ink); border-radius: 44px; padding: 34px 54px 30px; box-shadow: 0 30px 60px rgba(4,10,30,.35); text-align: center; position: relative; }
+  .bubble::after { content: ""; position: absolute; left: 50%; bottom: -34px; margin-left: -10px; border: 22px solid transparent; border-top: 34px solid #fff; border-bottom: 0; transform: translateX(var(--tail, 0px)); }
+  .bubble b { display: block; font: 800 104px/1.05 var(--d); color: var(--enamel); white-space: nowrap; }
+  .bubble span { display: block; margin-top: 10px; font: 600 40px/1 var(--b); color: #5a6681; }
+  .card { background: rgba(9, 20, 48, .82); border: 2px solid rgba(255,255,255,.18); border-radius: 34px; padding: 30px 40px; backdrop-filter: blur(6px); }
+  .card .ru { font: 800 58px/1.1 var(--d); color: var(--gold); }
+  .card .ex { margin-top: 14px; font: 600 38px/1.3 var(--b); }
+  .card .ex i { font-style: normal; color: #b8c6e8; }
+  .dots { display: flex; gap: 14px; }
+  .dots i { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,.3); }
+  .dots i.on { background: var(--gold); }
+  .cta { display: inline-flex; align-items: center; gap: 18px; background: #fff; color: var(--enamel); border-radius: 30px; padding: 30px 46px; font: 800 50px/1 var(--d); white-space: nowrap; box-shadow: 0 20px 40px rgba(4,10,30,.3); }
+</style>
+</head>
+<body>
+<div id="f"></div>
+<script>
+const f = document.getElementById('f');
+const clamp = (x) => Math.max(0, Math.min(1, x));
+const prog = (t, a, d) => clamp((t - a) / d);
+const outCubic = (x) => 1 - Math.pow(1 - x, 3);
+const outBack = (x) => { const c = 1.9; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+
+// ---------- персонаж: короткие тёмные волосы с косым пробором, карие глаза, прямые брови, щетина, чёрная футболка со шнурком ----------
+const SKIN = '#f1cdb6', SKIN_D = '#e2b49b', HAIR = '#3b2a22', HAIR_L = '#4f3a2f', SHIRT = '#1d2130';
+function hero(o) {
+  const { brow = 'flat', eyes = 'open', mouth = 'neutral', talk = 0, look = 0, blush = 0 } = o;
+  // брови: смещение по высоте и наклон внутреннего края
+  const B = { flat: [0, 0], up: [-16, 0], angry: [6, 12], relax: [-4, -6], tired: [4, -4] }[brow];
+  const browL = `<g transform="translate(0 ${B[0]}) rotate(${B[1]} 236 268)"><rect x="196" y="258" width="82" height="17" rx="8.5" fill="${HAIR}"/></g>`;
+  const browR = `<g transform="translate(0 ${B[0]}) rotate(${-B[1]} 364 268)"><rect x="322" y="258" width="82" height="17" rx="8.5" fill="${HAIR}"/></g>`;
+  const eye = (cx) => {
+    if (eyes === 'closed') return `<path d="M${cx - 26} 312 q26 16 52 0" fill="none" stroke="${HAIR}" stroke-width="7" stroke-linecap="round"/>`;
+    if (eyes === 'happy') return `<path d="M${cx - 26} 318 q26 -20 52 0" fill="none" stroke="${HAIR}" stroke-width="7" stroke-linecap="round"/>`;
+    const lid = eyes === 'half' ? `<path d="M${cx - 30} 300 h60 v14 h-60z" fill="${SKIN}"/><path d="M${cx - 30} 313 q30 -4 60 0" stroke="${HAIR}" stroke-width="5" fill="none"/>` : '';
+    return `<ellipse cx="${cx}" cy="312" rx="30" ry="19" fill="#fff"/><circle cx="${cx + look}" cy="313" r="14" fill="#6b4a33"/><circle cx="${cx + look}" cy="313" r="7" fill="#1d130d"/><circle cx="${cx + look + 4}" cy="308" r="4" fill="#fff"/>` +
+      `<path d="M${cx - 31} 306 q31 -22 62 0" fill="none" stroke="${HAIR}" stroke-width="4" stroke-linecap="round"/>` + lid;
+  };
+  const M = {
+    neutral: `<path d="M270 448 q30 6 60 0" fill="none" stroke="#b5645a" stroke-width="9" stroke-linecap="round"/>`,
+    flat: `<path d="M272 452 h56" fill="none" stroke="#b5645a" stroke-width="9" stroke-linecap="round"/>`,
+    smile: `<path d="M258 438 q42 40 84 0" fill="none" stroke="#b5645a" stroke-width="9" stroke-linecap="round"/>`,
+    grin: `<path d="M256 432 q44 6 88 0 q-8 52 -44 52 q-36 0 -44 -52z" fill="#7a2f2c"/><path d="M262 434 q38 6 76 0 v10 q-38 6 -76 0z" fill="#fff"/>`,
+    o: `<ellipse cx="300" cy="454" rx="20" ry="26" fill="#7a2f2c"/>`,
+  };
+  let m = M[mouth] || M.neutral;
+  if (talk > 0) { const h = 10 + talk * 34; m = `<path d="M262 440 q38 -6 76 0 q-6 ${h} -38 ${h} q-32 0 -38 -${h}z" fill="#7a2f2c"/><path d="M276 ${448 + h * 0.55} q24 -12 48 0" fill="#d9706a"/>`; }
+  return `<svg viewBox="0 0 600 760" width="600" height="760">
+    <!-- футболка и шея -->
+    <path d="M40 760 q10 -150 150 -190 l60 -18 q50 40 100 0 l60 18 q140 40 150 190z" fill="${SHIRT}"/>
+    <path d="M250 552 q50 40 100 0" fill="none" stroke="#2a3044" stroke-width="10"/>
+    <rect x="252" y="470" width="96" height="92" rx="30" fill="${SKIN_D}"/>
+    <path d="M238 560 q62 70 124 0" fill="none" stroke="#3b2f2a" stroke-width="3"/>
+    <!-- уши -->
+    <ellipse cx="160" cy="330" rx="26" ry="40" fill="${SKIN_D}"/><ellipse cx="440" cy="330" rx="26" ry="40" fill="${SKIN_D}"/>
+    <!-- лицо -->
+    <path d="M168 270 q0 -120 132 -120 q132 0 132 120 v70 q0 150 -132 168 q-132 -18 -132 -168z" fill="${SKIN}"/>
+    <!-- щетина -->
+    <path d="M186 380 q14 110 114 126 q100 -16 114 -126 q-20 70 -114 82 q-94 -12 -114 -82z" fill="#8a6a58" opacity=".22"/>
+    <path d="M262 422 q38 -14 76 0 q-38 8 -76 0z" fill="#8a6a58" opacity=".25"/>
+    <!-- румянец -->
+    <ellipse cx="214" cy="386" rx="30" ry="15" fill="#e88f86" opacity="${0.18 + blush * 0.4}"/><ellipse cx="386" cy="386" rx="30" ry="15" fill="#e88f86" opacity="${0.18 + blush * 0.4}"/>
+    <!-- волосы: объём сверху, чёлка с косым пробором вправо -->
+    <path d="M156 300 q-14 -170 150 -182 q150 -6 150 150 l-6 40 q-10 -70 -60 -96 q-70 40 -190 34 q-30 20 -36 70z" fill="${HAIR}"/>
+    <path d="M190 200 q70 -70 220 -40 q-60 -10 -130 30 q-50 22 -90 10z" fill="${HAIR_L}"/>
+    <path d="M230 186 q120 -40 200 24" fill="none" stroke="${HAIR_L}" stroke-width="10" stroke-linecap="round"/>
+    ${browL}${browR}${eye(236)}${eye(364)}
+    <!-- нос -->
+    <path d="M300 320 q-6 50 -18 74 q18 10 36 0" fill="none" stroke="${SKIN_D}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    ${m}
+  </svg>`;
+}
+
+// ---------- сцены ----------
+const HOOK = 2.6, STEP = 3.6;
+const SLANG = [
+  { sr: 'Brate!', cy: 'Брате!', ru: 'Братан!', ex: 'Brate, gde si? <i>— Братан, ты где?</i>', face: { brow: 'up', mouth: 'grin', blush: .4 } },
+  { sr: 'Ajde bre!', cy: 'Ајде бре!', ru: 'Ну давай уже!', ex: '«Bre» — для эмоций. Ajde bre, idemo! <i>— Ну давай, пошли!</i>', face: { brow: 'angry', mouth: 'o' } },
+  { sr: 'Polako', cy: 'Полако', ru: 'Спокойно, не спеши', ex: 'Polako, brate, stići ćemo. <i>— Спокойно, успеем.</i>', face: { brow: 'relax', eyes: 'closed', mouth: 'smile' } },
+  { sr: 'Kakav smor!', cy: 'Какав смор!', ru: 'Какая скукота!', ex: 'Ovaj film je smor. <i>— Этот фильм — скукота.</i>', face: { brow: 'tired', eyes: 'half', mouth: 'flat', look: -4 } },
+];
+const S2 = HOOK, S3 = S2 + SLANG.length * STEP, END = S3 + 4.4;
+window.DURATION = END;
+
+// персонаж: лёгкое покачивание, моргание, рот «говорит» в первые 1,1 с реплики
+function heroAt(t, face, talkFrom) {
+  const bob = Math.sin(t * 2.2) * 8;
+  const blink = (t % 3.1) > 2.98;
+  const fc = Object.assign({}, face);
+  if (blink && fc.eyes !== 'closed') fc.eyes = 'closed';
+  const lt = t - talkFrom;
+  if (lt > 0.15 && lt < 1.25) fc.talk = Math.abs(Math.sin(lt * 15));
+  return `<div class="abs" style="left:150px;top:${575 + bob}px;width:780px;height:988px">${hero(fc).replace('width="600" height="760"', 'width="780" height="988"')}</div>`;
+}
+
+window.render = function (t) {
+  let h = '';
+  if (t < S2) {
+    const a = outCubic(prog(t, 0.05, 0.4)), b = outCubic(prog(t, 0.35, 0.4)), c = outCubic(prog(t, 0.8, 0.4));
+    h += `<div class="abs eyebrow" style="left:90px;top:270px;opacity:${a}">@srpski_coach</div>`;
+    h += `<div class="abs h" style="left:90px;right:120px;top:330px;opacity:${a};transform:translateY(${(1 - a) * 40}px)">Сербский<br>сленг</div>`;
+    h += `<div class="abs" style="left:90px;right:140px;top:540px;font:600 50px/1.25 var(--b);opacity:${b}">4 слова, без которых ты <b style="color:var(--gold)">не свой</b></div>`;
+    const p = prog(t, 0.2, 0.5);
+    h += `<div style="opacity:${p};transform:translateY(${(1 - outCubic(p)) * 200}px)">` + heroAt(t, { brow: 'up', mouth: 'smile', blush: .3 }, 1.0) + `</div>`;
+    h += `<div class="abs" style="left:580px;top:640px;opacity:${c};transform:scale(${0.7 + 0.3 * outBack(c)})"><div class="bubble" style="padding:22px 44px"><b style="font-size:72px">Ćao! 👋</b></div></div>`;
+  } else if (t < S3) {
+    const k = Math.min(SLANG.length - 1, Math.floor((t - S2) / STEP)), lt = t - S2 - k * STEP;
+    const s = SLANG[k];
+    h += `<div class="abs dots" style="left:90px;top:290px">${SLANG.map((_, i) => `<i class="${i <= k ? 'on' : ''}"></i>`).join('')}</div>`;
+    h += `<div class="abs eyebrow" style="left:90px;top:330px">Сленг ${k + 1} из ${SLANG.length}</div>`;
+    const p = prog(lt, 0.05, 0.3);
+    h += `<div class="abs" style="left:0;right:0;top:420px;display:flex;justify-content:center;opacity:${p};transform:scale(${0.6 + 0.4 * outBack(p)});transform-origin:50% 100%"><div class="bubble"><b>${s.sr}</b><span>${s.cy}</span></div></div>`;
+    h += heroAt(t, s.face, S2 + k * STEP);
+    const q = prog(lt, 1.15, 0.3);
+    h += `<div class="abs card" style="left:70px;right:70px;top:1330px;opacity:${q};transform:translateY(${(1 - outCubic(q)) * 60}px)"><div class="ru">${s.ru}</div><div class="ex">${s.ex}</div></div>`;
+  } else {
+    const lt = t - S3;
+    const a = outCubic(prog(lt, 0, 0.4)), c = prog(lt, 1.0, 0.35);
+    h += `<div class="abs" style="left:0;right:0;top:420px;display:flex;justify-content:center;opacity:${a};transform:scale(${0.6 + 0.4 * outBack(a)});transform-origin:50% 100%"><div class="bubble"><b>Kapiraš?</b><span>Капираш? — Догоняешь? 😉</span></div></div>`;
+    h += heroAt(t, { brow: 'up', eyes: 'happy', mouth: 'grin', blush: .5 }, S3);
+    const pulse = 1 + 0.035 * Math.sin(Math.max(0, lt - 1.4) * 7) * (lt > 1.4 ? 1 : 0);
+    h += `<div class="abs card" style="left:70px;right:70px;top:1330px;opacity:${c};text-align:center"><div class="ex" style="margin:0 0 22px">Ещё больше живого сербского — в бесплатном приложении <b style="color:var(--gold)">Srpski</b></div><span class="cta" style="transform:scale(${pulse})">Ссылка в профиле →</span></div>`;
+  }
+  f.innerHTML = h;
+};
+render(0);
+</script>
+</body>
+</html>
