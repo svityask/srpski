@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700;800&display=swap">
+<style>
+  /* Баннер приложения: эмалевый синий фон, как табличка улицы; телефон с курсом и «таблички» слов вокруг. */
+  :root { --paper: #f3f5f9; --ink: #142039; --muted: #5a6681; --enamel: #1c3f8c; --enamel-2: #16336f; --gold: #f0b73a;
+    --d: "Unbounded", sans-serif; --b: "Golos Text", sans-serif; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: #777; padding: 40px; display: grid; gap: 40px; font-family: var(--b); }
+  .bn { position: relative; overflow: hidden; color: #fff; background: radial-gradient(120% 80% at 80% 10%, #2a55b8 0%, var(--enamel) 45%, var(--enamel-2) 100%); }
+  .story { width: 1080px; height: 1920px; }
+  .feed { width: 1080px; height: 1350px; }
+  .handle { font: 600 34px/1 var(--b); opacity: .8; letter-spacing: .02em; }
+  h1 { font: 800 118px/1.02 var(--d); letter-spacing: -.02em; text-wrap: balance; }
+  .sub { font: 500 46px/1.3 var(--b); opacity: .9; }
+  .phone { position: absolute; width: 600px; border-radius: 82px; border: 18px solid #0b1328; background: #0b1328; overflow: hidden;
+    box-shadow: 0 50px 90px rgba(4, 10, 30, .45), 0 0 0 3px rgba(255,255,255,.12); }
+  .phone img { display: block; width: 100%; border-radius: 64px; }
+  .notch { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); width: 170px; height: 48px; border-radius: 26px; background: #0b1328; z-index: 2; }
+  .plate { position: absolute; display: inline-flex; flex-direction: column; align-items: center; background: var(--enamel); color: #fff; border-radius: 26px; padding: 30px 50px 26px;
+    box-shadow: inset 0 0 0 8px var(--enamel), inset 0 0 0 12px rgba(255,255,255,.95), 0 30px 60px rgba(4, 10, 30, .4); z-index: 3; }
+  .plate .a { font: 800 84px/1.05 var(--d); }
+  .plate .c { margin-top: 12px; padding-top: 12px; border-top: 4px solid rgba(255,255,255,.55); font: 500 38px/1 var(--b); opacity: .92; }
+  .plate .r { position: absolute; bottom: -58px; left: 50%; transform: translateX(-50%); white-space: nowrap; font: 600 32px/1 var(--b); color: var(--ink); background: #fff; padding: 12px 20px; border-radius: 14px; box-shadow: 0 10px 24px rgba(4,10,30,.25); }
+  .stats { display: flex; gap: 14px; flex-wrap: wrap; }
+  .stats span { background: var(--enamel); border: 2px solid rgba(255,255,255,.3); border-radius: 18px; padding: 18px 22px; font: 600 34px/1 var(--b); white-space: nowrap; }
+  .stats b { font: 800 38px/1 var(--d); color: var(--gold); margin-right: 8px; }
+  .cta { white-space: nowrap; display: inline-flex; align-items: center; gap: 18px; background: #fff; color: var(--enamel); border-radius: 26px; padding: 30px 44px; font: 800 46px/1 var(--d); box-shadow: 0 20px 40px rgba(4,10,30,.3); }
+  .cta svg { width: 46px; height: 46px; }
+  .url { font: 500 32px/1 var(--b); opacity: .75; }
+</style>
+</head>
+<body>
+
+<!-- Сторис 9:16. Верх и низ (~250px) оставлены свободными под интерфейс Instagram -->
+<div class="bn story" id="banner-story">
+  <div style="position:absolute; left:90px; right:90px; top:250px">
+    <p class="handle">@srpski_coach</p>
+    <h1 style="margin-top:30px; font-size:108px">Сербский для русских</h1>
+    <p class="sub" style="margin-top:24px">Бесплатное приложение для iPhone</p>
+  </div>
+  <div class="phone" style="left:250px; top:690px; transform:rotate(-4deg)"><div class="notch"></div><img src="app-course.png" alt=""></div>
+  <div class="plate" style="left:50px; top:780px; transform:rotate(-7deg)"><span class="a">Zdravo!</span><span class="c">Здраво!</span><span class="r">Привет!</span></div>
+  <div class="plate" style="right:44px; top:1020px; transform:rotate(5deg)"><span class="a">Hvala</span><span class="c">Хвала</span><span class="r">Спасибо</span></div>
+  <div style="position:absolute; left:0; right:0; bottom:0; height:640px; background:linear-gradient(to top, var(--enamel-2) 72%, rgba(22,51,111,0))"></div>
+  <div style="position:absolute; left:90px; right:90px; bottom:250px; display:grid; gap:34px; justify-items:start">
+    <div class="stats"><span><b>10</b>тем</span><span><b>31</b>урок</span><span><b>318</b>фраз</span><span>с озвучкой</span></div>
+    <span class="cta">Ссылка в профиле <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  </div>
+</div>
+
+<!-- Лента 4:5 -->
+<div class="bn feed" id="banner-feed">
+  <div style="position:absolute; left:84px; top:90px; width:540px">
+    <p class="handle">@srpski_coach</p>
+    <h1 style="margin-top:30px; font-size:80px">Сербский для русских</h1>
+    <p class="sub" style="margin-top:24px; font-size:38px">Бесплатное приложение для iPhone</p>
+  </div>
+  <div class="phone" style="left:680px; top:300px; width:500px; transform:rotate(-5deg)"><div class="notch"></div><img src="app-course.png" alt=""></div>
+  <div class="plate" style="left:84px; top:620px; transform:rotate(-5deg)"><span class="a">Zdravo!</span><span class="c">Здраво!</span><span class="r">Привет!</span></div>
+  <div style="position:absolute; left:84px; bottom:90px; display:grid; gap:30px; justify-items:start; width:560px">
+    <div class="stats"><span><b>31</b>урок</span><span><b>318</b>фраз</span></div>
+    <span class="cta" style="font-size:38px; padding:28px 36px">Ссылка в профиле <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  </div>
+</div>
+
+</body>
+</html>
