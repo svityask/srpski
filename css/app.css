@@ -184,7 +184,7 @@ textarea { font-size: 14px; resize: vertical; }
 .box-l { font-size: 11px; color: var(--muted); white-space: nowrap; }
 
 /* нижние вкладки */
-#tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); background: color-mix(in srgb, var(--surface) 88%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-top: 1px solid var(--line); }
+#tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px)); background: color-mix(in srgb, var(--surface) 88%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-top: 1px solid var(--line); }
 #tabs button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; font-size: 11px; font-weight: 600; color: var(--muted); }
 #tabs button[aria-current="page"] { color: var(--enamel); }
 body.playing #tabs { display: none; }
@@ -309,3 +309,39 @@ body.playing #tabs { display: none; }
 .wel .hint { margin: 0; }
 .btn.ghost { background: none; border-color: transparent; color: var(--muted); }
 .confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
+
+/* карточки */
+.fc-ctl { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.fc-sel { flex: 1; min-width: 0; }
+.fc-sel select { width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.fc-mix { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--muted); flex-shrink: 0; }
+.sw.sm { width: 42px; height: 26px; }
+.sw.sm::after { width: 22px; height: 22px; }
+.sw.sm:checked::after { transform: translateX(16px); }
+.fc-count { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+.fc-count span { text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px; font-size: 13px; color: var(--muted); }
+.fc-count b { display: block; font: 700 20px/1.1 var(--f-display); color: var(--ink); font-variant-numeric: tabular-nums; }
+.fc-count .k b { color: var(--ok); }
+.fc-count .a b { color: var(--warn); }
+.fc-wrap { perspective: 1200px; }
+.fc { position: relative; height: min(56vh, 430px); cursor: pointer; outline: none; transition: transform .18s ease, opacity .18s ease; }
+.fc:focus-visible .fc-face { box-shadow: 0 0 0 3px var(--enamel); }
+.fc.go-r { transform: translateX(120%) rotate(8deg); opacity: 0; }
+.fc.go-l { transform: translateX(-120%) rotate(-8deg); opacity: 0; }
+.fc-in { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .45s cubic-bezier(.3,.7,.3,1); }
+.fc.flip .fc-in { transform: rotateY(180deg); }
+.fc-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 22px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 22px; text-align: center; }
+.fc-back { transform: rotateY(180deg); background: var(--enamel-soft); }
+.fc-face small { color: var(--muted); font-size: 13px; }
+.fc-pic { font-size: 84px; line-height: 1; }
+.fc-pic.sm { font-size: 48px; }
+.fc-ru { margin: 0; font: 700 26px/1.25 var(--f-display); text-wrap: balance; }
+.fc-back .pron { margin: 0; }
+.fc-note { margin: 0; color: var(--muted); font-size: 15px; }
+.fc-btns { display: grid; grid-template-columns: 56px 1fr 1fr; gap: 10px; margin-top: 16px; }
+.fc-btns .again { color: var(--warn); border-color: var(--warn); }
+.fc-btns .know { background: var(--ok); border-color: var(--ok); color: #fff; }
+.fc-hint { text-align: center; }
+.fc-end { display: grid; gap: 14px; justify-items: center; text-align: center; padding-top: 20px; }
+.fc-end h2 { font-size: 22px; }
+@media (prefers-reduced-motion: reduce) { .fc-in, .fc { transition: none; } }

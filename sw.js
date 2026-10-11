@@ -1,7 +1,7 @@
 // Офлайн: файлы приложения — из кэша с фоновым обновлением, шрифты — из кэша после первой загрузки.
 // При изменении файлов приложения поднимайте версию.
-const VERSION = 'srpski-5';
-const APP = ['./', 'index.html', 'css/app.css', 'js/data.js', 'js/app.js', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-192.png'];
+const VERSION = 'srpski-6';
+const APP = ['./', 'index.html', 'css/app.css', 'js/data.js', 'js/pics.js', 'js/app.js', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-192.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(APP)).then(() => self.skipWaiting()));

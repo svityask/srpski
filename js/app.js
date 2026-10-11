@@ -91,7 +91,7 @@
 
   // ---------- состояние ----------
   const KEY = 'srpski.v1';
-  const DEF = { script: 'lat', both: true, autoplay: true, sfx: true, rate: 0.9, theme: 'system', goal: 20, xp: 0, xpd: {}, days: [], lessons: {}, tests: {}, words: {} };
+  const DEF = { script: 'lat', both: true, autoplay: true, sfx: true, rate: 0.9, theme: 'system', goal: 20, cards: {}, cardsTopic: 'all', cardsShuffle: true, xp: 0, xpd: {}, days: [], lessons: {}, tests: {}, words: {} };
   let S;
   try { S = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { S = Object.assign({}, DEF); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* хранилище недоступно — работаем без него */ } };
@@ -180,6 +180,7 @@
     cup: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5M12 14v4M8 21h8M9.5 18h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     flame: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4 0 7-2.8 7-6.8 0-3.3-2-5.6-3.6-7.4-.3 1.8-1.2 3-2.4 3.6.3-3.6-1.3-6.6-4-8.4.2 3.2-1.5 5.1-3 6.9C4.8 11.3 5 13 5 15.2 5 19.2 8 22 12 22z" fill="currentColor"/></svg>',
     star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="currentColor"/></svg>',
+    cards: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 3h10.5A2.5 2.5 0 0 1 21 5.5V16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
     check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   };
   const stars = (n) => '<span class="stars" aria-label="' + n + ' из 3">' + [1, 2, 3].map((k) => '<i class="' + (k <= n ? 'on' : '') + '">' + I.star + '</i>').join('') + '</span>';
@@ -200,7 +201,8 @@
     applyTheme();
     document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-current', b.dataset.view === view ? 'page' : 'false'));
     try { localStorage.setItem('srpski.view', view); } catch (e) { /* не важно */ }
-    main.innerHTML = { course: vCourse, review: vReview, dict: vDict, more: vMore }[view]();
+    main.innerHTML = { course: vCourse, review: vReview, cards: vCards, dict: vDict, more: vMore }[view]();
+    if (view === 'cards') bindCards();
     if (view === 'dict') bindDict();
   }
 
@@ -304,6 +306,73 @@
   function bindDict() {
     const inp = $('#dq');
     if (inp) inp.addEventListener('input', () => { dictQ = inp.value; $('#dres').innerHTML = dictList(); });
+  }
+
+  // ---------- карточки ----------
+  const PICS = window.PICS || {};
+  let deck = null, deckI = 0, flipped = false;
+  const cardPool = () => ITEMS.filter((it) => S.cardsTopic === 'all' || it.unit.id === S.cardsTopic);
+  function buildDeck() {
+    const pool = cardPool();
+    let ids = pool.filter((it) => S.cards[it.id] !== 'known').map((it) => it.id);
+    if (!ids.length) ids = pool.map((it) => it.id);
+    deck = S.cardsShuffle ? shuffle(ids) : ids; deckI = 0; flipped = false;
+  }
+  function vCards() {
+    if (!S.cards) S.cards = {};
+    if (!deck) buildDeck();
+    const pool = cardPool();
+    const known = pool.filter((it) => S.cards[it.id] === 'known').length, again = pool.filter((it) => S.cards[it.id] === 'again').length;
+    let h = '<header class="top"><div><p class="eyebrow">Тренажёр</p><h1>Карточки</h1></div></header>' +
+      '<div class="fc-ctl"><label class="fc-sel"><span class="vh">Тема</span><select id="ctopic"><option value="all">Все темы · ' + ITEMS.length + '</option>' +
+      COURSE.map((u) => '<option value="' + u.id + '"' + (S.cardsTopic === u.id ? ' selected' : '') + '>' + u.n + '. ' + esc(u.title) + '</option>').join('') + '</select></label>' +
+      '<label class="fc-mix"><input type="checkbox" class="sw sm" id="set-cardsShuffle" data-tog="cardsShuffle"' + (S.cardsShuffle ? ' checked' : '') + '><span>Перемешать</span></label></div>' +
+      '<div class="fc-count"><span class="k"><b>' + known + '</b> знаю</span><span class="a"><b>' + again + '</b> учу</span><span><b>' + Math.max(0, deck.length - deckI) + '</b> осталось</span></div>';
+    if (deckI >= deck.length) {
+      return h + '<div class="fc-end">' + plate('Bravo!', 'big') + '<h2>Колода пройдена</h2><p class="hint">Знаю — ' + known + ', учу — ' + again + '. Незнакомые карточки вернутся в следующий круг, а слова попадут в «Повтор».</p>' +
+        '<button class="btn primary wide" data-card="restart">' + (again ? 'Ещё круг: только «учу»' : 'Начать заново') + '</button><button class="btn wide ghost" data-card="reset">Сбросить отметки темы</button></div>';
+    }
+    const it = BY_ID[deck[deckI]], pic = PICS[it.sr];
+    h += '<div class="fc-wrap"><div class="fc' + (flipped ? ' flip' : '') + '" data-flip role="button" tabindex="0" aria-label="Карточка. Нажмите, чтобы перевернуть"><div class="fc-in">' +
+      '<div class="fc-face fc-front">' + (pic ? '<span class="fc-pic" aria-hidden="true">' + pic + '</span>' : '') + plate(it.sr) + '<small>Нажмите, чтобы перевернуть</small></div>' +
+      '<div class="fc-face fc-back">' + (pic ? '<span class="fc-pic sm" aria-hidden="true">' + pic + '</span>' : '') + '<p class="fc-ru">' + esc(it.ru) + '</p><p class="pron">[' + esc(pron(it.say)) + ']</p>' +
+      (it.note ? '<p class="fc-note">' + esc(it.note) + '</p>' : '') + sayBtns(it.say) + '<small>Урок ' + it.lesson.id + ' · ' + esc(it.lesson.title) + '</small></div>' +
+      '</div></div></div>' +
+      '<div class="fc-btns"><button class="btn" data-card="prev" aria-label="Назад"' + (deckI ? '' : ' disabled') + '>←</button><button class="btn again" data-card="again">Повторить</button><button class="btn know" data-card="know">Знаю</button></div>' +
+      '<p class="hint fc-hint">Свайп вправо — «Знаю», влево — «Повторить».</p>';
+    return h;
+  }
+  function cardAct(a) {
+    if (a === 'restart') { if (!pickAgainOnly()) buildDeck(); render(); return; }
+    if (a === 'reset') { cardPool().forEach((it) => delete S.cards[it.id]); save(); buildDeck(); render(); return; }
+    if (a === 'prev') { if (deckI) { deckI--; flipped = false; render(); } return; }
+    const it = BY_ID[deck[deckI]];
+    if (!it) return;
+    S.cards[it.id] = a === 'know' ? 'known' : 'again';
+    if (a === 'know') touch(it); else mark(it, false);
+    save(); beep(a === 'know');
+    deckI++; flipped = false; render();
+  }
+  function pickAgainOnly() {
+    const ids = cardPool().filter((it) => S.cards[it.id] === 'again').map((it) => it.id);
+    if (!ids.length) return false;
+    deck = S.cardsShuffle ? shuffle(ids) : ids; deckI = 0; flipped = false; return true;
+  }
+  function flipCard() {
+    flipped = !flipped;
+    const c = $('.fc'); if (c) c.classList.toggle('flip', flipped);
+    if (flipped && S.autoplay) speak(BY_ID[deck[deckI]].say);
+  }
+  function bindCards() {
+    const c = $('.fc'); if (!c) return;
+    let x0 = null, y0 = null;
+    c.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    c.addEventListener('touchend', (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+      if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) { c.classList.add(dx > 0 ? 'go-r' : 'go-l'); setTimeout(() => cardAct(dx > 0 ? 'know' : 'again'), 180); }
+    });
+    c.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flipCard(); } });
   }
 
   let resetArm = false;
@@ -637,6 +706,8 @@
 
   // ---------- события ----------
   document.addEventListener('click', (e) => {
+    const fc = e.target.closest('[data-flip]');
+    if (fc && !e.target.closest('button')) { flipCard(); return; }
     const b = e.target.closest('button');
     if (!b || b.disabled) return;
     const d = b.dataset;
@@ -647,6 +718,7 @@
     if (d.test) { start('test', d.test); return; }
     if (d.review) { start('review', d.review); return; }
     if (d.dtab) { dictTab = d.dtab; render(); return; }
+    if (d.card) { cardAct(d.card); return; }
     if (d.opt !== undefined) { choose(+d.opt); return; }
     if (d.ml !== undefined) { matchTap('l', +d.ml); return; }
     if (d.mr !== undefined) { matchTap('r', +d.mr); return; }
@@ -686,7 +758,8 @@
   });
   document.addEventListener('change', (e) => {
     const t = e.target;
-    if (t.dataset.tog) { S[t.dataset.tog] = t.checked; save(); if (t.dataset.tog === 'both') render(); }
+    if (t.dataset.tog) { S[t.dataset.tog] = t.checked; save(); if (t.dataset.tog === 'cardsShuffle') buildDeck(); if (t.dataset.tog === 'both' || t.dataset.tog === 'cardsShuffle') render(); }
+    if (t.id === 'ctopic') { S.cardsTopic = t.value; save(); buildDeck(); render(); }
     if (t.dataset.rate !== undefined) { S.rate = +t.value; save(); render(); speak('Dobar dan'); }
   });
   $('#quit').addEventListener('click', askQuit);
