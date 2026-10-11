@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Srpski — материалы для Instagram</title>
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@700&display=swap">
+<style>
+  /* Склад материалов @srpski_coach: рилсы, посты, подписи — открыть на телефоне, посмотреть, скачать, скопировать. */
+  :root {
+    --paper: #f3f5f9; --surface: #fff; --ink: #142039; --muted: #5a6681; --line: #d8dee9;
+    --enamel: #1c3f8c; --enamel-soft: #e3e9f6; --ok: #18825a;
+    --f-d: "Unbounded", "Golos Text", system-ui, sans-serif; --f-b: "Golos Text", -apple-system, system-ui, sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #0d1424; --surface: #162036; --ink: #e8ecf5; --muted: #98a3bd; --line: #26324d; --enamel: #6f95ec; --enamel-soft: #1d2b4d; --ok: #3cbc84; color-scheme: dark; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.45 var(--f-b); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 720px; margin: 0 auto; padding-inline: 16px; padding-block: calc(20px + env(safe-area-inset-top, 0px)) calc(40px + env(safe-area-inset-bottom, 0px)); }
+  h1 { font: 700 26px/1.15 var(--f-d); margin: 4px 0 6px; }
+  h2 { font: 700 19px/1.2 var(--f-d); margin: 0; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0; }
+  .lead { color: var(--muted); margin: 0 0 18px; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  nav a { padding: 8px 14px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14px; }
+  section { margin-top: 30px; }
+  section > h3 { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 12px; margin-bottom: 14px; }
+  .card-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .badge { font-size: 12px; font-weight: 700; color: var(--ok); white-space: nowrap; }
+  video { width: 100%; max-width: 320px; aspect-ratio: 9 / 16; border-radius: 12px; background: #000; justify-self: center; }
+  .strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scroll-snap-type: x mandatory; }
+  .strip a { flex: 0 0 auto; width: 136px; scroll-snap-align: start; }
+  .strip img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+  .strip.tall img { aspect-ratio: 9 / 16; }
+  .strip.sq img { aspect-ratio: 1; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 16px; border-radius: 12px; font: 700 15px var(--f-b); text-decoration: none; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+  .btn.primary { background: var(--enamel); border-color: var(--enamel); color: #fff; }
+  details { border-top: 1px solid var(--line); padding-top: 10px; }
+  summary { cursor: pointer; font-weight: 600; color: var(--enamel); }
+  pre { white-space: pre-wrap; word-break: break-word; font: 14px/1.5 var(--f-b); background: var(--enamel-soft); border-radius: 10px; padding: 12px; margin: 10px 0; }
+  .hint { color: var(--muted); font-size: 14px; }
+  .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 12px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.on { opacity: 1; }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--enamel); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="eyebrow">@srpski_coach</p>
+  <h1>Материалы для Instagram</h1>
+  <p class="lead">Рилсы, посты и подписи в одном месте. На iPhone: видео → «Поделиться» → «Сохранить видео»; картинку — долгое нажатие → «Добавить в Фото».</p>
+  <nav><a href="#reels">Рилсы</a><a href="#posts">Посты</a><a href="#profile">Профиль и баннер</a></nav>
+  <div id="list"></div>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const B = 'instagram/';
+const TAGS = '#сербскийязык #сербия #белград #русскиевсербии';
+const REELS = [
+  { title: 'Рилс №2 · Сербы не поймут, если скажешь…', file: 'reel-2-lozhnye-druzya.mp4', cover: 'reel-2-cover.jpg', music: 'Goran Bregović — «Gas Gas» или любые балканские духовые',
+    caption: `Скажешь сербу «sutra» — а он придёт завтра, а не утром 😅\n\n5 слов, которые звучат как русские, но значат совсем другое. Особенно осторожно с последним 🙈\n\nСохрани, чтобы не попасть впросак 📌\nКакой ложный друг удивил тебя больше всего? Пиши в комментариях 👇\n\nВсе ложные друзья с озвучкой — в бесплатном приложении Srpski, ссылка в профиле.\n\n${TAGS} #ложныедрузья #изучениеязыков` },
+  { title: 'Рилс №1 · Ты уже знаешь сербский', file: 'reel-1-uzhe-znaesh.mp4', cover: 'reel-1-cover.jpg', music: 'Goran Bregović — «Kalashnikov»', done: true,
+    caption: `Проверь себя: сколько слов понял без перевода? 👀\n\nvoda, pivo, hleb, brat — сербский звучит как родной. Но sutra — это не «утро» 😅\n\nСохрани, чтобы не попасть впросак в Белграде 📌\nБольше слов — в бесплатном приложении, ссылка в профиле.\n\n${TAGS} #релокация #изучениеязыков` },
+];
+const n = (p, k) => Array.from({ length: k }, (_, i) => `${p}${i + 1}.png`);
+const POSTS = [
+  { title: 'Пост №5 · Читаем сербское меню', imgs: n('p5-', 5), done: true,
+    caption: `Открыли меню в кафане — а там ćevapi, pljeskavica, karađorđeva… 🤯\n\nРазбираем 12 блюд, которые есть почти в любом сербском меню, и 5 фраз, чтобы заказать без гугл-переводчика.\n\nСовет: просите «mala porcija» — порции здесь огромные 😄\n\nСохраните, пригодится в первой же кафане 📌\nКакое сербское блюдо ваше любимое? Пишите в комментариях 👇\n\nУрок «Сербская кухня» с озвучкой — в бесплатном приложении Srpski, ссылка в профиле.\n\n${TAGS} #сербскаякухня #новисад #изучениеязыков` },
+  { title: 'Пост №4 · Как заказать кофе в Сербии', imgs: n('p4-', 5), done: true,
+    caption: `Заказали «kafa» — а принесли крепкий кофе с гущей? Знакомо ☕️\n\nВ Сербии просто «kafa» — это domaća kafa, кофе по-турецки. В карусели: какой кофе бывает, 5 фраз для заказа и весь диалог с официантом.\n\nСохраните перед походом в кафе 📌\nА вы какой кофе заказываете в Сербии? Пишите в комментариях 👇\n\nУрок «В кафе» с озвучкой — в бесплатном приложении Srpski, ссылка в профиле.\n\n${TAGS} #кофе #новисад #изучениеязыков` },
+  { title: 'Пост №3 · 6 букв, которых нет в русском', imgs: n('p3-', 4), done: true,
+    caption: `Сербская кириллица почти как наша — кроме шести букв 👀\n\nЂ Ј Љ Њ Ћ Џ: разбираем, как они звучат и как не перепутать Ć и Č.\n\nНа последнем слайде — две настоящие вывески. Сможете прочитать? Ответы в комментариях 👇\n\nАзбука с озвучкой каждой буквы — в приложении Srpski, ссылка в профиле.\n\n${TAGS} #кириллица #изучениеязыков` },
+  { title: 'Пост №2 · 10 фраз на первый день в Сербии', imgs: n('p2-', 5), done: true,
+    caption: `Только приехали в Сербию? Начните с этих 10 фраз 🇷🇸\n\nС ними можно поздороваться, заказать кофе, попросить счёт и честно признаться «ne razumem» 😅\n\nА «molim» — вообще волшебное слово: смотрите 4-й слайд.\n\nСохраните, чтобы были под рукой 📌\nКакую фразу вы выучили первой? Пишите в комментариях 👇\n\nВсе фразы с озвучкой — в бесплатном приложении Srpski, ссылка в профиле.\n\n${TAGS} #переездвсербию #новисад #изучениеязыков` },
+  { title: 'Пост №1 · 27 сербских слов, которые вы уже знаете', imgs: n('slide-', 6), done: true,
+    caption: `Вы знаете сербский лучше, чем думаете 😉\n\nvoda, pivo, hleb, brat, sestra, ulica, taksi — 27 слов звучат точь-в-точь как по-русски. Ещё десятки отличаются одной буквой: riba — рыба, sir — сыр, autobus — автобус.\n\nНо есть ловушки: sutra — это «завтра», а pravo — «прямо». Сохраните пятый слайд, чтобы не перепутать 📌\n\nКакое сербское слово удивило вас больше всего? Пишите в комментариях 👇\n\nВсе эти слова с озвучкой и упражнениями — в бесплатном приложении Srpski, ссылка в профиле.\n\n${TAGS} #релокация #новисад #изучениеязыков #srpskijezik` },
+];
+const PROFILE = [
+  { title: 'Фото профиля', imgs: ['avatar.png', 'avatar-alt.png'], cls: 'sq' },
+  { title: 'Баннер: сторис и лента', imgs: ['banner-story.png', 'banner-feed.png'] },
+  { title: 'Обложки «Актуального»', imgs: ['hl-words.png', 'hl-phrases.png', 'hl-false.png', 'hl-app.png'], cls: 'tall' },
+];
+
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+let cid = 0;
+const caption = (c) => { const id = 'c' + cid++; return `<details><summary>Подпись</summary><pre id="${id}">${esc(c)}</pre><button class="btn" data-copy="${id}">Копировать подпись</button></details>`; };
+const strip = (imgs, cls = '') => `<div class="strip ${cls}">${imgs.map((f) => `<a href="${B}${f}" download><img src="${B}${f}" alt="" loading="lazy"></a>`).join('')}</div>`;
+
+let h = '<section id="reels"><h3>Рилсы</h3>';
+for (const r of REELS) h += `<div class="card"><div class="card-h"><h2>${esc(r.title)}</h2>${r.done ? '<span class="badge">✓ выложен</span>' : ''}</div>
+  <video controls playsinline preload="metadata" poster="${B}${r.cover}" src="${B}${r.file}"></video>
+  <div class="row"><a class="btn primary" href="${B}${r.file}" download>Скачать видео</a><a class="btn" href="${B}${r.cover}" download>Обложка</a></div>
+  <p class="hint">Музыка: ${esc(r.music)}</p>${caption(r.caption)}</div>`;
+h += '</section><section id="posts"><h3>Посты</h3>';
+for (const p of POSTS) h += `<div class="card"><div class="card-h"><h2>${esc(p.title)}</h2>${p.done ? '<span class="badge">✓ выложен</span>' : ''}</div>${strip(p.imgs)}<p class="hint">Нажмите на слайд, чтобы открыть и сохранить.</p>${caption(p.caption)}</div>`;
+h += '</section><section id="profile"><h3>Профиль и баннер</h3>';
+for (const p of PROFILE) h += `<div class="card"><h2>${esc(p.title)}</h2>${strip(p.imgs, p.cls)}</div>`;
+h += '</section>';
+document.getElementById('list').innerHTML = h;
+
+const toast = (t) => { const el = document.getElementById('toast'); el.textContent = t; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 1600); };
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-copy]');
+  if (!b) return;
+  const pre = document.getElementById(b.dataset.copy);
+  Promise.resolve().then(() => navigator.clipboard.writeText(pre.textContent)).then(() => toast('Подпись скопирована'), () => {
+    const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Выделено — нажмите «Скопировать»');
+  });
+});
+</script>
+</body>
+</html>
