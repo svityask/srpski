@@ -87,14 +87,15 @@ function hero(o) {
 }
 
 // ---------- сцены ----------
-const HOOK = 2.6, STEP = 3.6;
+const TL = window.TL || { starts: [0, 2.6, 6.2, 9.8, 13.4, 17], end: 21.4 };
+const HOOK = TL.starts[1];
 const SLANG = [
   { sr: 'Brate!', cy: 'Брате!', ru: 'Братан!', ex: 'Brate, gde si? <i>— Братан, ты где?</i>', face: { brow: 'up', mouth: 'grin', blush: .4 } },
   { sr: 'Ajde bre!', cy: 'Ајде бре!', ru: 'Ну давай уже!', ex: '«Bre» — для эмоций. Ajde bre, idemo! <i>— Ну давай, пошли!</i>', face: { brow: 'angry', mouth: 'o' } },
   { sr: 'Polako', cy: 'Полако', ru: 'Спокойно, не спеши', ex: 'Polako, brate, stići ćemo. <i>— Спокойно, успеем.</i>', face: { brow: 'relax', eyes: 'closed', mouth: 'smile' } },
   { sr: 'Kakav smor!', cy: 'Какав смор!', ru: 'Какая скукота!', ex: 'Ovaj film je smor. <i>— Этот фильм — скукота.</i>', face: { brow: 'tired', eyes: 'half', mouth: 'flat', look: -4 } },
 ];
-const S2 = HOOK, S3 = S2 + SLANG.length * STEP, END = S3 + 4.4;
+const S2 = HOOK, S3 = TL.starts[SLANG.length + 1], END = TL.end;
 window.DURATION = END;
 
 // персонаж: лёгкое покачивание, моргание, рот «говорит» в первые 1,1 с реплики
@@ -104,7 +105,8 @@ function heroAt(t, face, talkFrom) {
   const fc = Object.assign({}, face);
   if (blink && fc.eyes !== 'closed') fc.eyes = 'closed';
   const lt = t - talkFrom;
-  if (lt > 0.15 && lt < 1.25) fc.talk = Math.abs(Math.sin(lt * 15));
+  if (window.ENV) { const v = window.ENV[Math.round(t * 30)] || 0; if (v > 0.08) fc.talk = Math.min(1, v * 1.3); }
+  else if (lt > 0.15 && lt < 1.25) fc.talk = Math.abs(Math.sin(lt * 15));
   return `<div class="abs" style="left:150px;top:${575 + bob}px;width:780px;height:988px">${hero(fc).replace('width="600" height="760"', 'width="780" height="988"')}</div>`;
 }
 
@@ -119,14 +121,15 @@ window.render = function (t) {
     h += `<div style="opacity:${p};transform:translateY(${(1 - outCubic(p)) * 200}px)">` + heroAt(t, { brow: 'up', mouth: 'smile', blush: .3 }, 1.0) + `</div>`;
     h += `<div class="abs" style="left:580px;top:640px;opacity:${c};transform:scale(${0.7 + 0.3 * outBack(c)})"><div class="bubble" style="padding:22px 44px"><b style="font-size:72px">Ćao! 👋</b></div></div>`;
   } else if (t < S3) {
-    const k = Math.min(SLANG.length - 1, Math.floor((t - S2) / STEP)), lt = t - S2 - k * STEP;
+    let k = 0; while (k < SLANG.length - 1 && t >= TL.starts[k + 2]) k++;
+    const lt = t - TL.starts[k + 1];
     const s = SLANG[k];
     h += `<div class="abs dots" style="left:90px;top:290px">${SLANG.map((_, i) => `<i class="${i <= k ? 'on' : ''}"></i>`).join('')}</div>`;
     h += `<div class="abs eyebrow" style="left:90px;top:330px">Сленг ${k + 1} из ${SLANG.length}</div>`;
     const p = prog(lt, 0.05, 0.3);
     h += `<div class="abs" style="left:0;right:0;top:420px;display:flex;justify-content:center;opacity:${p};transform:scale(${0.6 + 0.4 * outBack(p)});transform-origin:50% 100%"><div class="bubble"><b>${s.sr}</b><span>${s.cy}</span></div></div>`;
-    h += heroAt(t, s.face, S2 + k * STEP);
-    const q = prog(lt, 1.15, 0.3);
+    h += heroAt(t, s.face, TL.starts[k + 1]);
+    const q = prog(lt, TL.card ? TL.card[k] : 1.15, 0.3);
     h += `<div class="abs card" style="left:70px;right:70px;top:1330px;opacity:${q};transform:translateY(${(1 - outCubic(q)) * 60}px)"><div class="ru">${s.ru}</div><div class="ex">${s.ex}</div></div>`;
   } else {
     const lt = t - S3;
