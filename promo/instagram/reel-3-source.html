@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@500;600;700&family=Unbounded:wght@700;800&display=swap">
 <style>
-  /* Рилс «Сербский сленг»: мультяшный ведущий объясняет 4 словечка. Кадр строится render(t). */
+  /* Рилс «Сербский сленг» под голос автора: сцены привязаны ко времени фраз в записи. Кадр строится render(t). */
   :root { --enamel: #1c3f8c; --enamel-2: #13306a; --ink: #142039; --gold: #f0b73a; --ok: #2fbf7f; --d: "Unbounded", sans-serif; --b: "Golos Text", sans-serif; }
   * { box-sizing: border-box; margin: 0; }
   body { margin: 0; background: #000; }
@@ -86,58 +86,71 @@ function hero(o) {
   </svg>`;
 }
 
-// ---------- сцены ----------
-const TL = window.TL || { starts: [0, 2.6, 6.2, 9.8, 13.4, 17], end: 21.4 };
-const HOOK = TL.starts[1];
-const SLANG = [
-  { sr: 'Brate!', cy: 'Брате!', ru: 'Братан!', ex: 'Brate, gde si? <i>— Братан, ты где?</i>', face: { brow: 'up', mouth: 'grin', blush: .4 } },
-  { sr: 'Ajde bre!', cy: 'Ајде бре!', ru: 'Ну давай уже!', ex: '«Bre» — для эмоций. Ajde bre, idemo! <i>— Ну давай, пошли!</i>', face: { brow: 'angry', mouth: 'o' } },
-  { sr: 'Polako', cy: 'Полако', ru: 'Спокойно, не спеши', ex: 'Polako, brate, stići ćemo. <i>— Спокойно, успеем.</i>', face: { brow: 'relax', eyes: 'closed', mouth: 'smile' } },
-  { sr: 'Kakav smor!', cy: 'Какав смор!', ru: 'Какая скукота!', ex: 'Ovaj film je smor. <i>— Этот фильм — скукота.</i>', face: { brow: 'tired', eyes: 'half', mouth: 'flat', look: -4 } },
+// ---------- сцены по записи голоса (секунды — начало фразы) ----------
+const SLANG = [['Brate!', 'братан'], ['Ajde bre!', 'ну давай уже!'], ['Polako', 'спокойно'], ['Kakav smor!', 'скукота!']];
+const SC = [
+  { t: 0,    k: 'title' },                      // «Сербский язык»
+  { t: 3.3,  k: 'words' },                      // «эти слова помогут вам лучше всего понять»
+  { t: 7.15, k: 'jezik' },                      // «Сербский язык»
+  { t: 9.05, k: 'where' },                      // «данные слова лучше всего подходят для…»
+  { t: 13.0, k: 'use', icon: '🏠', ru: 'Приём гостей', sr: 'Ajde, uđi!', cy: 'Давай, заходи!', ex: 'Ajde, uđi, brate! <i>— Заходи, братан!</i>', face: { brow: 'up', mouth: 'grin', blush: .4 } },
+  { t: 14.6, k: 'use', icon: '📄', ru: 'Документы', sr: 'Polako…', cy: 'Спокойно…', ex: 'Polako, red je dugačak. <i>— Спокойно, очередь длинная 😅</i>', face: { brow: 'relax', eyes: 'half', mouth: 'smile' } },
+  { t: 16.45, k: 'use', icon: '✨', ru: 'Всё самое лучшее', sr: 'Svaka čast!', cy: 'Респект!', ex: 'Svaka čast, brate! <i>— Респект, братан!</i>', face: { brow: 'up', eyes: 'happy', mouth: 'grin', blush: .5 } },
+  { t: 19.8, k: 'cta' },                        // «подписывайтесь на канал, делитесь с друзьями»
 ];
-const S2 = HOOK, S3 = TL.starts[SLANG.length + 1], END = TL.end;
+const END = 23.8;
 window.DURATION = END;
 
-// персонаж: лёгкое покачивание, моргание, рот «говорит» в первые 1,1 с реплики
-function heroAt(t, face, talkFrom) {
+function heroAt(t, face, top = 575) {
   const bob = Math.sin(t * 2.2) * 8;
-  const blink = (t % 3.1) > 2.98;
   const fc = Object.assign({}, face);
-  if (blink && fc.eyes !== 'closed') fc.eyes = 'closed';
-  const lt = t - talkFrom;
-  if (window.ENV) { const v = window.ENV[Math.round(t * 30)] || 0; if (v > 0.08) fc.talk = Math.min(1, v * 1.3); }
-  else if (lt > 0.15 && lt < 1.25) fc.talk = Math.abs(Math.sin(lt * 15));
-  return `<div class="abs" style="left:150px;top:${575 + bob}px;width:780px;height:988px">${hero(fc).replace('width="600" height="760"', 'width="780" height="988"')}</div>`;
+  if ((t % 3.1) > 2.98 && fc.eyes !== 'closed') fc.eyes = 'closed';
+  const v = window.ENV ? window.ENV[Math.round(t * 30)] || 0 : 0;
+  if (v > 0.1) fc.talk = Math.min(1, v * 1.3);
+  return `<div class="abs" style="left:150px;top:${top + bob}px;width:780px;height:988px">${hero(fc).replace('width="600" height="760"', 'width="780" height="988"')}</div>`;
 }
+const pop = (p) => `opacity:${p};transform:scale(${0.6 + 0.4 * outBack(p)});transform-origin:50% 100%`;
+const bubble = (p, b, span) => `<div class="abs" style="left:0;right:0;top:420px;display:flex;justify-content:center;${pop(p)}"><div class="bubble"><b>${b}</b><span>${span}</span></div></div>`;
 
 window.render = function (t) {
-  let h = '';
-  if (t < S2) {
-    const a = outCubic(prog(t, 0.05, 0.4)), b = outCubic(prog(t, 0.35, 0.4)), c = outCubic(prog(t, 0.8, 0.4));
-    h += `<div class="abs eyebrow" style="left:90px;top:270px;opacity:${a}">@srpski_coach</div>`;
-    h += `<div class="abs h" style="left:90px;right:120px;top:330px;opacity:${a};transform:translateY(${(1 - a) * 40}px)">Сербский<br>сленг</div>`;
-    h += `<div class="abs" style="left:90px;right:140px;top:540px;font:600 50px/1.25 var(--b);opacity:${b}">4 слова, без которых ты <b style="color:var(--gold)">не свой</b></div>`;
-    const p = prog(t, 0.2, 0.5);
-    h += `<div style="opacity:${p};transform:translateY(${(1 - outCubic(p)) * 200}px)">` + heroAt(t, { brow: 'up', mouth: 'smile', blush: .3 }, 1.0) + `</div>`;
+  let i = 0; while (i < SC.length - 1 && t >= SC[i + 1].t) i++;
+  const s = SC[i], lt = t - s.t;
+  let h = `<div class="abs eyebrow" style="left:90px;top:270px">@srpski_coach</div>`;
+  if (s.k === 'title') {
+    const a = outCubic(prog(t, 1.1, 0.45)), c = outCubic(prog(t, 0.3, 0.4));
+    h += `<div class="abs h" style="left:90px;right:120px;top:330px;opacity:${a};transform:translateY(${(1 - a) * 40}px)">Сербский<br>язык</div>`;
+    h += `<div class="abs" style="left:90px;right:140px;top:540px;font:600 50px/1.25 var(--b);opacity:${a}">и его <b style="color:var(--gold)">живой сленг</b></div>`;
+    const p = prog(t, 0, 0.5);
+    h += `<div style="opacity:${p};transform:translateY(${(1 - outCubic(p)) * 200}px)">` + heroAt(t, { brow: 'up', mouth: 'smile', blush: .3 }) + `</div>`;
     h += `<div class="abs" style="left:580px;top:640px;opacity:${c};transform:scale(${0.7 + 0.3 * outBack(c)})"><div class="bubble" style="padding:22px 44px"><b style="font-size:72px">Ćao! 👋</b></div></div>`;
-  } else if (t < S3) {
-    let k = 0; while (k < SLANG.length - 1 && t >= TL.starts[k + 2]) k++;
-    const lt = t - TL.starts[k + 1];
-    const s = SLANG[k];
-    h += `<div class="abs dots" style="left:90px;top:290px">${SLANG.map((_, i) => `<i class="${i <= k ? 'on' : ''}"></i>`).join('')}</div>`;
-    h += `<div class="abs eyebrow" style="left:90px;top:330px">Сленг ${k + 1} из ${SLANG.length}</div>`;
-    const p = prog(lt, 0.05, 0.3);
-    h += `<div class="abs" style="left:0;right:0;top:420px;display:flex;justify-content:center;opacity:${p};transform:scale(${0.6 + 0.4 * outBack(p)});transform-origin:50% 100%"><div class="bubble"><b>${s.sr}</b><span>${s.cy}</span></div></div>`;
-    h += heroAt(t, s.face, TL.starts[k + 1]);
-    const q = prog(lt, TL.card ? TL.card[k] : 1.15, 0.3);
-    h += `<div class="abs card" style="left:70px;right:70px;top:1330px;opacity:${q};transform:translateY(${(1 - outCubic(q)) * 60}px)"><div class="ru">${s.ru}</div><div class="ex">${s.ex}</div></div>`;
+  } else if (s.k === 'words') {
+    h += `<div class="abs h" style="left:90px;right:90px;top:330px;font-size:72px">4 слова,<br>чтобы <span style="color:var(--gold)">понимать</span></div>`;
+    h += heroAt(t, { brow: 'up', mouth: 'smile' }, 520);
+    h += `<div class="abs" style="left:70px;right:70px;top:1300px;display:grid;grid-template-columns:1fr 1fr;gap:24px">` + SLANG.map(([sr, ru], j) => {
+      const p = outCubic(prog(lt, 0.25 + j * 0.75, 0.35));
+      return `<div class="card" style="padding:26px 30px;opacity:${p};transform:translateY(${(1 - p) * 50}px)"><div class="ru" style="color:#fff;font-size:46px;white-space:nowrap">${sr}</div><div class="ex" style="margin-top:8px;color:var(--gold)">${ru}</div></div>`;
+    }).join('') + `</div>`;
+  } else if (s.k === 'jezik') {
+    h += bubble(outCubic(prog(lt, 0.05, 0.35)), 'Srpski jezik', 'Српски језик');
+    h += heroAt(t, { brow: 'up', eyes: 'happy', mouth: 'grin', blush: .4 });
+  } else if (s.k === 'where') {
+    h += `<div class="abs h" style="left:90px;right:90px;top:330px;font-size:72px;opacity:${outCubic(prog(lt, 0, 0.35))}">Где пригодятся?</div>`;
+    h += heroAt(t, { brow: 'flat', mouth: 'smile', look: 4 });
+    const icons = ['🏠', '📄', '✨'];
+    h += `<div class="abs" style="left:0;right:0;top:1360px;display:flex;justify-content:center;gap:40px">` + icons.map((ic, j) => {
+      const p = prog(lt, 0.8 + j * 0.6, 0.35);
+      return `<div class="card" style="width:230px;height:230px;display:flex;align-items:center;justify-content:center;font-size:120px;${pop(p)}">${ic}</div>`;
+    }).join('') + `</div>`;
+  } else if (s.k === 'use') {
+    h += bubble(outCubic(prog(lt, 0.05, 0.3)), s.sr, s.cy);
+    h += heroAt(t, s.face);
+    const q = prog(lt, 0.25, 0.3);
+    h += `<div class="abs card" style="left:70px;right:70px;top:1330px;opacity:${q};transform:translateY(${(1 - outCubic(q)) * 60}px)"><div class="ru">${s.icon} ${s.ru}</div><div class="ex">${s.ex}</div></div>`;
   } else {
-    const lt = t - S3;
-    const a = outCubic(prog(lt, 0, 0.4)), c = prog(lt, 1.0, 0.35);
-    h += `<div class="abs" style="left:0;right:0;top:420px;display:flex;justify-content:center;opacity:${a};transform:scale(${0.6 + 0.4 * outBack(a)});transform-origin:50% 100%"><div class="bubble"><b>Kapiraš?</b><span>Капираш? — Догоняешь? 😉</span></div></div>`;
-    h += heroAt(t, { brow: 'up', eyes: 'happy', mouth: 'grin', blush: .5 }, S3);
-    const pulse = 1 + 0.035 * Math.sin(Math.max(0, lt - 1.4) * 7) * (lt > 1.4 ? 1 : 0);
-    h += `<div class="abs card" style="left:70px;right:70px;top:1330px;opacity:${c};text-align:center"><div class="ex" style="margin:0 0 22px">Ещё больше живого сербского — в бесплатном приложении <b style="color:var(--gold)">Srpski</b></div><span class="cta" style="transform:scale(${pulse})">Ссылка в профиле →</span></div>`;
+    h += bubble(outCubic(prog(lt, 0.05, 0.35)), 'Prati nas!', 'Подписывайся! 🙌');
+    h += heroAt(t, { brow: 'up', eyes: 'happy', mouth: 'grin', blush: .5 });
+    const c = prog(lt, 0.4, 0.35), pulse = 1 + 0.035 * Math.sin(Math.max(0, lt - 1.2) * 7) * (lt > 1.2 ? 1 : 0);
+    h += `<div class="abs card" style="left:70px;right:70px;top:1330px;opacity:${c};text-align:center"><div class="ex" style="margin:0 0 22px">Instagram и Telegram <b style="color:var(--gold)">@srpski_coach</b><br>Приложение Srpski — ссылка в профиле</div><span class="cta" style="transform:scale(${pulse})">Поделись с другом →</span></div>`;
   }
   f.innerHTML = h;
 };
