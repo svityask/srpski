@@ -14,8 +14,8 @@ const RAW = 'https://raw.githubusercontent.com/svityask/srpski/main/';
 const APP_URL = 'https://zdravo.srpski.workers.dev/';
 const plan = JSON.parse(fs.readFileSync(PLAN, 'utf8'));
 
-const nowBelgrade = () => {
-  const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Belgrade', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date()).map((x) => [x.type, x.value]));
+const nowBelgrade = (aheadMin = 0) => {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Belgrade', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date(Date.now() + aheadMin * 6e4)).map((x) => [x.type, x.value]));
   return `${p.year}-${p.month}-${p.day} ${p.hour === '24' ? '00' : p.hour}:${p.minute}`;
 };
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -30,7 +30,9 @@ function tgCaption(p, igUrl) {
 const cmd = process.argv[2] || 'next';
 if (cmd === 'next') {
   const now = nowBelgrade();
-  const due = plan.items.filter((p) => p.status === 'pending' && `${p.date} ${p.time}` <= now);
+  // расписание срабатывает на пару минут раньше слота — допускаем 5 минут вперёд
+  const soon = nowBelgrade(5);
+  const due = plan.items.filter((p) => p.status === 'pending' && `${p.date} ${p.time}` <= soon);
   if (!due.length) { console.log(JSON.stringify({ now, due: null, next: plan.items.find((p) => p.status === 'pending') || null })); process.exit(0); }
   const p = due[due.length - 1]; // самая свежая из наступивших; более старые пропущенные — в skipped
   console.log(JSON.stringify({
