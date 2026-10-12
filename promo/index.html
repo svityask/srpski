@@ -45,6 +45,15 @@
   summary { cursor: pointer; font-weight: 600; color: var(--enamel); }
   pre { white-space: pre-wrap; word-break: break-word; font: 14px/1.5 var(--f-b); background: var(--enamel-soft); border-radius: 10px; padding: 12px; margin: 10px 0; }
   .hint { color: var(--muted); font-size: 14px; }
+  .day { margin: 18px 0 8px; font: 700 16px/1.2 var(--f-d); }
+  .day.today { color: var(--enamel); }
+  .slot.done { opacity: .55; }
+  .slot.late { border-color: #c98a12; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 8px; background: var(--enamel-soft); font-size: 12px; font-weight: 700; }
+  .chk { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .chk input { width: 22px; height: 22px; accent-color: var(--ok); }
+  .quiz { font-size: 14px; }
+  .quiz li.ok { color: var(--ok); font-weight: 700; }
   .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 12px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; }
   .toast.on { opacity: 1; }
   a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--enamel); outline-offset: 2px; }
@@ -105,7 +114,7 @@ for (const r of REELS) h += `<div class="card"><div class="card-h"><h2>${esc(r.t
   <video controls playsinline preload="metadata" poster="${B}${r.cover}" src="${B}${r.file}"></video>
   <div class="row"><a class="btn primary" href="${B}${r.file}" download>Скачать видео</a><a class="btn" href="${B}${r.cover}" download>Обложка</a>${r.voice ? `<a class="btn" href="${B}${r.voice}" download>Голос отдельно</a>` : ''}</div>
   <p class="hint">Музыка: ${esc(r.music)}</p>${caption(r.caption)}</div>`;
-h += '</section><section id="posts"><h3>Посты</h3>';
+h += '</section><section id="posts"><h3>Посты по дням — выкладывать вручную</h3><div id="daily"><p class="hint">Загружаю очередь…</p></div><h3 style="margin-top:26px">Посты из запаса</h3>';
 for (const p of POSTS) h += `<div class="card"><div class="card-h"><h2>${esc(p.title)}</h2>${p.done ? '<span class="badge">✓ выложен</span>' : ''}</div>${strip(p.imgs)}<p class="hint">Нажмите на слайд, чтобы открыть и сохранить.</p>${caption(p.caption)}</div>`;
 h += '</section><section id="profile"><h3>Профиль и баннер</h3>';
 for (const p of PROFILE) h += `<div class="card"><h2>${esc(p.title)}</h2>${strip(p.imgs, p.cls)}</div>`;
@@ -121,6 +130,47 @@ document.addEventListener('click', (e) => {
     const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Выделено — нажмите «Скопировать»');
   });
 });
+
+// ---------- очередь постов по дням (promo/daily/plan.json) ----------
+(async () => {
+  const box = document.getElementById('daily');
+  let plan;
+  try { plan = await (await fetch('daily/plan.json', { cache: 'no-store' })).json(); } catch (e) { box.innerHTML = '<p class="hint">Не удалось загрузить очередь. Обновите страницу.</p>'; return; }
+  const KEY = 'srpski.promo.done';
+  let mine = {}; try { mine = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { /* без отметок */ }
+  const fmt = (d) => new Date(d + 'T12:00:00').toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' });
+  const nowB = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Belgrade', dateStyle: 'short', timeStyle: 'short' }).format(new Date());
+  const today = nowB.slice(0, 10);
+  const KIND = { word: 'Слово дня · 1 фото', lesson: 'Урок · карусель', quiz: 'Проверь себя · карусель + опрос', promo: 'Карусель' };
+  const img = (f) => f.replace(/^promo\//, '');
+  const tg = (p) => p.caption.split('\n').filter((l) => !l.startsWith('#') && !/ссылка в профиле|t\.me\/srpski_coach/.test(l)).join('\n').replace(/\n{3,}/g, '\n\n').trim() +
+    '\n\n📸 Instagram: instagram.com/srpski_coach\n📱 Приложение: zdravo.srpski.workers.dev';
+  const items = plan.items.filter((p) => p.date >= today || p.status === 'pending');
+  let showAll = false;
+  const draw = () => {
+    let h = '<p class="hint">Время — по Белграду. Отметка «Выложил» хранится на этом телефоне. Нажмите на слайд, чтобы открыть и сохранить.</p>', last = '', n = 0;
+    for (const p of items) {
+      const id = p.date + ' ' + p.time, done = p.status === 'published' || mine[id];
+      if (!showAll && p.date > today && ++n > 9) continue;
+      if (p.date !== last) { last = p.date; h += '<p class="day' + (p.date === today ? ' today' : '') + '">' + (p.date === today ? 'Сегодня, ' : '') + fmt(p.date) + '</p>'; }
+      const late = !done && id < nowB;
+      const imgs = p.images.map(img), tgImg = img(p.telegram_image);
+      let q = '';
+      if (p.quiz) q = '<details><summary>Опрос-викторина для Telegram</summary><div class="quiz"><p><b>' + esc(p.quiz.question) + '</b></p><ol>' + p.quiz.options.map((o, k) => '<li' + (k === p.quiz.correct ? ' class="ok"' : '') + '>' + esc(o) + (k === p.quiz.correct ? ' ✓' : '') + '</li>').join('') + '</ol><p class="hint">Telegram: скрепка → «Опрос» → тип «Викторина», отметьте верный ответ.</p></div></details>';
+      const c1 = 'c' + cid++, c2 = 'c' + cid++;
+      h += '<div class="card slot' + (done ? ' done' : '') + (late ? ' late' : '') + '"><div class="card-h"><h2>' + p.time + ' · ' + esc(KIND[p.type] || p.type) + '</h2>' + (p.status === 'published' ? '<span class="badge">✓ выложен</span>' : late ? '<span class="tag">пора выложить</span>' : '') + '</div>' +
+        '<div class="strip">' + imgs.map((f) => '<a href="' + f + '" download><img src="' + f + '" alt="" loading="lazy"></a>').join('') + '</div>' +
+        '<details><summary>Подпись для Instagram</summary><pre id="' + c1 + '">' + esc(p.caption) + '</pre><button class="btn" data-copy="' + c1 + '">Копировать</button></details>' +
+        '<details><summary>Для Telegram</summary><div class="row" style="margin:10px 0"><a class="btn" href="' + tgImg + '" download>Картинка для Telegram</a></div><pre id="' + c2 + '">' + esc(tg(p)) + '</pre><button class="btn" data-copy="' + c2 + '">Копировать</button></details>' + q +
+        (p.status === 'published' ? '' : '<label class="chk"><input type="checkbox" data-done="' + id + '"' + (mine[id] ? ' checked' : '') + '> Выложил</label>') + '</div>';
+    }
+    if (!showAll) h += '<button class="btn" id="more">Показать все дни</button>';
+    box.innerHTML = h;
+    const m = document.getElementById('more'); if (m) m.onclick = () => { showAll = true; draw(); };
+  };
+  box.addEventListener('change', (e) => { const id = e.target.dataset.done; if (!id) return; if (e.target.checked) mine[id] = 1; else delete mine[id]; try { localStorage.setItem(KEY, JSON.stringify(mine)); } catch (er) { /* не важно */ } draw(); });
+  draw();
+})();
 </script>
 </body>
 </html>

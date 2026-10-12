@@ -4,5 +4,4 @@
 .gitignore
 .assetsignore
 promo/tools
-promo/daily/plan.json
 *.md
