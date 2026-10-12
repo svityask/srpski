@@ -91,9 +91,10 @@
 
   // ---------- состояние ----------
   const KEY = 'srpski.v1';
-  const DEF = { script: 'lat', both: true, autoplay: true, sfx: true, rate: 0.9, theme: 'system', goal: 20, cards: {}, cardsTopic: 'all', cardsShuffle: true, xp: 0, xpd: {}, days: [], lessons: {}, tests: {}, words: {} };
+  const DEF = { script: 'lat', both: true, autoplay: true, sfx: true, rate: 0.9, theme: 'system', goal: 20, cards: {}, cardsTopic: 'all', cardsShuffle: true, xp: 0, xpd: {}, days: [], lessons: {}, tests: {}, words: {}, cases: {}, reads: {}, dlg: {}, topics: {}, exams: {}, daily: {} };
   let S;
   try { S = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { S = Object.assign({}, DEF); }
+  ['cases', 'reads', 'dlg', 'topics', 'exams', 'daily'].forEach((k) => { if (!S[k] || typeof S[k] !== 'object') S[k] = {}; });
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* хранилище недоступно — работаем без него */ } };
 
   const sr = (t) => (S.script === 'cyr' ? toCyr(t) : t);
@@ -127,6 +128,7 @@
     else { w.box = 0; w.due = 0; w.wrong = (w.wrong || 0) + 1; }
   }
   function touch(it) { if (!S.words[it.id]) S.words[it.id] = { box: 0, due: Date.now() + DAY, wrong: 0 }; }
+  function markDay() { if (!S.days.includes(today())) S.days.push(today()); S.days = S.days.slice(-400); }
   function nextStep() {
     for (const u of COURSE) {
       for (const l of u.lessons) if (!S.lessons[l.id]) return { kind: 'lesson', l };
@@ -170,6 +172,25 @@
 
   // ---------- иконки ----------
   const I = {
+    back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    moon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="currentColor"/></svg>',
+    home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+    learn: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2" fill="currentColor"/></svg>',
+    cal: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8.5" cy="14" r="1.1" fill="currentColor"/><circle cx="12" cy="14" r="1.1" fill="currentColor"/><circle cx="15.5" cy="14" r="1.1" fill="currentColor"/><circle cx="8.5" cy="17.2" r="1.1" fill="currentColor"/><circle cx="12" cy="17.2" r="1.1" fill="currentColor"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3l1.6 4.6L16 9.2l-4.4 1.6L10 15.4 8.4 10.8 4 9.2l4.4-1.6zM17.5 13.5l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+    map: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5l5.5-2 6 2 5.5-2v13l-5.5 2-6-2-5.5 2z M9 4.5v13M15 6.5v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    cap: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 9.5L12 5l9.5 4.5L12 14z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M6.5 11.5V16c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3v-4.5M21.5 9.5V14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    dumb: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7.5v9M4 9.5v5M17.5 7.5v9M20 9.5v5M6.5 12h11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+    grid: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7 9.5h.01M10.5 9.5h.01M14 9.5h.01M17 9.5h.01M7 12.5h.01M10.5 12.5h.01M14 12.5h.01M17 12.5h.01M8 15.5h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    mic: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+    chat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h11a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5H9l-3.5 3v-3H4A1.5 1.5 0 0 1 2.5 13V7A1.5 1.5 0 0 1 4 5.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M16.5 9.5H20a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 20 17.5h-1v2.5l-3-2.5h-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+    read: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    phones: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="5" height="6.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="16" y="14" width="5" height="6.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+    pen: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1L19 8a2.1 2.1 0 0 0-3-3L5 16z M14 7l3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    scroll: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h11a2 2 0 0 1 2 2v1h-4M7 4a2 2 0 0 0-2 2v12a2 2 0 0 1-2 2h11a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2M9 9h4M9 13h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    sprout: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-8M12 13c0-4 3-6.5 7.5-6.5 0 4-3 6.5-7.5 6.5zM12 15c0-3-2.5-5-6.5-5 0 3 2.5 5 6.5 5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    doc: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z M14 3v4h4 M9 12h6M9 16h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>',
+    play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5l12 7-12 7z" fill="currentColor"/></svg>',
     speak: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
     slow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 16c0-4.4 3.6-8 8-8s8 3.6 8 8H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M19 13h2.5M7 16v3M15 16v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
     close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
@@ -192,16 +213,21 @@
   const sayBtns = (text) => tts.has ? '<div class="say"><button class="ic" data-say="' + esc(text) + '" aria-label="Послушать">' + I.speak + '</button><button class="ic" data-say="' + esc(text) + '" data-slow="1" aria-label="Послушать медленно">' + I.slow + '</button></div>' : '';
 
   // ---------- главные экраны ----------
-  let view = 'course';
-  try { view = localStorage.getItem('srpski.view') || 'course'; } catch (e) { /* по умолчанию курс */ }
+  let view = 'course', arg = null;
+  try { view = localStorage.getItem('srpski.view') || 'course'; arg = localStorage.getItem('srpski.arg') || null; } catch (e) { /* по умолчанию курс */ }
+  // экраны раздела «Учиться» подсвечивают его вкладку
+  const TAB_OF = { map: 'learn', level: 'learn', cases: 'learn', dialogs: 'learn', dialog: 'learn', reading: 'learn', read: 'learn', speak: 'learn', garden: 'learn', cheat: 'learn', wod: 'learn', drill: 'learn', exams: 'learn', cards: 'learn' };
   let dictTab = 'words', dictQ = '';
   const main = $('#main');
 
   function render() {
     applyTheme();
-    document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-current', b.dataset.view === view ? 'page' : 'false'));
-    try { localStorage.setItem('srpski.view', view); } catch (e) { /* не важно */ }
-    main.innerHTML = { course: vCourse, review: vReview, cards: vCards, dict: vDict, more: vMore }[view]();
+    const V = { course: vCourse, learn: vLearn, review: vReview, cards: vCards, dict: vDict, more: vMore, map: vMap, level: vLevel, cases: vCases, dialogs: vDialogs, dialog: vDialog, reading: vReading, read: vRead, speak: vSpeak, garden: vGarden, cheat: vCheat, wod: vWod, drill: vDrill, exams: vExams };
+    if (!V[view]) view = 'course';
+    const tab = TAB_OF[view] || view;
+    document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-current', b.dataset.view === tab ? 'page' : 'false'));
+    try { localStorage.setItem('srpski.view', view); localStorage.setItem('srpski.arg', arg || ''); } catch (e) { /* не важно */ }
+    main.innerHTML = V[view](arg);
     if (view === 'cards') bindCards();
     if (view === 'dict') bindDict();
   }
@@ -224,7 +250,7 @@
     const doneL = LESSONS.filter((l) => S.lessons[l.id]).length;
     const [g, gru] = greet(), xt = xpToday(), goal = S.goal || 20;
     const wd = wordOfDay();
-    let h = '<header class="hello"><div class="hello-t"><p class="eyebrow">' + new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }) + '</p>' +
+    let h = appbar() + '<header class="hello"><div class="hello-t"><p class="eyebrow">' + new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }) + '</p>' +
       '<h1 lang="sr">' + esc(sr(g)) + '!</h1><p class="hello-ru">' + gru + ' · ' + (xt >= goal ? 'цель дня выполнена 🎉' : 'сегодня ' + xt + ' из ' + goal + ' XP') + '</p></div>' +
       ring(xt, goal, I.flame + '<b>' + st + '</b>') + '</header>';
     h += '<div class="stats"><span><b>' + st + '</b> ' + plural(st, 'день', 'дня', 'дней') + ' подряд</span><span><b>' + S.xp + '</b> XP всего</span><span><b>' + seenIds().length + '</b> ' + plural(seenIds().length, 'слово', 'слова', 'слов') + ' знакомо</span></div>';
@@ -237,6 +263,10 @@
       const lab = nx.kind === 'lesson' ? 'Урок ' + nx.l.id + ' · ' + nx.l.title : 'Тест юнита ' + nx.u.n + ' · ' + nx.u.title;
       h += '<button class="next" data-' + (nx.kind === 'lesson' ? 'lesson="' + nx.l.id : 'test="' + nx.u.id) + '"><span class="eyebrow">' + (doneL ? 'Дальше по курсу' : 'Первый урок') + '</span><span class="next-t">' + esc(lab) + '</span><span class="next-go">Начать</span></button>';
     } else h += '<div class="next done"><span class="eyebrow">Курс пройден</span><span class="next-t">Bravo! Повторяйте слова во вкладке «Повтор».</span></div>';
+    const dd = S.daily[today()], due = dueIds().length, L = curLevel(), lst = levelStats(L);
+    h += '<div class="quick"><button class="q' + (dd ? ' done' : '') + '" data-start="daily">' + I.spark + '<b>Урок дня</b><small>' + (dd ? 'выполнен ✓' : '10 заданий') + '</small></button>' +
+      '<button class="q" ' + (due ? 'data-review="due"' : 'data-go="review"') + '>' + I.cycle + '<b>Повтор</b><small>' + (due ? due + ' ' + plural(due, 'слово', 'слова', 'слов') : 'всё повторено') + '</small></button>' +
+      '<button class="q" data-nav="level" data-arg="' + L.id + '">' + I.map + '<b>Уровень ' + L.id + '</b><small>' + lst.total + '% пройдено</small></button></div>';
     h += '<section class="wod"><div class="wod-h"><p class="eyebrow">Слово дня</p>' + sayBtns(wd.say) + '</div>' + plate(wd.sr, 'sm') +
       '<p class="wod-ru">' + esc(wd.ru) + '</p><p class="wod-pr">[' + esc(pron(wd.say)) + '] · урок «' + esc(wd.lesson.title) + '»</p></section>';
     h += '<div class="course-h"><h2>Маршрут курса</h2><span>' + doneL + ' / ' + LESSONS.length + '</span></div>' +
@@ -274,7 +304,7 @@
   }
 
   function vDict() {
-    let h = '<header class="top"><div><p class="eyebrow">Справочник</p><h1>Разговорник</h1></div></header>' +
+    let h = '<header class="top"><div><p class="eyebrow">Справочник</p><h1>Словарь</h1></div></header>' +
       '<div class="seg" role="tablist"><button role="tab" data-dtab="same" aria-selected="' + (dictTab === 'same') + '">Как по-русски</button><button role="tab" data-dtab="words" aria-selected="' + (dictTab === 'words') + '">Фразы</button><button role="tab" data-dtab="abc" aria-selected="' + (dictTab === 'abc') + '">Азбука</button></div>';
     if (dictTab === 'same') {
       const card = (x) => '<button data-say="' + esc(x.it.say) + '"><span lang="sr">' + esc(sr(x.it.sr)) + '</span><small>' + esc(x.it.ru.replace(/ \(\d+\)/, '')) + '</small></button>';
@@ -323,7 +353,7 @@
     if (!deck) buildDeck();
     const pool = cardPool();
     const known = pool.filter((it) => S.cards[it.id] === 'known').length, again = pool.filter((it) => S.cards[it.id] === 'again').length;
-    let h = '<header class="top"><div><p class="eyebrow">Тренажёр</p><h1>Карточки</h1></div></header>' +
+    let h = subTop('Карточки', 'Тренажёр') +
       '<div class="fc-ctl"><label class="fc-sel"><span class="vh">Тема</span><select id="ctopic"><option value="all">Все темы · ' + ITEMS.length + '</option>' +
       COURSE.map((u) => '<option value="' + u.id + '"' + (S.cardsTopic === u.id ? ' selected' : '') + '>' + u.n + '. ' + esc(u.title) + '</option>').join('') + '</select></label>' +
       '<label class="fc-mix"><input type="checkbox" class="sw sm" id="set-cardsShuffle" data-tog="cardsShuffle"' + (S.cardsShuffle ? ' checked' : '') + '><span>Перемешать</span></label></div>' +
@@ -397,6 +427,312 @@
   }
   const flash = (t) => { const m = $('#msg'); if (m) m.textContent = t; };
 
+  // ---------- раздел «Учиться»: дорожная карта, падежи, диалоги, чтение, говорение, сад ----------
+  const CASES = window.CASES || { list: [], nouns: {}, drills: [] };
+  const DIALOGS = window.DIALOGS || [], READING = window.READING || [], TOPICS = window.TOPICS || [];
+  const CASE_I = { N: 0, G: 1, D: 2, A: 3, V: 4, I: 5, L: 6 };
+  const CASE_BY = {}; CASES.list.forEach((c) => { CASE_BY[c.c] = c; });
+  const DRILL_BY = {}; CASES.drills.forEach((d) => { DRILL_BY[d.id] = d; });
+  const LEVELS = [
+    { id: 'A1', title: 'Первые слова', sr: 'Prve reči', units: ['u1', 'u2', 'u3', 'u4', 'u5'] },
+    { id: 'A2', title: 'Простые фразы', sr: 'Jednostavne rečenice', units: ['u6', 'u7', 'u8', 'u9', 'u10'] },
+    { id: 'B1', title: 'Уверенный разговор', sr: 'Samostalan razgovor', units: [], soon: true },
+    { id: 'B2', title: 'Почти свободно', sr: 'Skoro tečno', units: [], soon: true },
+  ];
+  const LEVEL_BY = {}; LEVELS.forEach((L) => { LEVEL_BY[L.id] = L; });
+  const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  const caseOk = (d) => S.cases[d.id] && S.cases[d.id].ok;
+  function levelStats(L) {
+    const ls = COURSE.filter((u) => L.units.includes(u.id)).flatMap((u) => u.lessons), its = ls.flatMap((l) => l.items);
+    const r = (a, b) => ({ a, b, p: pct(a, b) });
+    const of = (arr, done) => { const x = arr.filter((t) => t.level === L.id); return r(x.filter(done).length, x.length); };
+    const sec = {
+      course: r(ls.filter((l) => S.lessons[l.id]).length, ls.length),
+      vocab: r(its.filter((it) => S.words[it.id] && S.words[it.id].box >= 2).length, its.length),
+      grammar: of(CASES.drills.map((d) => ({ level: d.lvl, d })), (x) => caseOk(x.d)),
+      reading: of(READING, (t) => S.reads[t.id]),
+      dialogs: of(DIALOGS, (t) => S.dlg[t.id]),
+      speak: of(TOPICS, (t) => S.topics[t.id]),
+    };
+    const parts = Object.values(sec).filter((x) => x.b);
+    return { sec, total: parts.length ? Math.round(parts.reduce((s, x) => s + x.p, 0) / parts.length) : 0, exam: S.exams[L.id] };
+  }
+  const curLevel = () => (LEVELS.find((L) => !L.soon && !(S.exams[L.id] && S.exams[L.id].passed)) || LEVELS[1]);
+
+  const subTop = (title, eyebrow, back = 'learn', backArg = '') => '<header class="top sub-top"><button class="ic back" data-nav="' + back + '" data-arg="' + backArg + '" aria-label="Назад">' + I.back + '</button><div><p class="eyebrow">' + eyebrow + '</p><h1>' + title + '</h1></div></header>';
+  const chip = (t, cls = '') => '<span class="lv ' + cls + '">' + t + '</span>';
+  const pbar = (p) => '<div class="meter sm"><i style="width:' + p + '%"></i></div>';
+  function lvRing(p, label, size = 64) {
+    const r = 26, c = 2 * Math.PI * r;
+    return '<span class="lring" style="--s:' + size + 'px"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="' + r + '" class="ring-bg"/><circle cx="32" cy="32" r="' + r + '" class="ring-fg" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + (c * (1 - p / 100)).toFixed(1) + '"/></svg><b>' + label + '</b></span>';
+  }
+  function appbar() {
+    return '<header class="appbar"><span class="logo">' + window.mascot({ head: true, mouth: 'smile', blush: 0.3 }) + '</span><b class="brand">Srpski</b><span class="appbar-sp"></span>' +
+      '<button class="ic plain" data-act="theme" aria-label="Сменить тему">' + I.moon + '</button></header>';
+  }
+
+  function vLearn() {
+    const dd = S.daily[today()], L = curLevel(), st = levelStats(L);
+    const t = (attrs, icon, label, cls = '', badge = '') => '<button class="tl ' + cls + '" ' + attrs + '>' + I[icon] + '<span>' + label + '</span>' + badge + '</button>';
+    let h = appbar();
+    h += '<section class="lv-card"><div class="lv-card-t"><p class="eyebrow">Ваш уровень</p><h2>' + L.id + ' · ' + esc(L.title) + '</h2><p class="hint">' + st.total + '% пройдено · дальше: ' + nextHint(L, st) + '</p></div>' + lvRing(st.total, L.id, 70) + '<button class="btn primary wide" data-nav="level" data-arg="' + L.id + '">Открыть уровень ' + L.id + '</button></section>';
+    h += '<p class="eyebrow sec">Каждый день</p><div class="tiles">' +
+      t('data-nav="wod"', 'cal', 'Слова дня') + t('data-start="daily"', 'spark', 'Урок дня', dd ? 'done' : 'feat', dd ? '<em>✓</em>' : '') + '</div>';
+    h += '<p class="eyebrow sec">Учиться</p><div class="tiles">' +
+      t('data-nav="map"', 'map', 'Дорожная карта', 'feat') + t('data-go="course"', 'cap', 'Курс') +
+      t('data-nav="drill"', 'dumb', 'Тренажёр') + t('data-nav="cases"', 'grid', 'Победи падежи', 'feat') +
+      t('data-nav="speak"', 'mic', 'Говори! Тема на барабане') + t('data-nav="cards"', 'cards', 'Карточки') +
+      t('data-nav="dialogs"', 'chat', 'Диалоги') + t('data-nav="reading"', 'read', 'Чтение') +
+      t('data-start="drill" data-ref="listen:all"', 'phones', 'Слушание') + t('data-start="drill" data-ref="dict:all"', 'pen', 'Диктант') +
+      t('data-nav="exams"', 'scroll', 'Экзамены') + t('data-nav="garden"', 'sprout', 'Сад') + '</div>';
+    h += '<p class="eyebrow sec">Справочник</p><div class="tiles">' + t('data-nav="cheat"', 'doc', 'Шпаргалки') + t('data-go="dict"', 'book', 'Словарь и азбука') + '</div>';
+    return h;
+  }
+  function nextHint(L, st) {
+    const order = [['course', 'уроки курса'], ['grammar', 'падежи'], ['reading', 'чтение'], ['dialogs', 'диалоги'], ['speak', 'говорение'], ['vocab', 'повтор слов']];
+    const x = order.find(([k]) => st.sec[k].b && st.sec[k].p < 100);
+    return x ? x[1] : (st.exam && st.exam.passed ? 'следующий уровень' : 'экзамен ' + L.id);
+  }
+
+  function vMap() {
+    const cur = curLevel().id;
+    let h = subTop('Дорожная карта', 'Путь к свободному сербскому');
+    h += '<p class="lead">Уровни по европейской шкале. Нажмите на уровень, чтобы увидеть, что в нём: курс, падежи, чтение, диалоги и говорение.</p>';
+    const n = LEVELS.length, rowH = 128;
+    let path = 'M 30 ' + rowH / 2;
+    for (let k = 1; k < n; k++) { const x0 = k % 2 ? 30 : 70, x1 = k % 2 ? 70 : 30, y0 = (k - 1) * rowH + rowH / 2, y1 = k * rowH + rowH / 2; path += ' C ' + x0 + ' ' + (y0 + rowH * 0.6) + ', ' + x1 + ' ' + (y1 - rowH * 0.6) + ', ' + x1 + ' ' + y1; }
+    h += '<div class="road" style="height:' + n * rowH + 'px"><svg viewBox="0 0 100 ' + n * rowH + '" preserveAspectRatio="none" aria-hidden="true"><path d="' + path + '"/></svg>' +
+      LEVELS.map((L, k) => {
+        const p = L.soon ? 0 : levelStats(L).total, ex = S.exams[L.id];
+        return '<button class="lvl' + (k % 2 ? ' r' : '') + (L.soon ? ' soon' : '') + (L.id === cur ? ' cur' : '') + '" style="top:' + (k * rowH + 10) + 'px" data-nav="level" data-arg="' + L.id + '"' + (L.soon ? ' disabled' : '') + '>' +
+          lvRing(p, L.id, 58) + '<span><b>' + esc(L.title) + '</b><small>' + (L.soon ? 'Скоро' : ex && ex.passed ? 'Экзамен сдан · ' + p + '%' : p + '%') + '</small></span></button>';
+      }).join('') + '</div>';
+    h += '<h2 class="h2s">Как устроена дорожная карта?</h2><p class="lead">Внутри каждого уровня — разделы освоения языка. Прогресс уровня складывается из всех разделов:</p>';
+    const how = [['cap', 'Курс', 'уроки по темам: от «Zdravo» до врача и документов'], ['grid', 'Грамматика', 'падежи на живых фразах: где? куда? с кем?'], ['cards', 'Словарь', 'слова выученные — те, что продержались в повторе хотя бы 2 дня'],
+      ['read', 'Чтение', 'короткие истории с переводом по предложениям и вопросами'], ['chat', 'Диалоги', 'сценки из жизни, можно играть роль'], ['mic', 'Говорение', 'тема на барабане и минута речи вслух'], ['scroll', 'Экзамен', '20 вопросов, нужно 80%']];
+    h += '<div class="how">' + how.map(([ic, a, b]) => '<div class="how-i"><span class="how-ic">' + I[ic] + '</span><p><b>' + a + '</b> — ' + b + '.</p></div>').join('') + '</div>';
+    return h;
+  }
+
+  function vLevel(id) {
+    const L = LEVEL_BY[id] || LEVELS[0], st = levelStats(L), s = st.sec;
+    let h = subTop(L.id + ', ' + esc(L.title), esc(L.sr), 'map');
+    h += '<div class="lv-sum">' + lvRing(st.total, L.id, 76) + '<p>Уровень пройден на <b>' + st.total + '%</b>. ' + (L.id === 'A1' ? 'Юниты 1–5: приветствия, знакомство, числа, еда, семья.' : 'Юниты 6–10: город, покупки, путешествия, жизнь в Сербии, разговорный язык.') + '</p></div>';
+    const sec = (key, ru, srt, nav, unit) => '<button class="sect" ' + nav + '><span class="sect-h"><b>' + ru + '</b><small lang="sr">' + srt + '</small></span><span class="sect-n">' + s[key].a + ' из ' + s[key].b + ' ' + unit + ', ' + s[key].p + '%</span>' + pbar(s[key].p) + '</button>';
+    h += sec('course', 'Курс', 'Kurs', 'data-go="course"', 'уроков') + sec('grammar', 'Грамматика', 'Gramatika', 'data-nav="cases"', 'фраз') +
+      sec('vocab', 'Словарь', 'Vokabular', 'data-nav="cards"', 'слов') + sec('reading', 'Чтение', 'Čitanje', 'data-nav="reading"', 'текстов') +
+      sec('dialogs', 'Диалоги', 'Dijalozi', 'data-nav="dialogs"', 'диалогов') + sec('speak', 'Говорение', 'Govor', 'data-nav="speak"', 'тем');
+    const ex = st.exam;
+    h += '<div class="sect exam"><span class="sect-h"><b>Экзамен ' + L.id + '</b><small lang="sr">Ispit</small></span><span class="sect-n">' + (ex ? (ex.passed ? 'Сдан' : 'Не сдан') + ' · лучший результат ' + ex.best + '%' : '20 вопросов: слова и падежи, нужно 80%') + '</span><button class="btn primary" data-start="exam" data-ref="' + L.id + '">' + (ex && ex.passed ? 'Пересдать' : 'Сдать экзамен') + '</button></div>';
+    return h;
+  }
+
+  // ---------- падежи ----------
+  function vCases() {
+    const done = CASES.drills.filter(caseOk).length;
+    let h = subTop('Победи падежи', 'Грамматика · Gramatika');
+    h += '<div class="lv-sum">' + lvRing(pct(done, CASES.drills.length), done + '', 70) + '<p>В сербском семь падежей — почти как в русском, плюс звательный. Освоено <b>' + done + ' из ' + CASES.drills.length + '</b> фраз.</p></div>';
+    h += '<div class="stack"><button class="btn primary wide" data-start="cases" data-ref="A1">Где? и Куда? — u/na · A1</button><button class="btn wide" data-start="cases" data-ref="A2">Все падежи · A2</button><button class="btn wide" data-start="cases" data-ref="all">Бой: 20 фраз вперемешку</button></div>';
+    h += '<h3 class="sub">Семь падежей</h3><div class="cases">' + CASES.list.map((c) => '<div class="case"><span class="case-b">' + c.c + '</span><div><p class="case-h"><b lang="sr">' + c.sr + '</b> · ' + c.ru + '</p><p class="case-q"><span lang="sr">' + c.q + '</span> — ' + c.qru + '</p><p class="case-u">' + esc(c.use) + '</p>' +
+      '<button class="case-ex" data-say="' + esc(c.ex[0]) + '"><span lang="sr">' + esc(sr(c.ex[0])) + '</span><small>' + esc(c.ex[1]) + '</small></button></div></div>').join('') + '</div>';
+    h += '<h3 class="sub">Ловушки для русских</h3><ul class="list">' + [['Zovem mamu.', 'Звоню маме — в сербском винительный: zvati koga'], ['Idem kod lekara.', 'Иду к врачу — kod + родительный'], ['Vraćam se sa posla. / Pričam sa prijateljem.', 'sa + родительный — откуда, sa + творительный — с кем'], ['Idem autobusom.', 'Еду на автобусе — творительный без предлога']]
+      .map(([a, b]) => '<li><button data-say="' + esc(a) + '"><span lang="sr">' + esc(sr(a)) + '</span><small>' + esc(b) + '</small></button></li>').join('') + '</ul>';
+    return h;
+  }
+
+  // ---------- диалоги ----------
+  let dlgMode = 'read', dlgTr = true, dlgShown = new Set();
+  function vDialogs() {
+    let h = subTop('Диалоги', 'Dijalozi · сценки из жизни');
+    ['A1', 'A2'].forEach((lv) => {
+      h += '<h3 class="sub">' + lv + '</h3><div class="cards-l">' + DIALOGS.filter((d) => d.level === lv).map((d) => '<button class="cl" data-nav="dialog" data-arg="' + d.id + '"><span class="cl-e">' + d.emoji + '</span><span class="cl-t"><b>' + esc(d.title) + '</b><small lang="sr">' + esc(sr(d.sr)) + ' · ' + d.lines.length + ' реплик</small></span>' + (S.dlg[d.id] ? '<em class="okm">' + I.check + '</em>' : '') + '</button>').join('') + '</div>';
+    });
+    return h;
+  }
+  function vDialog(id) {
+    const d = DIALOGS.find((x) => x.id === id) || DIALOGS[0];
+    const me = dlgMode === 'read' ? -1 : +dlgMode;
+    let h = subTop(esc(d.title), esc(sr(d.sr)) + ' · ' + d.level, 'dialogs');
+    h += '<div class="seg"><button data-dmode="read" aria-pressed="' + (dlgMode === 'read') + '">Читать</button>' + d.roles.map((r, k) => '<button data-dmode="' + k + '" aria-pressed="' + (dlgMode === String(k)) + '">Я — ' + esc(d.rolesRu[k]) + '</button>').join('') + '</div>';
+    h += '<div class="dlg-ctl"><button class="btn sm" data-act="dlgplay">' + I.play + ' Слушать диалог</button><label class="fc-mix"><input type="checkbox" class="sw sm" data-dtr' + (dlgTr ? ' checked' : '') + '><span>Перевод</span></label></div>';
+    if (me >= 0) h += '<p class="hint">Ваши реплики скрыты: прочитайте перевод, скажите по-сербски вслух и нажмите, чтобы проверить.</p>';
+    h += '<div class="dlg">' + d.lines.map(([who, s, ru], k) => {
+      const side = who === 1 ? 'r' : 'l', hide = who === me && !dlgShown.has(k);
+      if (hide) return '<button class="bub ' + side + ' hid" data-dshow="' + k + '"><small>' + esc(d.rolesRu[who]) + '</small><span class="bub-ru">' + esc(ru) + '</span><span class="bub-q">Скажите по-сербски и нажмите</span></button>';
+      return '<button class="bub ' + side + '" data-say="' + esc(s) + '" data-line="' + k + '"><small>' + esc(d.roles[who]) + '</small><span lang="sr">' + esc(sr(s)) + '</span>' + (dlgTr ? '<span class="bub-ru">' + esc(ru) + '</span>' : '') + '</button>';
+    }).join('') + '</div>';
+    if (d.tip) h += '<p class="tip">' + esc(d.tip) + '</p>';
+    h += '<button class="btn primary wide" data-dlgdone="' + d.id + '">' + (S.dlg[d.id] ? 'Пройден ✓ · ещё раз +1 XP' : 'Диалог освоен · +3 XP') + '</button>';
+    return h;
+  }
+  // очередь фраз голосом: у собеседников разная высота голоса, текущая реплика подсвечивается
+  function speakSeq(lines) {
+    if (!tts.has) return;
+    speechSynthesis.cancel();
+    lines.forEach(([text, pitch, k]) => {
+      const u = new SpeechSynthesisUtterance(text.split(' / ')[0]);
+      if (tts.voice) { u.voice = tts.voice; u.lang = tts.voice.lang; } else u.lang = 'sr-RS';
+      u.rate = S.rate; u.pitch = pitch;
+      u.onstart = () => { document.querySelectorAll('.now').forEach((e) => e.classList.remove('now')); const e = document.querySelector('[data-line="' + k + '"]'); if (e) { e.classList.add('now'); e.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } };
+      u.onend = () => { const e = document.querySelector('[data-line="' + k + '"]'); if (e) e.classList.remove('now'); };
+      speechSynthesis.speak(u);
+    });
+  }
+
+  // ---------- чтение ----------
+  let rdOpen = new Set(), rdAll = false, rdQuiz = {};
+  function vReading() {
+    let h = subTop('Чтение', 'Čitanje · короткие истории');
+    ['A1', 'A2'].forEach((lv) => {
+      h += '<h3 class="sub">' + lv + '</h3><div class="cards-l">' + READING.filter((t) => t.level === lv).map((t) => '<button class="cl" data-nav="read" data-arg="' + t.id + '"><span class="cl-e">' + t.emoji + '</span><span class="cl-t"><b>' + esc(t.title) + '</b><small lang="sr">' + esc(sr(t.sr)) + ' · ' + t.text.length + ' предложений</small></span>' + (S.reads[t.id] ? '<em class="okm">' + I.check + '</em>' : '') + '</button>').join('') + '</div>';
+    });
+    return h;
+  }
+  function vRead(id) {
+    const t = READING.find((x) => x.id === id) || READING[0];
+    let h = subTop(esc(sr(t.sr)), esc(t.title) + ' · ' + t.level, 'reading');
+    h += '<div class="dlg-ctl"><button class="btn sm" data-act="rdplay">' + I.play + ' Слушать текст</button><label class="fc-mix"><input type="checkbox" class="sw sm" data-rdall' + (rdAll ? ' checked' : '') + '><span>Весь перевод</span></label></div>';
+    h += '<p class="hint">Нажмите на предложение — услышите его и увидите перевод.</p><div class="rd">' + t.text.map(([s, ru], k) => '<button class="rs' + (rdOpen.has(k) || rdAll ? ' open' : '') + '" data-rs="' + k + '" data-line="' + k + '"><span lang="sr">' + esc(sr(s)) + '</span>' + (rdOpen.has(k) || rdAll ? '<small>' + esc(ru) + '</small>' : '') + '</button>').join(' ') + '</div>';
+    h += '<h3 class="sub">Слова из текста</h3><div class="same near">' + t.words.map(([a, b]) => '<button data-say="' + esc(a) + '"><span lang="sr">' + esc(sr(a)) + '</span><small>' + esc(b) + '</small></button>').join('') + '</div>';
+    h += '<h3 class="sub">Проверьте себя</h3><div class="quiz">' + t.quiz.map((q, k) => {
+      const a = rdQuiz[k];
+      return '<div class="qz"><p><b>' + (k + 1) + '.</b> ' + esc(q.q) + '</p><div class="opts">' + q.opts.map((o, j) => '<button class="opt' + (a !== undefined ? (j === q.a ? ' right' : j === a ? ' wrong' : '') : '') + '" data-qz="' + k + ':' + j + '"' + (a !== undefined ? ' disabled' : '') + '>' + esc(o) + '</button>').join('') + '</div></div>';
+    }).join('') + '</div>';
+    const n = Object.keys(rdQuiz).length;
+    if (n === t.quiz.length) { const ok = t.quiz.filter((q, k) => rdQuiz[k] === q.a).length; h += '<p class="fb-inline ' + (ok === n ? 'ok' : '') + '">' + (ok === n ? 'Все ответы верны! Svaka čast.' : 'Верно ' + ok + ' из ' + n + '. Перечитайте текст и попробуйте ещё раз.') + '</p><button class="btn wide" data-act="rdreset">Пройти вопросы заново</button>'; }
+    return h;
+  }
+
+  // ---------- говорение: тема на барабане ----------
+  let spin = { angle: 0, topic: null, busy: false }, talk = { t: 0, timer: null, rec: null, url: null, recOn: false };
+  function vSpeak() {
+    const n = TOPICS.length, seg = 360 / n;
+    let h = subTop('Говори!', 'Тема на барабане · Govor');
+    const grad = TOPICS.map((t, k) => (k % 2 ? 'var(--tile)' : 'var(--surface)') + ' ' + (k * seg) + 'deg ' + ((k + 1) * seg) + 'deg').join(',');
+    h += '<div class="wheel-w"><span class="wheel-pin"></span><div class="wheel" id="wheel" style="background:conic-gradient(' + grad + ');transform:rotate(' + spin.angle + 'deg)">' +
+      TOPICS.map((t, k) => '<span class="wh-e" style="transform:rotate(' + (k * seg + seg / 2) + 'deg) translateY(-118px) rotate(' + -(k * seg + seg / 2) + 'deg)">' + t.emoji + '</span>').join('') + '</div><span class="wheel-c">' + window.mascot({ head: true, mouth: 'grin', eyes: 'happy', blush: 0.4 }) + '</span></div>';
+    h += '<button class="btn primary wide" data-act="spin"' + (spin.busy ? ' disabled' : '') + '>' + (spin.topic ? 'Крутить ещё раз' : 'Крутить барабан') + '</button>';
+    const t = TOPICS.find((x) => x.id === spin.topic);
+    if (!t) return h + '<p class="hint center">Барабан выберет тему. Ответьте на вопросы вслух — минуту, без остановки. Ошибки не страшны: главное — говорить.</p>';
+    const left = talk.t;
+    h += '<section class="topic"><div class="topic-h"><span class="cl-e">' + t.emoji + '</span><div><h2>' + esc(t.ru) + '</h2><p class="hint" lang="sr">' + esc(sr(t.sr)) + ' · ' + t.level + (S.topics[t.id] ? ' · говорили ' + S.topics[t.id] + ' ' + plural(S.topics[t.id], 'раз', 'раза', 'раз') : '') + '</p></div></div>' +
+      '<h3 class="sub">Вопросы</h3><ul class="list">' + t.q.map(([a, b]) => '<li><button data-say="' + esc(a) + '"><span lang="sr">' + esc(sr(a)) + '</span><small>' + esc(b) + '</small></button></li>').join('') + '</ul>' +
+      '<h3 class="sub">Фразы-помощники</h3><div class="same near two">' + t.phrases.map(([a, b]) => '<button data-say="' + esc(a) + '"><span lang="sr">' + esc(sr(a)) + '</span><small>' + esc(b) + '</small></button>').join('') + '</div>' +
+      '<div class="talk"><div class="talk-t' + (left ? ' on' : '') + '" id="talkt">' + (left ? fmtT(left) : '1:00') + '</div><button class="btn' + (left ? '' : ' primary') + '" data-act="talk">' + (left ? 'Стоп' : 'Говорить минуту') + '</button>' +
+      (window.MediaRecorder && navigator.mediaDevices ? '<button class="btn" data-act="rec">' + (talk.recOn ? '■ Остановить запись' : '● Записать себя') + '</button>' : '') + '</div>' +
+      (talk.url ? '<audio controls src="' + talk.url + '" class="rec-a"></audio>' : '') +
+      '<button class="btn wide go" data-topicdone="' + t.id + '">Я поговорил(а) · +3 XP</button></section>';
+    return h;
+  }
+  const fmtT = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  function doSpin() {
+    if (spin.busy) return;
+    const n = TOPICS.length, seg = 360 / n;
+    let k = (Math.random() * n) | 0; if (TOPICS[k].id === spin.topic) k = (k + 1) % n;
+    const base = spin.angle - (spin.angle % 360);
+    spin.angle = base + 360 * 5 + (360 - (k * seg + seg / 2));
+    spin.busy = true; stopTalk();
+    const w = $('#wheel'); if (w) { w.style.transform = 'rotate(' + spin.angle + 'deg)'; }
+    const b = $('[data-act="spin"]'); if (b) b.disabled = true;
+    beep(true);
+    setTimeout(() => { spin.busy = false; spin.topic = TOPICS[k].id; if (view === 'speak') render(); const tp = $('.topic'); if (tp) tp.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 50 : 3200);
+  }
+  function stopTalk() { if (talk.timer) clearInterval(talk.timer); talk.timer = null; talk.t = 0; }
+  function toggleTalk() {
+    if (talk.timer) { stopTalk(); render(); return; }
+    talk.t = 60; render();
+    talk.timer = setInterval(() => {
+      talk.t--; const e = $('#talkt'); if (e) e.textContent = fmtT(talk.t);
+      if (talk.t <= 0) { stopTalk(); beep(true); if (view === 'speak') render(); }
+    }, 1000);
+  }
+  async function toggleRec() {
+    if (talk.rec) { talk.rec.stop(); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const chunks = [], rec = new MediaRecorder(stream);
+      rec.ondataavailable = (e) => chunks.push(e.data);
+      rec.onstop = () => { stream.getTracks().forEach((t) => t.stop()); if (talk.url) URL.revokeObjectURL(talk.url); talk.url = URL.createObjectURL(new Blob(chunks, { type: rec.mimeType || 'audio/mp4' })); talk.rec = null; talk.recOn = false; if (view === 'speak') render(); };
+      rec.start(); talk.rec = rec; talk.recOn = true; render();
+    } catch (e) { flashTop('Нет доступа к микрофону. Разрешите его в настройках Safari.'); }
+  }
+  const flashTop = (t) => { const m = document.createElement('div'); m.className = 'toast'; m.textContent = t; document.body.appendChild(m); setTimeout(() => m.remove(), 2600); };
+
+  // ---------- сад ----------
+  const STAGES = [[0, 'Семечко'], [15, 'Росток'], [50, 'Саженец'], [120, 'Кустик'], [250, 'Деревце'], [450, 'Цветущее дерево'], [750, 'Плодовое дерево'], [1200, 'Сад Srpski']];
+  const stageOf = (xp) => { let k = 0; STAGES.forEach(([x], i) => { if (xp >= x) k = i; }); return k; };
+  function gardenSVG() {
+    const k = stageOf(S.xp), flowers = COURSE.filter((u) => S.tests[u.id] && S.tests[u.id].passed).length, st = Math.min(streak(), 7), sun = xpToday() >= (S.goal || 20);
+    const H = [0, 18, 42, 64, 86, 104, 116, 124][k], gx = 150, gy = 186;
+    let g = '<svg viewBox="0 0 300 220" class="garden" role="img" aria-label="Сад: ' + STAGES[k][1] + '">';
+    g += '<circle cx="252" cy="44" r="' + (sun ? 22 : 16) + '" fill="' + (sun ? '#f2b33d' : 'var(--line)') + '"/>';
+    for (let i = 0; i < st; i++) g += '<path d="M' + (40 + i * 14) + ' 30 q5 8 0 12 q-5 -4 0 -12z" fill="#5aa9e6" opacity=".85"/>';
+    g += '<ellipse cx="150" cy="196" rx="132" ry="18" fill="#8a6a45" opacity=".35"/><ellipse cx="150" cy="190" rx="120" ry="12" fill="#6f9a4a"/>';
+    if (k === 0) g += '<ellipse cx="' + gx + '" cy="' + (gy - 2) + '" rx="7" ry="5" fill="#8a5a2b"/>';
+    else {
+      g += '<path d="M' + gx + ' ' + gy + ' C ' + (gx - 4) + ' ' + (gy - H * 0.5) + ', ' + (gx + 4) + ' ' + (gy - H * 0.7) + ', ' + gx + ' ' + (gy - H) + '" stroke="' + (k > 3 ? '#7a5230' : '#4f8a3a') + '" stroke-width="' + (2 + k * 1.4) + '" fill="none" stroke-linecap="round"/>';
+      const crown = k >= 4;
+      if (!crown) { for (let i = 0; i < k; i++) { const y = gy - H * (0.35 + 0.6 * i / Math.max(1, k)); const dir = i % 2 ? 1 : -1; g += '<ellipse cx="' + (gx + dir * 11) + '" cy="' + y + '" rx="11" ry="6" fill="#5c9e44" transform="rotate(' + dir * -25 + ' ' + (gx + dir * 11) + ' ' + y + ')"/>'; } }
+      else {
+        const cy = gy - H, R = 26 + k * 6;
+        g += '<circle cx="' + gx + '" cy="' + cy + '" r="' + R + '" fill="#5c9e44"/><circle cx="' + (gx - R * 0.6) + '" cy="' + (cy + 8) + '" r="' + R * 0.7 + '" fill="#4f8f3b"/><circle cx="' + (gx + R * 0.6) + '" cy="' + (cy + 6) + '" r="' + R * 0.72 + '" fill="#67a84d"/>';
+        if (k >= 5) for (let i = 0; i < 9; i++) { const a = i * 0.7, rr = R * 0.75; g += '<circle cx="' + (gx + Math.cos(a) * rr * (0.4 + (i % 3) * 0.3)) + '" cy="' + (cy + Math.sin(a) * rr * 0.6) + '" r="4.5" fill="' + (k >= 6 ? '#d6453f' : '#f6c6d4') + '"/>'; }
+      }
+    }
+    for (let i = 0; i < flowers; i++) { const x = i % 2 ? 150 + 30 + (i >> 1) * 22 : 150 - 30 - (i >> 1) * 22, c = 'var(--l' + (i + 1) + ')'; g += '<path d="M' + x + ' 190 v-16" stroke="#4f8a3a" stroke-width="2"/><circle cx="' + x + '" cy="172" r="6" fill="' + c + '"/><circle cx="' + x + '" cy="172" r="2.4" fill="#f6d36b"/>'; }
+    return g + '</svg>';
+  }
+  function vGarden() {
+    const k = stageOf(S.xp), nx = STAGES[k + 1], flowers = COURSE.filter((u) => S.tests[u.id] && S.tests[u.id].passed).length;
+    let h = subTop('Сад', 'Bašta · растёт вместе с вами');
+    h += '<div class="garden-w">' + gardenSVG() + '</div><h2 class="center">' + STAGES[k][1] + '</h2>';
+    h += nx ? '<p class="hint center">' + S.xp + ' XP · до стадии «' + nx[1] + '» ещё ' + (nx[0] - S.xp) + ' XP</p>' + pbar(pct(S.xp - STAGES[k][0], nx[0] - STAGES[k][0])) : '<p class="hint center">Сад полностью вырос. Bravo!</p>';
+    h += '<div class="how"><div class="how-i"><span class="how-ic">' + I.sprout + '</span><p><b>Дерево</b> растёт от опыта: каждый правильный ответ — XP.</p></div><div class="how-i"><span class="how-ic">' + I.cup + '</span><p><b>Цветы</b> — сданные тесты юнитов: ' + flowers + ' из ' + COURSE.length + '.</p></div><div class="how-i"><span class="how-ic">' + I.flame + '</span><p><b>Капли</b> — дни подряд (' + streak() + '). <b>Солнце</b> светит, когда выполнена цель дня.</p></div></div>';
+    return h;
+  }
+
+  // ---------- шпаргалки ----------
+  function vCheat() {
+    let h = subTop('Шпаргалки', 'Самое нужное на одном экране');
+    const tbl = (rows, cols) => '<div class="tbl" style="--cols:' + cols + '">' + rows.map((r) => r.map((c, j) => '<span' + (j === 0 ? ' class="th"' : '') + ' lang="sr">' + c + '</span>').join('')).join('') + '</div>';
+    h += '<h3 class="sub">Падежи</h3>' + tbl([['N', 'ko? šta?', 'Ovo je <b>kafa</b>.'], ['G', 'iz, od, bez, kod', 'iz <b>Beograda</b>'], ['D', 'kome?', 'pišem <b>mami</b>'], ['A', 'šta? kuda?', 'idem u <b>grad</b>'], ['V', 'обращение', '<b>brate</b>!'], ['I', 's kim? čime?', 'sa <b>mlekom</b>'], ['L', 'gde? o čemu?', 'u <b>gradu</b>']], 3);
+    h += '<h3 class="sub">Глагол biti — быть</h3>' + tbl([['ja', 'sam', 'nisam'], ['ti', 'si', 'nisi'], ['on, ona', 'je', 'nije'], ['mi', 'smo', 'nismo'], ['vi', 'ste', 'niste'], ['oni', 'su', 'nisu']], 3) + '<p class="hint">В отличие от русского, «есть» не пропускают: Ja sam Rus. — Я русский.</p>';
+    h += '<h3 class="sub">Настоящее время: три типа</h3>' + tbl([['', 'čitati', 'pisati', 'govoriti'], ['ja', 'čitam', 'pišem', 'govorim'], ['ti', 'čitaš', 'pišeš', 'govoriš'], ['on', 'čita', 'piše', 'govori'], ['mi', 'čitamo', 'pišemo', 'govorimo'], ['vi', 'čitate', 'pišete', 'govorite'], ['oni', 'čitaju', 'pišu', 'govore']], 4);
+    h += '<h3 class="sub">Вопросительные слова</h3><div class="same">' + [['ko?', 'кто?'], ['šta?', 'что?'], ['gde?', 'где?'], ['kuda?', 'куда?'], ['odakle?', 'откуда?'], ['kada?', 'когда?'], ['kako?', 'как?'], ['zašto?', 'почему?'], ['koliko?', 'сколько?'], ['koji?', 'который?'], ['čiji?', 'чей?'], ['da li…?', 'ли…?']].map(([a, b]) => '<button data-say="' + esc(a) + '"><span lang="sr">' + esc(sr(a)) + '</span><small>' + b + '</small></button>').join('') + '</div>';
+    h += '<h3 class="sub">Да, нет и вежливость</h3><div class="same">' + [['da', 'да'], ['ne', 'нет'], ['molim', 'пожалуйста'], ['hvala', 'спасибо'], ['izvinite', 'извините'], ['može', 'можно / давай']].map(([a, b]) => '<button data-say="' + esc(a) + '"><span lang="sr">' + esc(sr(a)) + '</span><small>' + b + '</small></button>').join('') + '</div>';
+    return h;
+  }
+
+  // ---------- слова дня, тренажёр, экзамены ----------
+  function wordsOfDay() {
+    const d = Math.floor(Date.now() / 864e5);
+    const pool = DAILY.filter((it) => PICS[it.sr] && !it.multi);
+    return [0, 1, 2].map((k) => pool[(d * 3 + k * 7 + 11) % pool.length]);
+  }
+  function vWod() {
+    const ws = wordsOfDay();
+    let h = subTop('Слова дня', new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }));
+    h += ws.map((it) => '<section class="wod">' + '<div class="wod-h"><p class="eyebrow">' + esc(it.unit.title) + '</p>' + sayBtns(it.say) + '</div>' + plate(it.sr, 'sm') + '<p class="wod-ru">' + esc(it.ru) + '</p><p class="wod-pr">[' + esc(pron(it.say)) + ']' + (it.note ? ' · ' + esc(it.note) : '') + '</p></section>').join('');
+    h += '<button class="btn primary wide mt" data-start="wod">Выучить эти слова</button>';
+    return h;
+  }
+  let drillUnit = 'all', drillType = 'mix';
+  const DRILLS = [['mix', 'Вперемешку', 'dumb'], ['pickRu', 'Что значит?', 'cards'], ['pickSr', 'Как сказать?', 'chat'], ['listen', 'Аудирование', 'phones'], ['dict', 'Диктант', 'pen'], ['type', 'Письмо', 'doc'], ['build', 'Собери фразу', 'grid'], ['match', 'Пары', 'cycle']];
+  function vDrill() {
+    let h = subTop('Тренажёр', 'Тренируйте то, что нужно');
+    h += '<label class="fc-sel"><span class="vh">Тема</span><select id="dunit"><option value="all">Все темы</option>' + COURSE.map((u) => '<option value="' + u.id + '"' + (drillUnit === u.id ? ' selected' : '') + '>' + u.n + '. ' + esc(u.title) + '</option>').join('') + '</select></label>';
+    h += '<div class="tiles mt">' + DRILLS.map(([k, lab, ic]) => '<button class="tl' + (drillType === k ? ' feat' : '') + '" data-dtype="' + k + '"' + ((k === 'listen' || k === 'dict') && !tts.has ? ' disabled' : '') + '>' + I[ic] + '<span>' + lab + '</span></button>').join('') + '</div>';
+    h += '<button class="btn primary wide mt" data-start="drill" data-ref="' + drillType + ':' + drillUnit + '">Начать · 12 заданий</button>';
+    if (!tts.voice) h += '<p class="hint">Для аудирования и диктанта нужен сербский или хорватский голос — подсказка в «Ещё».</p>';
+    return h;
+  }
+  function vExams() {
+    let h = subTop('Экзамены', 'Ispiti');
+    h += '<p class="lead">20 вопросов на уровень: слова, фразы на слух и падежи. Чтобы сдать, нужно 80% верных ответов.</p>';
+    h += LEVELS.map((L) => { const ex = S.exams[L.id]; return '<div class="sect exam"><span class="sect-h"><b>' + L.id + ' · ' + esc(L.title) + '</b><small lang="sr">' + esc(L.sr) + '</small></span><span class="sect-n">' + (L.soon ? 'Скоро' : ex ? (ex.passed ? 'Сдан ✓' : 'Не сдан') + ' · лучший ' + ex.best + '%' : 'Ещё не сдавали') + '</span>' + (L.soon ? '' : '<button class="btn' + (ex && ex.passed ? '' : ' primary') + '" data-start="exam" data-ref="' + L.id + '">' + (ex ? 'Сдать снова' : 'Сдать') + '</button>') + '</div>'; }).join('');
+    return h;
+  }
+
   // ---------- сессии ----------
   let P = null;
   const play = $('#play'), stage = $('#stage'), foot = $('#foot'), bar = $('#bar'), cnt = $('#count');
@@ -404,6 +740,7 @@
   function taskFor(it, pool) {
     const c = ['pickSr'];
     if (tts.voice) c.push('listen');
+    if (tts.voice && words(it.say) <= 3 && it.say.length <= 22) c.push('dict');
     if (words(it.say) <= 3 && it.say.length <= 22) c.push('type', 'type');
     if (it.multi && words(it.say) <= 8) c.push('build', 'build', 'build');
     if (pool) c.push(...pool);
@@ -427,8 +764,8 @@
   function persistRun(open = true) {
     if (!P) return;
     const run = {
-      kind: P.kind, ref: P.l ? P.l.id : P.u ? P.u.id : null, title: P.title,
-      q: P.q.map((x) => (x.t === 'match' ? { t: 'match', ids: x.items.map((y) => y.id) } : { t: x.t, id: x.it.id })),
+      kind: P.kind, ref: P.l ? P.l.id : P.u ? P.u.id : P.ref || null, title: P.title,
+      q: P.q.map((x) => (x.t === 'match' ? { t: 'match', ids: x.items.map((y) => y.id) } : x.t === 'case' ? { t: 'case', cid: x.d.id } : { t: x.t, id: x.it.id })),
       i: P.i, ok: P.ok, n: P.n, wrong: [...P.wrong], retried: [...P.retried], answered: !!P.answered, intro: !!P.intro, open,
     };
     try { localStorage.setItem(RUN, JSON.stringify(run)); } catch (e) { /* хранилище недоступно */ }
@@ -438,8 +775,8 @@
       const r = JSON.parse(localStorage.getItem(RUN) || 'null');
       if (!r || !r.q || !r.q.length) return null;
       // курс могли обновить: задания с исчезнувшими словами выбрасываем
-      r.q = r.q.map((x) => (x.t === 'match' ? { t: 'match', items: x.ids.map((id) => BY_ID[id]).filter(Boolean) } : { t: x.t, it: BY_ID[x.id] }))
-        .filter((x) => (x.t === 'match' ? x.items.length >= 2 : x.it));
+      r.q = r.q.map((x) => (x.t === 'match' ? { t: 'match', items: x.ids.map((id) => BY_ID[id]).filter(Boolean) } : x.t === 'case' ? { t: 'case', d: DRILL_BY[x.cid] } : { t: x.t, it: BY_ID[x.id] }))
+        .filter((x) => (x.t === 'match' ? x.items.length >= 2 : x.t === 'case' ? x.d : x.it));
       if (r.kind === 'lesson' && !LESSONS.find((l) => l.id === r.ref)) return null;
       if (r.kind === 'test' && !COURSE.find((u) => u.id === r.ref)) return null;
       return r.q.length ? r : null;
@@ -447,7 +784,7 @@
   }
   const dropRun = () => { try { localStorage.removeItem(RUN); } catch (e) { /* не важно */ } };
   function resume(r) {
-    P = { kind: r.kind, title: r.title, q: r.q, i: Math.min(r.i, r.q.length), ok: r.ok, n: r.n, wrong: new Set(r.wrong), retried: new Set(r.retried), t0: Date.now() };
+    P = { kind: r.kind, ref: r.ref, title: r.title, q: r.q, i: Math.min(r.i, r.q.length), ok: r.ok, n: r.n, wrong: new Set(r.wrong), retried: new Set(r.retried), t0: Date.now() };
     if (r.kind === 'lesson') P.l = LESSONS.find((l) => l.id === r.ref);
     if (r.kind === 'test') P.u = COURSE.find((u) => u.id === r.ref);
     openPlay();
@@ -466,6 +803,41 @@
       q = all.slice(0, 14).map((it) => taskFor(it, ['pickRu', 'pickRu']));
       q.splice(5, 0, { t: 'match', items: all.slice(14, 19).length >= 3 ? all.slice(14, 19) : all.slice(0, 5) });
       title = 'Тест: ' + u.title; P = { kind, u };
+    } else if (kind === 'cases') {
+      const pool = CASES.drills.filter((d) => ref === 'all' || d.lvl === ref);
+      q = shuffle(pool).sort((a, b) => (caseOk(a) ? 1 : 0) - (caseOk(b) ? 1 : 0)).slice(0, ref === 'all' ? 20 : 10).map((d) => ({ t: 'case', d }));
+      title = ref === 'all' ? 'Падежи: бой' : 'Падежи ' + ref; P = { kind, ref };
+    } else if (kind === 'daily') {
+      const nx = nextStep(), l = nx && nx.kind === 'lesson' ? nx.l : null;
+      const fresh = shuffle(l ? l.items : ITEMS).slice(0, 3).flatMap((it) => (S.words[it.id] ? [taskFor(it, ['pickRu'])] : [{ t: 'intro', it }, { t: 'pickRu', it }]));
+      const used = new Set(fresh.map((x) => x.it.id));
+      let rev = shuffle(dueIds()).filter((id) => !used.has(id));
+      if (rev.length < 4) rev = rev.concat(shuffle(seenIds()).filter((id) => !used.has(id) && !rev.includes(id)));
+      rev = rev.slice(0, 4).map((id) => taskFor(BY_ID[id], ['pickRu']));
+      const lv = S.lessons['5.3'] || Object.keys(S.lessons).length >= 14 ? null : 'A1';
+      const cs = shuffle(CASES.drills.filter((d) => !lv || d.lvl === lv)).sort((a, b) => (caseOk(a) ? 1 : 0) - (caseOk(b) ? 1 : 0)).slice(0, 3).map((d) => ({ t: 'case', d }));
+      q = fresh.concat(shuffle(rev.concat(cs)));
+      title = 'Урок дня'; P = { kind };
+    } else if (kind === 'wod') {
+      q = wordsOfDay().flatMap((it) => [{ t: 'intro', it }, { t: 'pickRu', it }]);
+      q = q.filter((x) => x.t === 'intro').concat(shuffle(q.filter((x) => x.t !== 'intro')));
+      title = 'Слова дня'; P = { kind };
+    } else if (kind === 'drill') {
+      const [type, unit] = String(ref).split(':');
+      const base = ITEMS.filter((it) => unit === 'all' || it.unit.id === unit);
+      const seen = base.filter((it) => S.words[it.id]);
+      let pool = shuffle(seen.length >= 8 ? seen : base);
+      const fits = { build: (it) => it.multi && words(it.say) <= 8, type: (it) => words(it.say) <= 3 && it.say.length <= 22, dict: (it) => words(it.say) <= 4 && it.say.length <= 26 };
+      if (fits[type]) pool = pool.filter(fits[type]).concat(pool.filter((it) => !fits[type](it))).filter((it, k, a) => fits[type](it) || k < 12);
+      if (type === 'match') q = [0, 1, 2].map((k) => ({ t: 'match', items: pool.slice(k * 5, k * 5 + 5) })).filter((x) => x.items.length >= 3);
+      else q = pool.slice(0, 12).map((it) => (type === 'mix' ? taskFor(it, ['pickRu']) : { t: (type === 'listen' || type === 'dict') && !tts.has ? 'pickRu' : type, it }));
+      title = 'Тренажёр · ' + (DRILLS.find((d) => d[0] === type) || ['', 'вперемешку'])[1]; P = { kind, ref };
+    } else if (kind === 'exam') {
+      const L = LEVEL_BY[ref] || LEVELS[0];
+      const its = shuffle(ITEMS.filter((it) => L.units.includes(it.unit.id))).slice(0, 14);
+      const cs = shuffle(CASES.drills.filter((d) => d.lvl === L.id)).slice(0, 6).map((d) => ({ t: 'case', d }));
+      q = shuffle(its.map((it) => taskFor(it, ['pickRu', 'pickSr'])).concat(cs));
+      title = 'Экзамен ' + L.id; P = { kind, ref };
     } else {
       let ids = shuffle(dueIds()).sort((a, b) => S.words[a].box - S.words[b].box);
       if (!ids.length || ref === 'any') ids = seenIds().sort((a, b) => (S.words[b].wrong || 0) - (S.words[a].wrong || 0) || S.words[a].box - S.words[b].box);
@@ -473,6 +845,7 @@
       q = shuffle(ids).map((id) => taskFor(BY_ID[id], ['pickRu', 'pickRu']));
       title = 'Повтор'; P = { kind };
     }
+    if (!q.length) { P = null; flashTop('Пока нечего тренировать — сначала пройдите пару уроков.'); return; }
     Object.assign(P, { title, q, i: 0, ok: 0, n: 0, wrong: new Set(), retried: new Set(), t0: Date.now() });
     openPlay();
     if (kind === 'lesson') return showIntro();
@@ -499,7 +872,7 @@
     cnt.textContent = (P.i + 1) + '/' + P.q.length;
     foot.innerHTML = '';
     stage.scrollTop = 0;
-    ({ intro: tIntro, pickRu: tPickRu, pickSr: tPickSr, listen: tListen, type: tType, build: tBuild, match: tMatch })[x.t](x);
+    ({ intro: tIntro, pickRu: tPickRu, pickSr: tPickSr, listen: tListen, type: tType, dict: tDict, build: tBuild, match: tMatch, case: tCase })[x.t](x);
   }
 
   // смыслы «Привет / Пока» → [привет, пока]: варианты с общим смыслом не ставим рядом — иначе верны оба
@@ -545,6 +918,41 @@
     inp.addEventListener('input', () => { b.disabled = !inp.value.trim(); });
     inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && inp.value.trim()) { e.preventDefault(); check(); } });
     inp.focus({ preventScroll: true });
+  }
+  function tDict(x) {
+    stage.innerHTML = '<p class="eyebrow">Диктант: напишите, что слышите</p><div class="listen"><button class="big-say" data-say="' + esc(x.it.say) + '" aria-label="Послушать">' + I.speak + '</button><button class="ic" data-say="' + esc(x.it.say) + '" data-slow="1" aria-label="Медленно">' + I.slow + '</button></div>' +
+      '<label class="vh" for="ans">Ответ</label><input id="ans" class="ans" lang="sr" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="Что вы услышали?">' +
+      '<p class="hint">Можно без č ć š ž đ и даже русскими буквами.</p>';
+    foot.innerHTML = '<button class="btn primary wide" data-act="check" disabled>Проверить</button>';
+    const inp = $('#ans'), b = foot.querySelector('button');
+    inp.addEventListener('input', () => { b.disabled = !inp.value.trim(); });
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && inp.value.trim()) { e.preventDefault(); check(); } });
+    speak(x.it.say);
+  }
+  // падеж: фраза с пропуском и четыре формы одного слова
+  function tCase(x) {
+    const d = x.d, forms = CASES.nouns[d.n], right = forms[CASE_I[d.c]];
+    x.right = right;
+    // звательная форма у неодушевлённых слов звучит странно — в варианты её не берём
+    const pool = forms.filter((f, k) => k !== CASE_I.V || d.c === 'V' || /^(brat|sestra|mama|prijatelj|lekar)$/.test(d.n));
+    x.opts = shuffle([right].concat(shuffle([...new Set(pool)].filter((f) => f !== right)).slice(0, 3)));
+    const [a, b] = d.s.split('___');
+    stage.innerHTML = '<p class="eyebrow">Падежи · вставьте слово в нужной форме</p><div class="cz"><p class="cz-s" lang="sr">' + esc(sr(a)) + '<span class="gap">?</span>' + esc(sr(b)) + '</p><p class="cz-ru">' + esc(d.ru) + '</p><p class="cz-n">Слово: <b lang="sr">' + esc(sr(d.n)) + '</b></p></div>' +
+      '<div class="opts">' + x.opts.map((o, k) => '<button class="opt" data-copt="' + k + '" lang="sr">' + esc(sr(o)) + '</button>').join('') + '</div>';
+  }
+  function chooseCase(k) {
+    const x = P.q[P.i], d = x.d, ok = x.opts[k] === x.right;
+    stage.querySelectorAll('.opt').forEach((b, j) => { b.disabled = true; if (x.opts[j] === x.right) b.classList.add('right'); else if (j === k) b.classList.add('wrong'); });
+    const g = stage.querySelector('.gap'); if (g) { g.textContent = sr(x.right); g.classList.add(ok ? 'ok' : 'bad'); }
+    P.n++;
+    if (ok) { P.ok++; addXP(1); } else P.wrong.add('case:' + d.id);
+    S.cases[d.id] = { ok, n: ((S.cases[d.id] || {}).n || 0) + 1 };
+    if (!ok && !P.retried.has('case:' + d.id) && P.kind !== 'exam') { P.retried.add('case:' + d.id); P.q.push({ t: 'case', d }); }
+    save(); P.answered = true; persistRun(); beep(ok);
+    const full = d.s.replace('___', x.right), c = CASE_BY[d.c];
+    foot.innerHTML = '<div class="fb ' + (ok ? 'ok' : 'bad') + '" role="status"><p class="fb-h">' + (ok ? 'Točno! Верно' : 'Не совсем') + '</p><p class="fb-a"><b lang="sr">' + esc(sr(full)) + '</b></p>' +
+      '<p class="fb-a"><span class="case-b sm">' + c.c + '</span> ' + esc(c.sr) + ' — ' + esc(d.why) + '</p><button class="btn wide ' + (ok ? 'go' : 'stop') + '" data-act="next">Дальше</button></div>';
+    if (S.autoplay) speak(full);
   }
   function tBuild(x) {
     // первое слово фразы — со строчной, иначе заглавная буква подсказывает начало
@@ -627,7 +1035,7 @@
   }
   function check() {
     const x = P.q[P.i];
-    if (x.t === 'type') {
+    if (x.t === 'type' || x.t === 'dict') {
       const v = $('#ans').value, it = x.it;
       $('#ans').disabled = true;
       const exact = it.alts.some((a) => norm(a) === norm(v));
@@ -684,18 +1092,28 @@
       S.tests[P.u.id] = { best: Math.max(r.best, pct), passed: r.passed || passed };
       head = passed ? 'Тест сдан' : 'Пока не сдан'; sub = passed ? '<p class="res-sub">Юнит «' + esc(P.u.title) + '» закрыт.</p>' : '<p class="res-sub">Нужно 80%. Повторите уроки юнита и попробуйте снова.</p>';
       bonus = passed ? 15 : 0;
-    } else { head = 'Повтор окончен'; bonus = 3; }
+    } else if (P.kind === 'exam') {
+      const passed = pct >= 80, r = S.exams[P.ref] || { best: 0, passed: false };
+      S.exams[P.ref] = { best: Math.max(r.best, pct), passed: r.passed || passed };
+      head = passed ? 'Экзамен ' + P.ref + ' сдан!' : 'Экзамен не сдан'; sub = '<p class="res-sub">' + (passed ? 'Уровень ' + P.ref + ' подтверждён. Bravo!' : 'Нужно 80%. Повторите слова и падежи уровня.') + '</p>';
+      bonus = passed ? 25 : 0;
+    } else if (P.kind === 'daily') { S.daily[today()] = true; Object.keys(S.daily).sort().slice(0, -60).forEach((k) => delete S.daily[k]); head = 'Урок дня выполнен'; sub = stars(st); bonus = 10; }
+    else if (P.kind === 'cases') { head = 'Падежи: ' + pct + '%'; sub = '<p class="res-sub">Освоено ' + CASES.drills.filter(caseOk).length + ' из ' + CASES.drills.length + ' фраз.</p>'; bonus = 3; }
+    else if (P.kind === 'drill' || P.kind === 'wod') { head = 'Тренировка окончена'; sub = stars(st); bonus = 3; }
+    else { head = 'Повтор окончен'; bonus = 3; }
     addXP(bonus);
     if (!S.days.includes(today())) S.days.push(today());
     S.days = S.days.slice(-400);
     save();
     const wrong = [...P.wrong].map((id) => BY_ID[id]).filter(Boolean);
+    const wrongC = [...P.wrong].filter((id) => /^case:/.test(id)).map((id) => DRILL_BY[id.slice(5)]).filter(Boolean);
     stage.innerHTML = '<div class="res"><p class="eyebrow">' + esc(P.title) + '</p><h2 class="t-h">' + head + '</h2>' + sub +
       '<div class="res-row"><div><b>' + pct + '%</b><span>верно</span></div><div><b>+' + (P.ok + bonus) + '</b><span>XP</span></div><div><b>' + streak() + '</b><span>' + plural(streak(), 'день', 'дня', 'дней') + ' подряд</span></div></div>' +
-      (wrong.length ? '<h3 class="sub">Над этим стоит поработать</h3><ul class="list compact">' + wrong.map((it) => '<li><button data-say="' + esc(it.say) + '"><span lang="sr">' + esc(sr(it.sr)) + '</span><small>' + esc(it.ru) + '</small></button></li>').join('') + '</ul>' : '<p class="res-sub">Без единой ошибки. Svaka čast!</p>') + '</div>';
-    const again = P.kind === 'lesson' ? 'data-lesson="' + P.l.id + '"' : P.kind === 'test' ? 'data-test="' + P.u.id + '"' : 'data-review="any"';
+      (wrong.length || wrongC.length ? '<h3 class="sub">Над этим стоит поработать</h3><ul class="list compact">' + wrong.map((it) => '<li><button data-say="' + esc(it.say) + '"><span lang="sr">' + esc(sr(it.sr)) + '</span><small>' + esc(it.ru) + '</small></button></li>').join('') +
+        wrongC.map((d) => { const f = d.s.replace('___', CASES.nouns[d.n][CASE_I[d.c]]); return '<li><button data-say="' + esc(f) + '"><span lang="sr">' + esc(sr(f)) + '</span><small>' + esc(d.why) + '</small></button></li>'; }).join('') + '</ul>' : '<p class="res-sub">Без единой ошибки. Svaka čast!</p>') + '</div>';
+    const again = P.kind === 'lesson' ? 'data-lesson="' + P.l.id + '"' : P.kind === 'test' ? 'data-test="' + P.u.id + '"' : P.kind === 'review' ? 'data-review="any"' : 'data-start="' + P.kind + '" data-ref="' + esc(P.ref || '') + '"';
     foot.innerHTML = '<div class="duo"><button class="btn" ' + again + '>Ещё раз</button><button class="btn primary" data-act="done">Готово</button></div>';
-    if (pct >= 70 && !(P.kind === 'test' && pct < 80)) confetti();
+    if (pct >= 70 && !((P.kind === 'test' || P.kind === 'exam') && pct < 80)) confetti();
   }
 
   // крестик просто закрывает: урок сохранён и продолжится с того же места
@@ -712,7 +1130,17 @@
     if (!b || b.disabled) return;
     const d = b.dataset;
     if (d.say !== undefined) { speak(d.say, !!d.slow); if (!b.classList.contains('opt')) return; }
-    if (d.view) { view = d.view; resetArm = false; render(); window.scrollTo(0, 0); return; }
+    if (d.view) { view = d.view; arg = null; resetArm = false; render(); window.scrollTo(0, 0); return; }
+    if (d.nav) { if (d.nav !== view || d.arg !== arg) { dlgShown = new Set(); rdOpen = new Set(); rdQuiz = {}; if (d.nav !== 'speak') stopTalk(); } view = d.nav; arg = d.arg || null; if (view === 'cards') deck = null; render(); window.scrollTo(0, 0); return; }
+    if (d.start) { start(d.start, d.ref || null); return; }
+    if (d.copt !== undefined) { chooseCase(+d.copt); return; }
+    if (d.dmode) { dlgMode = d.dmode; dlgShown = new Set(); render(); return; }
+    if (d.dshow !== undefined) { dlgShown.add(+d.dshow); render(); const dl = DIALOGS.find((x) => x.id === arg); if (dl) speak(dl.lines[+d.dshow][1]); return; }
+    if (d.dlgdone) { addXP(S.dlg[d.dlgdone] ? 1 : 3); S.dlg[d.dlgdone] = (S.dlg[d.dlgdone] || 0) + 1; markDay(); save(); render(); flashTop('Диалог засчитан!'); return; }
+    if (d.rs !== undefined) { const k = +d.rs; if (rdOpen.has(k)) rdOpen.delete(k); else rdOpen.add(k); const t = READING.find((x) => x.id === arg); render(); if (t && rdOpen.has(k)) speak(t.text[k][0]); return; }
+    if (d.qz) { const [k, j] = d.qz.split(':').map(Number); rdQuiz[k] = j; const t = READING.find((x) => x.id === arg); beep(t && t.quiz[k].a === j); if (t && Object.keys(rdQuiz).length === t.quiz.length && !S.reads[t.id]) { const ok = t.quiz.filter((q, i) => rdQuiz[i] === q.a).length; if (ok === t.quiz.length) { S.reads[t.id] = 1; addXP(4); markDay(); save(); confetti(); } } render(); return; }
+    if (d.topicdone) { S.topics[d.topicdone] = (S.topics[d.topicdone] || 0) + 1; addXP(3); markDay(); save(); stopTalk(); render(); flashTop('Molodec! Тема засчитана, +3 XP'); return; }
+    if (d.dtype) { drillType = d.dtype; render(); return; }
     if (d.go) { view = d.go; render(); return; }
     if (d.lesson) { start('lesson', d.lesson); return; }
     if (d.test) { start('test', d.test); return; }
@@ -754,6 +1182,13 @@
       case 'check': check(); break;
       case 'done': P = null; closePlay(); break;
       case 'resume': { const r = loadRun(); if (r) resume(r); else render(); break; }
+      case 'theme': { const dark = S.theme === 'dark' || (S.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches); S.theme = dark ? 'light' : 'dark'; save(); render(); break; }
+      case 'spin': doSpin(); break;
+      case 'talk': toggleTalk(); break;
+      case 'rec': toggleRec(); break;
+      case 'dlgplay': { const dl = DIALOGS.find((x) => x.id === arg) || DIALOGS[0]; speakSeq(dl.lines.map(([w, t], k) => [t, w ? 1.15 : 0.85, k])); break; }
+      case 'rdplay': { const t = READING.find((x) => x.id === arg) || READING[0]; speakSeq(t.text.map(([x], k) => [x, 1, k])); break; }
+      case 'rdreset': rdQuiz = {}; render(); break;
     }
   });
   document.addEventListener('change', (e) => {
@@ -761,6 +1196,9 @@
     if (t.dataset.tog) { S[t.dataset.tog] = t.checked; save(); if (t.dataset.tog === 'cardsShuffle') buildDeck(); if (t.dataset.tog === 'both' || t.dataset.tog === 'cardsShuffle') render(); }
     if (t.id === 'ctopic') { S.cardsTopic = t.value; save(); buildDeck(); render(); }
     if (t.dataset.rate !== undefined) { S.rate = +t.value; save(); render(); speak('Dobar dan'); }
+    if (t.id === 'dunit') { drillUnit = t.value; render(); }
+    if (t.dataset.dtr !== undefined) { dlgTr = t.checked; render(); }
+    if (t.dataset.rdall !== undefined) { rdAll = t.checked; render(); }
   });
   $('#quit').addEventListener('click', askQuit);
   document.querySelectorAll('#tabs button').forEach((b) => { b.innerHTML = I[b.dataset.icon] + '<span>' + b.textContent + '</span>'; });
