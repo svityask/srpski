@@ -566,7 +566,7 @@
   function vGrammar() {
     const done = GAPS_ALL.filter(gapOk).length;
     let h = subTop('Грамматика', 'Gramatika · коротко и с примерами');
-    h += '<div class="lv-sum">' + lvRing(pct(done, GAPS_ALL.length), done + '', 70) + '<p>Двенадцать коротких уроков: правило, таблица, примеры с озвучкой и тренировка. Освоено <b>' + done + ' из ' + GAPS_ALL.length + '</b> заданий.</p></div>';
+    h += '<div class="lv-sum">' + lvRing(pct(done, GAPS_ALL.length), done + '', 70) + '<p>' + GRAMMAR.length + ' коротких уроков: правило, таблица, примеры с озвучкой и тренировка. Освоено <b>' + done + ' из ' + GAPS_ALL.length + '</b> заданий.</p></div>';
     ['A1', 'A2'].forEach((lv) => {
       h += '<h3 class="sub">' + lv + '</h3><div class="cards-l">' + GRAMMAR.filter((g) => g.lvl === lv).map((g, k) => {
         const ok = g.drills.filter(gapOk).length;
