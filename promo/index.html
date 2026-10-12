@@ -89,7 +89,10 @@ const POSTS = [
 const PROFILE = [
   { title: 'Фото профиля', imgs: ['avatar.png', 'avatar-alt.png'], cls: 'sq' },
   { title: 'Баннер: сторис и лента', imgs: ['banner-story.png', 'banner-feed.png'] },
-  { title: 'Обложки «Актуального»', imgs: ['hl-words.png', 'hl-phrases.png', 'hl-false.png', 'hl-app.png'], cls: 'tall' },
+  { title: 'Актуальное «Функции» — 9 сторис по порядку', imgs: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => 'stories/func-' + i + '.jpg'), cls: 'tall' },
+  { title: 'Актуальное «Как сохранить» — 4 сторис', imgs: [1, 2, 3, 4].map((i) => 'stories/save-' + i + '.jpg'), cls: 'tall' },
+  { title: 'Обложки «Актуального» (новый стиль): Функции · Как сохранить · Слова · Фразы · Ложные друзья · Падежи', imgs: ['func', 'save', 'words', 'phrases', 'false', 'cases'].map((c) => 'stories/cover-' + c + '.jpg'), cls: 'tall' },
+  { title: 'Обложки «Актуального» (прежние)', imgs: ['hl-words.png', 'hl-phrases.png', 'hl-false.png', 'hl-app.png'], cls: 'tall' },
 ];
 
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
