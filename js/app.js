@@ -190,6 +190,7 @@
     scroll: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h11a2 2 0 0 1 2 2v1h-4M7 4a2 2 0 0 0-2 2v12a2 2 0 0 1-2 2h11a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2M9 9h4M9 13h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     sprout: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-8M12 13c0-4 3-6.5 7.5-6.5 0 4-3 6.5-7.5 6.5zM12 15c0-3-2.5-5-6.5-5 0 3 2.5 5 6.5 5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
     doc: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z M14 3v4h4 M9 12h6M9 16h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>',
+    phone: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5v6M9.5 11l2.5 2.5 2.5-2.5M10 18.5h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5l12 7-12 7z" fill="currentColor"/></svg>',
     speak: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
     slow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 16c0-4.4 3.6-8 8-8s8 3.6 8 8H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M19 13h2.5M7 16v3M15 16v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
@@ -245,12 +246,23 @@
     return '<div class="ring" role="img" aria-label="Цель дня: ' + val + ' из ' + max + ' XP"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="' + r + '" class="ring-bg"/><circle cx="32" cy="32" r="' + r + '" class="ring-fg' + (f >= 1 ? ' full' : '') + '" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + (c * (1 - f)).toFixed(1) + '"/></svg><span>' + inner + '</span></div>';
   }
 
+  // подсказка «на экран Домой»: в браузере прогресс может пропасть, на иконке — хранится надёжно
+  function installTip() {
+    const standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    if (standalone) return '';
+    const ua = navigator.userAgent, inApp = /Instagram|FBAN|FBAV|Telegram/i.test(ua), ios = /iPhone|iPad|iPod/.test(ua);
+    if (S.installHide && !inApp) return '';
+    const txt = inApp ? 'Вы во встроенном браузере — здесь прогресс может пропасть. Нажмите <b>•••</b> → <b>«Открыть в браузере»</b>, а там добавьте Srpski на экран «Домой».'
+      : ios ? 'Чтобы прогресс не пропал, добавьте Srpski на экран «Домой»: <b>«Поделиться»</b> → <b>«На экран „Домой“»</b>. Потом заходите с иконки — так приложение работает и без интернета.'
+        : 'Чтобы прогресс не пропал, установите приложение: меню браузера → <b>«Добавить на главный экран»</b>.';
+    return '<section class="itip" role="note"><span class="itip-ic">' + I.phone + '</span><p>' + txt + '</p>' + (inApp ? '' : '<button class="btn sm" data-act="itiphide">Понятно</button>') + '</section>';
+  }
   function vCourse() {
     const st = streak(), nx = nextStep();
     const doneL = LESSONS.filter((l) => S.lessons[l.id]).length;
     const [g, gru] = greet(), xt = xpToday(), goal = S.goal || 20;
     const wd = wordOfDay();
-    let h = appbar() + '<header class="hello"><div class="hello-t"><p class="eyebrow">' + new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }) + '</p>' +
+    let h = appbar() + installTip() + '<header class="hello"><div class="hello-t"><p class="eyebrow">' + new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' }) + '</p>' +
       '<h1 lang="sr">' + esc(sr(g)) + '!</h1><p class="hello-ru">' + gru + ' · ' + (xt >= goal ? 'цель дня выполнена 🎉' : 'сегодня ' + xt + ' из ' + goal + ' XP') + '</p></div>' +
       ring(xt, goal, I.flame + '<b>' + st + '</b>') + '</header>';
     h += '<div class="stats"><span><b>' + st + '</b> ' + plural(st, 'день', 'дня', 'дней') + ' подряд</span><span><b>' + S.xp + '</b> XP всего</span><span><b>' + seenIds().length + '</b> ' + plural(seenIds().length, 'слово', 'слова', 'слов') + ' знакомо</span></div>';
@@ -1184,6 +1196,7 @@
       case 'resume': { const r = loadRun(); if (r) resume(r); else render(); break; }
       case 'theme': { const dark = S.theme === 'dark' || (S.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches); S.theme = dark ? 'light' : 'dark'; save(); render(); break; }
       case 'spin': doSpin(); break;
+      case 'itiphide': S.installHide = true; save(); render(); break;
       case 'talk': toggleTalk(); break;
       case 'rec': toggleRec(); break;
       case 'dlgplay': { const dl = DIALOGS.find((x) => x.id === arg) || DIALOGS[0]; speakSeq(dl.lines.map(([w, t], k) => [t, w ? 1.15 : 0.85, k])); break; }

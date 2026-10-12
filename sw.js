@@ -1,6 +1,6 @@
 // Офлайн: файлы приложения — из кэша с фоновым обновлением, шрифты — из кэша после первой загрузки.
 // При изменении файлов приложения поднимайте версию.
-const VERSION = 'srpski-7';
+const VERSION = 'srpski-8';
 const APP = ['./', 'index.html', 'css/app.css', 'js/data.js', 'js/pics.js', 'js/cases.js', 'js/dialogs.js', 'js/reading.js', 'js/topics.js', 'js/mascot.js', 'js/app.js', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-192.png'];
 
 self.addEventListener('install', (e) => {
