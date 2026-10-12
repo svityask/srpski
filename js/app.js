@@ -91,10 +91,10 @@
 
   // ---------- состояние ----------
   const KEY = 'srpski.v1';
-  const DEF = { script: 'lat', both: true, autoplay: true, sfx: true, rate: 0.9, theme: 'system', goal: 20, cards: {}, cardsTopic: 'all', cardsShuffle: true, xp: 0, xpd: {}, days: [], lessons: {}, tests: {}, words: {}, cases: {}, reads: {}, dlg: {}, topics: {}, exams: {}, daily: {} };
+  const DEF = { script: 'lat', both: true, autoplay: true, sfx: true, rate: 0.9, theme: 'system', goal: 20, cards: {}, cardsTopic: 'all', cardsShuffle: true, xp: 0, xpd: {}, days: [], lessons: {}, tests: {}, words: {}, cases: {}, gram: {}, reads: {}, dlg: {}, topics: {}, exams: {}, daily: {} };
   let S;
   try { S = Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { S = Object.assign({}, DEF); }
-  ['cases', 'reads', 'dlg', 'topics', 'exams', 'daily'].forEach((k) => { if (!S[k] || typeof S[k] !== 'object') S[k] = {}; });
+  ['cases', 'gram', 'reads', 'dlg', 'topics', 'exams', 'daily'].forEach((k) => { if (!S[k] || typeof S[k] !== 'object') S[k] = {}; });
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* хранилище недоступно — работаем без него */ } };
 
   const sr = (t) => (S.script === 'cyr' ? toCyr(t) : t);
@@ -191,6 +191,7 @@
     sprout: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-8M12 13c0-4 3-6.5 7.5-6.5 0 4-3 6.5-7.5 6.5zM12 15c0-3-2.5-5-6.5-5 0 3 2.5 5 6.5 5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
     doc: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z M14 3v4h4 M9 12h6M9 16h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>',
     phone: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5v6M9.5 11l2.5 2.5 2.5-2.5M10 18.5h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    abc: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18l4-11 4 11M4.5 14h5M14 7h4a2.5 2.5 0 0 1 0 5h-4zM14 12h4.5a3 3 0 0 1 0 6H14z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>',
     play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5l12 7-12 7z" fill="currentColor"/></svg>',
     speak: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
     slow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 16c0-4.4 3.6-8 8-8s8 3.6 8 8H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M19 13h2.5M7 16v3M15 16v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
@@ -217,13 +218,13 @@
   let view = 'course', arg = null;
   try { view = localStorage.getItem('srpski.view') || 'course'; arg = localStorage.getItem('srpski.arg') || null; } catch (e) { /* по умолчанию курс */ }
   // экраны раздела «Учиться» подсвечивают его вкладку
-  const TAB_OF = { map: 'learn', level: 'learn', cases: 'learn', dialogs: 'learn', dialog: 'learn', reading: 'learn', read: 'learn', speak: 'learn', garden: 'learn', cheat: 'learn', wod: 'learn', drill: 'learn', exams: 'learn', cards: 'learn' };
+  const TAB_OF = { map: 'learn', level: 'learn', cases: 'learn', grammar: 'learn', gram: 'learn', dialogs: 'learn', dialog: 'learn', reading: 'learn', read: 'learn', speak: 'learn', garden: 'learn', cheat: 'learn', wod: 'learn', drill: 'learn', exams: 'learn', cards: 'learn' };
   let dictTab = 'words', dictQ = '';
   const main = $('#main');
 
   function render() {
     applyTheme();
-    const V = { course: vCourse, learn: vLearn, review: vReview, cards: vCards, dict: vDict, more: vMore, map: vMap, level: vLevel, cases: vCases, dialogs: vDialogs, dialog: vDialog, reading: vReading, read: vRead, speak: vSpeak, garden: vGarden, cheat: vCheat, wod: vWod, drill: vDrill, exams: vExams };
+    const V = { course: vCourse, learn: vLearn, review: vReview, cards: vCards, dict: vDict, more: vMore, map: vMap, level: vLevel, cases: vCases, grammar: vGrammar, gram: vGram, dialogs: vDialogs, dialog: vDialog, reading: vReading, read: vRead, speak: vSpeak, garden: vGarden, cheat: vCheat, wod: vWod, drill: vDrill, exams: vExams };
     if (!V[view]) view = 'course';
     const tab = TAB_OF[view] || view;
     document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-current', b.dataset.view === tab ? 'page' : 'false'));
@@ -240,7 +241,12 @@
   }
   // слово дня — одно на всех в этот день, как в соцсетях
   const DAILY = ITEMS.filter((it) => words(it.say) <= 3 && !/\(\d+\)/.test(it.ru));
-  const wordOfDay = () => DAILY[Math.floor(Date.now() / 864e5 + 3) % DAILY.length];
+  // номер дня по местному календарю: слово меняется в полночь, а не по UTC
+  const dayNo = () => { const d = new Date(); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / DAY); };
+  // порядок слов перемешан один раз (детерминированно), чтобы соседние дни были из разных тем
+  const seeded = (arr, seed) => { const a = arr.slice(); let x = seed; for (let i = a.length - 1; i > 0; i--) { x = (Math.imul(x, 1103515245) + 12345) >>> 0; const j = x % (i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const DAILY_ORDER = seeded(DAILY, 20261012);
+  const wordOfDay = () => DAILY_ORDER[dayNo() % DAILY_ORDER.length];
   function ring(val, max, inner) {
     const r = 26, c = 2 * Math.PI * r, f = Math.min(1, val / max);
     return '<div class="ring" role="img" aria-label="Цель дня: ' + val + ' из ' + max + ' XP"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="' + r + '" class="ring-bg"/><circle cx="32" cy="32" r="' + r + '" class="ring-fg' + (f >= 1 ? ' full' : '') + '" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + (c * (1 - f)).toFixed(1) + '"/></svg><span>' + inner + '</span></div>';
@@ -445,6 +451,10 @@
   const CASE_I = { N: 0, G: 1, D: 2, A: 3, V: 4, I: 5, L: 6 };
   const CASE_BY = {}; CASES.list.forEach((c) => { CASE_BY[c.c] = c; });
   const DRILL_BY = {}; CASES.drills.forEach((d) => { DRILL_BY[d.id] = d; });
+  const GRAMMAR = window.GRAMMAR || [];
+  const GAP_BY = {}; GRAMMAR.forEach((g) => g.drills.forEach((d) => { d.lesson = g; GAP_BY[d.id] = d; }));
+  const GAPS_ALL = GRAMMAR.flatMap((g) => g.drills);
+  const gapOk = (d) => S.gram[d.id] && S.gram[d.id].ok;
   const LEVELS = [
     { id: 'A1', title: 'Первые слова', sr: 'Prve reči', units: ['u1', 'u2', 'u3', 'u4', 'u5'] },
     { id: 'A2', title: 'Простые фразы', sr: 'Jednostavne rečenice', units: ['u6', 'u7', 'u8', 'u9', 'u10'] },
@@ -461,7 +471,7 @@
     const sec = {
       course: r(ls.filter((l) => S.lessons[l.id]).length, ls.length),
       vocab: r(its.filter((it) => S.words[it.id] && S.words[it.id].box >= 2).length, its.length),
-      grammar: of(CASES.drills.map((d) => ({ level: d.lvl, d })), (x) => caseOk(x.d)),
+      grammar: of(CASES.drills.map((d) => ({ level: d.lvl, ok: caseOk(d) })).concat(GAPS_ALL.map((d) => ({ level: d.lesson.lvl, ok: gapOk(d) }))), (x) => x.ok),
       reading: of(READING, (t) => S.reads[t.id]),
       dialogs: of(DIALOGS, (t) => S.dlg[t.id]),
       speak: of(TOPICS, (t) => S.topics[t.id]),
@@ -492,12 +502,12 @@
       t('data-nav="wod"', 'cal', 'Слова дня') + t('data-start="daily"', 'spark', 'Урок дня', dd ? 'done' : 'feat', dd ? '<em>✓</em>' : '') + '</div>';
     h += '<p class="eyebrow sec">Учиться</p><div class="tiles">' +
       t('data-nav="map"', 'map', 'Дорожная карта', 'feat') + t('data-go="course"', 'cap', 'Курс') +
-      t('data-nav="drill"', 'dumb', 'Тренажёр') + t('data-nav="cases"', 'grid', 'Победи падежи', 'feat') +
+      t('data-nav="drill"', 'dumb', 'Тренажёр') + t('data-nav="cases"', 'grid', 'Победи падежи', 'feat') + t('data-nav="grammar"', 'abc', 'Грамматика') +
       t('data-nav="speak"', 'mic', 'Говори! Тема на барабане') + t('data-nav="cards"', 'cards', 'Карточки') +
       t('data-nav="dialogs"', 'chat', 'Диалоги') + t('data-nav="reading"', 'read', 'Чтение') +
       t('data-start="drill" data-ref="listen:all"', 'phones', 'Слушание') + t('data-start="drill" data-ref="dict:all"', 'pen', 'Диктант') +
-      t('data-nav="exams"', 'scroll', 'Экзамены') + t('data-nav="garden"', 'sprout', 'Сад') + '</div>';
-    h += '<p class="eyebrow sec">Справочник</p><div class="tiles">' + t('data-nav="cheat"', 'doc', 'Шпаргалки') + t('data-go="dict"', 'book', 'Словарь и азбука') + '</div>';
+      t('data-nav="exams"', 'scroll', 'Экзамены') + t('data-nav="garden"', 'sprout', 'Сад') + t('data-nav="cheat"', 'doc', 'Шпаргалки') + '</div>';
+    h += '<p class="eyebrow sec">Справочник</p><div class="tiles">' + t('data-go="dict"', 'book', 'Словарь и азбука') + '</div>';
     return h;
   }
   function nextHint(L, st) {
@@ -531,7 +541,7 @@
     let h = subTop(L.id + ', ' + esc(L.title), esc(L.sr), 'map');
     h += '<div class="lv-sum">' + lvRing(st.total, L.id, 76) + '<p>Уровень пройден на <b>' + st.total + '%</b>. ' + (L.id === 'A1' ? 'Юниты 1–5: приветствия, знакомство, числа, еда, семья.' : 'Юниты 6–10: город, покупки, путешествия, жизнь в Сербии, разговорный язык.') + '</p></div>';
     const sec = (key, ru, srt, nav, unit) => '<button class="sect" ' + nav + '><span class="sect-h"><b>' + ru + '</b><small lang="sr">' + srt + '</small></span><span class="sect-n">' + s[key].a + ' из ' + s[key].b + ' ' + unit + ', ' + s[key].p + '%</span>' + pbar(s[key].p) + '</button>';
-    h += sec('course', 'Курс', 'Kurs', 'data-go="course"', 'уроков') + sec('grammar', 'Грамматика', 'Gramatika', 'data-nav="cases"', 'фраз') +
+    h += sec('course', 'Курс', 'Kurs', 'data-go="course"', 'уроков') + sec('grammar', 'Грамматика', 'Gramatika', 'data-nav="grammar"', 'фраз') +
       sec('vocab', 'Словарь', 'Vokabular', 'data-nav="cards"', 'слов') + sec('reading', 'Чтение', 'Čitanje', 'data-nav="reading"', 'текстов') +
       sec('dialogs', 'Диалоги', 'Dijalozi', 'data-nav="dialogs"', 'диалогов') + sec('speak', 'Говорение', 'Govor', 'data-nav="speak"', 'тем');
     const ex = st.exam;
@@ -549,6 +559,35 @@
       '<button class="case-ex" data-say="' + esc(c.ex[0]) + '"><span lang="sr">' + esc(sr(c.ex[0])) + '</span><small>' + esc(c.ex[1]) + '</small></button></div></div>').join('') + '</div>';
     h += '<h3 class="sub">Ловушки для русских</h3><ul class="list">' + [['Zovem mamu.', 'Звоню маме — в сербском винительный: zvati koga'], ['Idem kod lekara.', 'Иду к врачу — kod + родительный'], ['Vraćam se sa posla. / Pričam sa prijateljem.', 'sa + родительный — откуда, sa + творительный — с кем'], ['Idem autobusom.', 'Еду на автобусе — творительный без предлога']]
       .map(([a, b]) => '<li><button data-say="' + esc(a) + '"><span lang="sr">' + esc(sr(a)) + '</span><small>' + esc(b) + '</small></button></li>').join('') + '</ul>';
+    return h;
+  }
+
+  // ---------- грамматика ----------
+  function vGrammar() {
+    const done = GAPS_ALL.filter(gapOk).length;
+    let h = subTop('Грамматика', 'Gramatika · коротко и с примерами');
+    h += '<div class="lv-sum">' + lvRing(pct(done, GAPS_ALL.length), done + '', 70) + '<p>Двенадцать коротких уроков: правило, таблица, примеры с озвучкой и тренировка. Освоено <b>' + done + ' из ' + GAPS_ALL.length + '</b> заданий.</p></div>';
+    ['A1', 'A2'].forEach((lv) => {
+      h += '<h3 class="sub">' + lv + '</h3><div class="cards-l">' + GRAMMAR.filter((g) => g.lvl === lv).map((g, k) => {
+        const ok = g.drills.filter(gapOk).length;
+        return '<button class="cl" data-nav="gram" data-arg="' + g.id + '"><span class="cl-e num-e">' + (GRAMMAR.indexOf(g) + 1) + '</span><span class="cl-t"><b>' + esc(g.title) + '</b><small lang="sr">' + esc(sr(g.sr)) + ' · ' + ok + '/' + g.drills.length + '</small></span>' + (ok === g.drills.length ? '<em class="okm">' + I.check + '</em>' : '') + '</button>';
+      }).join('') + '</div>';
+    });
+    h += '<button class="btn wide mt" data-start="gram" data-ref="all">Повторить всё вперемешку · 15 заданий</button>';
+    return h;
+  }
+  function vGram(id) {
+    const g = GRAMMAR.find((x) => x.id === id) || GRAMMAR[0], k = GRAMMAR.indexOf(g);
+    let h = subTop(esc(g.title), 'Урок ' + (k + 1) + ' · ' + esc(sr(g.sr)) + ' · ' + g.lvl, 'grammar');
+    h += '<p class="lead gram-in">' + esc(g.intro) + '</p>';
+    const t = g.table;
+    h += '<div class="tbl" style="--cols:' + t.head.length + '">' + t.head.map((c) => '<span class="th">' + esc(c) + '</span>').join('') + t.rows.map((r) => r.map((c, j) => '<span' + (j === 0 ? ' class="th"' : '') + ' lang="sr">' + esc(j ? sr(c) : c) + '</span>').join('')).join('') + '</div>';
+    h += '<h3 class="sub">Примеры</h3><ul class="list">' + g.ex.map(([a, b]) => '<li><button data-say="' + esc(a) + '"><span lang="sr">' + esc(sr(a)) + '</span><small>' + esc(b) + '</small></button></li>').join('') + '</ul>';
+    if (g.tip) h += '<p class="tip mt">💡 ' + esc(g.tip) + '</p>';
+    const ok = g.drills.filter(gapOk).length;
+    h += '<button class="btn primary wide mt" data-start="gram" data-ref="' + g.id + '">Тренировка · ' + g.drills.length + ' заданий' + (ok ? ' · освоено ' + ok : '') + '</button>';
+    const nx = GRAMMAR[k + 1];
+    if (nx) h += '<button class="btn wide ghost" data-nav="gram" data-arg="' + nx.id + '">Следующий урок: ' + esc(nx.title) + ' →</button>';
     return h;
   }
 
@@ -717,7 +756,7 @@
 
   // ---------- слова дня, тренажёр, экзамены ----------
   function wordsOfDay() {
-    const d = Math.floor(Date.now() / 864e5);
+    const d = dayNo();
     const pool = DAILY.filter((it) => PICS[it.sr] && !it.multi);
     return [0, 1, 2].map((k) => pool[(d * 3 + k * 7 + 11) % pool.length]);
   }
@@ -777,7 +816,7 @@
     if (!P) return;
     const run = {
       kind: P.kind, ref: P.l ? P.l.id : P.u ? P.u.id : P.ref || null, title: P.title,
-      q: P.q.map((x) => (x.t === 'match' ? { t: 'match', ids: x.items.map((y) => y.id) } : x.t === 'case' ? { t: 'case', cid: x.d.id } : { t: x.t, id: x.it.id })),
+      q: P.q.map((x) => (x.t === 'match' ? { t: 'match', ids: x.items.map((y) => y.id) } : x.t === 'case' ? { t: 'case', cid: x.d.id } : x.t === 'gap' ? { t: 'gap', gid: x.d.id } : { t: x.t, id: x.it.id })),
       i: P.i, ok: P.ok, n: P.n, wrong: [...P.wrong], retried: [...P.retried], answered: !!P.answered, intro: !!P.intro, open,
     };
     try { localStorage.setItem(RUN, JSON.stringify(run)); } catch (e) { /* хранилище недоступно */ }
@@ -787,8 +826,8 @@
       const r = JSON.parse(localStorage.getItem(RUN) || 'null');
       if (!r || !r.q || !r.q.length) return null;
       // курс могли обновить: задания с исчезнувшими словами выбрасываем
-      r.q = r.q.map((x) => (x.t === 'match' ? { t: 'match', items: x.ids.map((id) => BY_ID[id]).filter(Boolean) } : x.t === 'case' ? { t: 'case', d: DRILL_BY[x.cid] } : { t: x.t, it: BY_ID[x.id] }))
-        .filter((x) => (x.t === 'match' ? x.items.length >= 2 : x.t === 'case' ? x.d : x.it));
+      r.q = r.q.map((x) => (x.t === 'match' ? { t: 'match', items: x.ids.map((id) => BY_ID[id]).filter(Boolean) } : x.t === 'case' ? { t: 'case', d: DRILL_BY[x.cid] } : x.t === 'gap' ? { t: 'gap', d: GAP_BY[x.gid] } : { t: x.t, it: BY_ID[x.id] }))
+        .filter((x) => (x.t === 'match' ? x.items.length >= 2 : x.t === 'case' || x.t === 'gap' ? x.d : x.it));
       if (r.kind === 'lesson' && !LESSONS.find((l) => l.id === r.ref)) return null;
       if (r.kind === 'test' && !COURSE.find((u) => u.id === r.ref)) return null;
       return r.q.length ? r : null;
@@ -819,6 +858,11 @@
       const pool = CASES.drills.filter((d) => ref === 'all' || d.lvl === ref);
       q = shuffle(pool).sort((a, b) => (caseOk(a) ? 1 : 0) - (caseOk(b) ? 1 : 0)).slice(0, ref === 'all' ? 20 : 10).map((d) => ({ t: 'case', d }));
       title = ref === 'all' ? 'Падежи: бой' : 'Падежи ' + ref; P = { kind, ref };
+    } else if (kind === 'gram') {
+      const g = GRAMMAR.find((x) => x.id === ref);
+      const pool = g ? g.drills : GAPS_ALL;
+      q = (g ? shuffle(pool) : shuffle(pool).sort((a, b) => (gapOk(a) ? 1 : 0) - (gapOk(b) ? 1 : 0)).slice(0, 15)).map((d) => ({ t: 'gap', d }));
+      title = g ? g.title : 'Грамматика вперемешку'; P = { kind, ref };
     } else if (kind === 'daily') {
       const nx = nextStep(), l = nx && nx.kind === 'lesson' ? nx.l : null;
       const fresh = shuffle(l ? l.items : ITEMS).slice(0, 3).flatMap((it) => (S.words[it.id] ? [taskFor(it, ['pickRu'])] : [{ t: 'intro', it }, { t: 'pickRu', it }]));
@@ -828,7 +872,8 @@
       rev = rev.slice(0, 4).map((id) => taskFor(BY_ID[id], ['pickRu']));
       const lv = S.lessons['5.3'] || Object.keys(S.lessons).length >= 14 ? null : 'A1';
       const cs = shuffle(CASES.drills.filter((d) => !lv || d.lvl === lv)).sort((a, b) => (caseOk(a) ? 1 : 0) - (caseOk(b) ? 1 : 0)).slice(0, 3).map((d) => ({ t: 'case', d }));
-      q = fresh.concat(shuffle(rev.concat(cs)));
+      const gp = shuffle(GAPS_ALL.filter((d) => !lv || d.lesson.lvl === lv)).sort((a, b) => (gapOk(a) ? 1 : 0) - (gapOk(b) ? 1 : 0)).slice(0, 2).map((d) => ({ t: 'gap', d }));
+      q = fresh.concat(shuffle(rev.concat(cs, gp)));
       title = 'Урок дня'; P = { kind };
     } else if (kind === 'wod') {
       q = wordsOfDay().flatMap((it) => [{ t: 'intro', it }, { t: 'pickRu', it }]);
@@ -848,7 +893,8 @@
       const L = LEVEL_BY[ref] || LEVELS[0];
       const its = shuffle(ITEMS.filter((it) => L.units.includes(it.unit.id))).slice(0, 14);
       const cs = shuffle(CASES.drills.filter((d) => d.lvl === L.id)).slice(0, 6).map((d) => ({ t: 'case', d }));
-      q = shuffle(its.map((it) => taskFor(it, ['pickRu', 'pickSr'])).concat(cs));
+      const gx = shuffle(GAPS_ALL.filter((d) => d.lesson.lvl === L.id)).slice(0, 4).map((d) => ({ t: 'gap', d }));
+      q = shuffle(its.slice(0, 12).map((it) => taskFor(it, ['pickRu', 'pickSr'])).concat(cs.slice(0, 4), gx));
       title = 'Экзамен ' + L.id; P = { kind, ref };
     } else {
       let ids = shuffle(dueIds()).sort((a, b) => S.words[a].box - S.words[b].box);
@@ -884,7 +930,7 @@
     cnt.textContent = (P.i + 1) + '/' + P.q.length;
     foot.innerHTML = '';
     stage.scrollTop = 0;
-    ({ intro: tIntro, pickRu: tPickRu, pickSr: tPickSr, listen: tListen, type: tType, dict: tDict, build: tBuild, match: tMatch, case: tCase })[x.t](x);
+    ({ intro: tIntro, pickRu: tPickRu, pickSr: tPickSr, listen: tListen, type: tType, dict: tDict, build: tBuild, match: tMatch, case: tCase, gap: tGap })[x.t](x);
   }
 
   // смыслы «Привет / Пока» → [привет, пока]: варианты с общим смыслом не ставим рядом — иначе верны оба
@@ -965,6 +1011,28 @@
     foot.innerHTML = '<div class="fb ' + (ok ? 'ok' : 'bad') + '" role="status"><p class="fb-h">' + (ok ? 'Točno! Верно' : 'Не совсем') + '</p><p class="fb-a"><b lang="sr">' + esc(sr(full)) + '</b></p>' +
       '<p class="fb-a"><span class="case-b sm">' + c.c + '</span> ' + esc(c.sr) + ' — ' + esc(d.why) + '</p><button class="btn wide ' + (ok ? 'go' : 'stop') + '" data-act="next">Дальше</button></div>';
     if (S.autoplay) speak(full);
+  }
+  // грамматика: фраза с пропуском и варианты
+  function tGap(x) {
+    const d = x.d;
+    x.opts = shuffle(d.opts.slice());
+    const [a, b] = d.s.split('___');
+    stage.innerHTML = '<p class="eyebrow">Грамматика · ' + esc(d.lesson.title) + '</p><div class="cz"><p class="cz-s" lang="sr">' + esc(sr(a)) + '<span class="gap">?</span>' + esc(sr(b)) + '</p><p class="cz-ru">' + esc(d.ru) + '</p>' + (d.hint ? '<p class="cz-n">Подсказка: <b>' + esc(d.hint) + '</b></p>' : '') + '</div>' +
+      '<div class="opts">' + x.opts.map((o, k) => '<button class="opt" data-gopt="' + k + '" lang="sr">' + esc(sr(o)) + '</button>').join('') + '</div>';
+  }
+  function chooseGap(k) {
+    const x = P.q[P.i], d = x.d, ok = x.opts[k] === d.a;
+    stage.querySelectorAll('.opt').forEach((b, j) => { b.disabled = true; if (x.opts[j] === d.a) b.classList.add('right'); else if (j === k) b.classList.add('wrong'); });
+    const g = stage.querySelector('.gap'); if (g) { g.textContent = sr(d.a); g.classList.add(ok ? 'ok' : 'bad'); }
+    P.n++;
+    if (ok) { P.ok++; addXP(1); } else P.wrong.add('gap:' + d.id);
+    S.gram[d.id] = { ok, n: ((S.gram[d.id] || {}).n || 0) + 1 };
+    if (!ok && !P.retried.has('gap:' + d.id) && P.kind !== 'exam') { P.retried.add('gap:' + d.id); P.q.push({ t: 'gap', d }); }
+    save(); P.answered = true; persistRun(); beep(ok);
+    const full = d.s.replace('___', d.a);
+    foot.innerHTML = '<div class="fb ' + (ok ? 'ok' : 'bad') + '" role="status"><p class="fb-h">' + (ok ? 'Točno! Верно' : 'Не совсем') + '</p><p class="fb-a"><b lang="sr">' + esc(sr(full)) + '</b> — ' + esc(d.ru) + '</p>' +
+      (d.why ? '<p class="fb-a">' + esc(d.why) + '</p>' : '') + '<button class="btn wide ' + (ok ? 'go' : 'stop') + '" data-act="next">Дальше</button></div>';
+    if (S.autoplay) speak(full.replace(/^— /, ''));
   }
   function tBuild(x) {
     // первое слово фразы — со строчной, иначе заглавная буква подсказывает начало
@@ -1110,6 +1178,7 @@
       head = passed ? 'Экзамен ' + P.ref + ' сдан!' : 'Экзамен не сдан'; sub = '<p class="res-sub">' + (passed ? 'Уровень ' + P.ref + ' подтверждён. Bravo!' : 'Нужно 80%. Повторите слова и падежи уровня.') + '</p>';
       bonus = passed ? 25 : 0;
     } else if (P.kind === 'daily') { S.daily[today()] = true; Object.keys(S.daily).sort().slice(0, -60).forEach((k) => delete S.daily[k]); head = 'Урок дня выполнен'; sub = stars(st); bonus = 10; }
+    else if (P.kind === 'gram') { head = 'Грамматика: ' + pct + '%'; sub = '<p class="res-sub">Освоено ' + GAPS_ALL.filter(gapOk).length + ' из ' + GAPS_ALL.length + ' заданий.</p>'; bonus = 3; }
     else if (P.kind === 'cases') { head = 'Падежи: ' + pct + '%'; sub = '<p class="res-sub">Освоено ' + CASES.drills.filter(caseOk).length + ' из ' + CASES.drills.length + ' фраз.</p>'; bonus = 3; }
     else if (P.kind === 'drill' || P.kind === 'wod') { head = 'Тренировка окончена'; sub = stars(st); bonus = 3; }
     else { head = 'Повтор окончен'; bonus = 3; }
@@ -1119,10 +1188,12 @@
     save();
     const wrong = [...P.wrong].map((id) => BY_ID[id]).filter(Boolean);
     const wrongC = [...P.wrong].filter((id) => /^case:/.test(id)).map((id) => DRILL_BY[id.slice(5)]).filter(Boolean);
+    const wrongG = [...P.wrong].filter((id) => /^gap:/.test(id)).map((id) => GAP_BY[id.slice(4)]).filter(Boolean);
     stage.innerHTML = '<div class="res"><p class="eyebrow">' + esc(P.title) + '</p><h2 class="t-h">' + head + '</h2>' + sub +
       '<div class="res-row"><div><b>' + pct + '%</b><span>верно</span></div><div><b>+' + (P.ok + bonus) + '</b><span>XP</span></div><div><b>' + streak() + '</b><span>' + plural(streak(), 'день', 'дня', 'дней') + ' подряд</span></div></div>' +
-      (wrong.length || wrongC.length ? '<h3 class="sub">Над этим стоит поработать</h3><ul class="list compact">' + wrong.map((it) => '<li><button data-say="' + esc(it.say) + '"><span lang="sr">' + esc(sr(it.sr)) + '</span><small>' + esc(it.ru) + '</small></button></li>').join('') +
-        wrongC.map((d) => { const f = d.s.replace('___', CASES.nouns[d.n][CASE_I[d.c]]); return '<li><button data-say="' + esc(f) + '"><span lang="sr">' + esc(sr(f)) + '</span><small>' + esc(d.why) + '</small></button></li>'; }).join('') + '</ul>' : '<p class="res-sub">Без единой ошибки. Svaka čast!</p>') + '</div>';
+      (wrong.length || wrongC.length || wrongG.length ? '<h3 class="sub">Над этим стоит поработать</h3><ul class="list compact">' + wrong.map((it) => '<li><button data-say="' + esc(it.say) + '"><span lang="sr">' + esc(sr(it.sr)) + '</span><small>' + esc(it.ru) + '</small></button></li>').join('') +
+        wrongC.map((d) => { const f = d.s.replace('___', CASES.nouns[d.n][CASE_I[d.c]]); return '<li><button data-say="' + esc(f) + '"><span lang="sr">' + esc(sr(f)) + '</span><small>' + esc(d.why) + '</small></button></li>'; }).join('') +
+        wrongG.map((d) => { const f = d.s.replace('___', d.a); return '<li><button data-say="' + esc(f) + '"><span lang="sr">' + esc(sr(f)) + '</span><small>' + esc(d.why || d.ru) + '</small></button></li>'; }).join('') + '</ul>' : '<p class="res-sub">Без единой ошибки. Svaka čast!</p>') + '</div>';
     const again = P.kind === 'lesson' ? 'data-lesson="' + P.l.id + '"' : P.kind === 'test' ? 'data-test="' + P.u.id + '"' : P.kind === 'review' ? 'data-review="any"' : 'data-start="' + P.kind + '" data-ref="' + esc(P.ref || '') + '"';
     foot.innerHTML = '<div class="duo"><button class="btn" ' + again + '>Ещё раз</button><button class="btn primary" data-act="done">Готово</button></div>';
     if (pct >= 70 && !((P.kind === 'test' || P.kind === 'exam') && pct < 80)) confetti();
@@ -1146,6 +1217,7 @@
     if (d.nav) { if (d.nav !== view || d.arg !== arg) { dlgShown = new Set(); rdOpen = new Set(); rdQuiz = {}; if (d.nav !== 'speak') stopTalk(); } view = d.nav; arg = d.arg || null; if (view === 'cards') deck = null; render(); window.scrollTo(0, 0); return; }
     if (d.start) { start(d.start, d.ref || null); return; }
     if (d.copt !== undefined) { chooseCase(+d.copt); return; }
+    if (d.gopt !== undefined) { chooseGap(+d.gopt); return; }
     if (d.dmode) { dlgMode = d.dmode; dlgShown = new Set(); render(); return; }
     if (d.dshow !== undefined) { dlgShown.add(+d.dshow); render(); const dl = DIALOGS.find((x) => x.id === arg); if (dl) speak(dl.lines[+d.dshow][1]); return; }
     if (d.dlgdone) { addXP(S.dlg[d.dlgdone] ? 1 : 3); S.dlg[d.dlgdone] = (S.dlg[d.dlgdone] || 0) + 1; markDay(); save(); render(); flashTop('Диалог засчитан!'); return; }
@@ -1218,6 +1290,12 @@
   $('#quit').innerHTML = I.close;
 
   render();
+  // приложение с экрана «Домой» часто не перезагружается — обновляем «сегодня» при возврате и в полночь
+  let shownDay = dayNo();
+  const refreshDay = () => { if (dayNo() !== shownDay && play.hidden) { shownDay = dayNo(); deck = null; render(); } };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshDay(); });
+  window.addEventListener('focus', refreshDay);
+  setInterval(refreshDay, 60 * 1000);
   { const r = loadRun(); if (r && r.open) resume(r); }
   if (!S.welcomed && !Object.keys(S.lessons).length && !loadRun()) showWelcome();
   function showWelcome() {
