@@ -1,0 +1,54 @@
+{
+  "title": "Приветствие на сербском и русском",
+  "total_duration_sec": 6,
+  "format": {
+    "aspect_ratio": "9:16",
+    "resolution": "1080x1920",
+    "fps": 30
+  },
+  "style": "3D-мультфильм, тёплый свет, тёмно-синий фон, персонажи в тёмно-синих футболках с надписью «УЧИ СРПСКИ», джинсы, белые кеды",
+  "characters": [
+    {
+      "id": "marko",
+      "name": "Марко",
+      "language": "сербский"
+    },
+    {
+      "id": "ivan",
+      "name": "Иван",
+      "language": "русский"
+    }
+  ],
+  "timeline": [
+    {
+      "start_sec": 0,
+      "end_sec": 2,
+      "character_id": "marko",
+      "action": "Поднимает руку в приветствии",
+      "dialogue": "Здраво!",
+      "dialogue_latin": "Zdravo!",
+      "subtitle_ru": "Привет!",
+      "language": "сербский"
+    },
+    {
+      "start_sec": 2,
+      "end_sec": 4,
+      "character_id": "ivan",
+      "action": "Кивает в ответ",
+      "dialogue": "Привет!",
+      "dialogue_latin": null,
+      "subtitle_ru": null,
+      "language": "русский"
+    },
+    {
+      "start_sec": 4,
+      "end_sec": 6,
+      "character_id": null,
+      "action": "Они пожимают друг другу руки и улыбаются",
+      "dialogue": null,
+      "dialogue_latin": null,
+      "subtitle_ru": null,
+      "language": null
+    }
+  ]
+}
