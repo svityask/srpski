@@ -20,6 +20,8 @@ const { chromium } = require(process.env.PLAYWRIGHT || '/opt/node22/lib/node_mod
 global.window = {};
 require(path.join(ROOT, 'js/data.js'));
 const COURSE = window.COURSE;
+require(path.join(ROOT, 'js/grammar.js'));
+const GRAMMAR = window.GRAMMAR || [];
 const appSrc = fs.readFileSync(path.join(ROOT, 'js/app.js'), 'utf8');
 const pron = new Function(appSrc.slice(appSrc.indexOf('  const VOW ='), appSrc.indexOf('  // ---------- курс')) + ';return pron;')();
 const toCyr = new Function(appSrc.slice(appSrc.indexOf('  const L2C_DI'), appSrc.indexOf('  // ввод:')) + ';return toCyr;')();
@@ -45,7 +47,13 @@ const WORDS = (() => {
   return out;
 })();
 const QUIZ = (() => { const a = ITEMS.filter((it) => it.sr.split(' ').length <= 4); const out = []; for (let k = 0; k < a.length; k++) out.push(a[(k * 37) % a.length]); return [...new Set(out)]; })();
-const take = (list, kind, key, also) => { const x = list.find((v) => !used[kind].has(key(v)) && !(also && used[also].has(key(v)))) || list[0]; used[kind].add(key(x)); return x; };
+// Правило: только новые посты. Что уже было в плане (опубликовано, пропущено или ждёт) — не повторяем.
+// Закончился запас — слот не создаём и предупреждаем, а не крутим старое по кругу.
+const take = (list, kind, key, also) => { const x = list.find((v) => !used[kind].has(key(v)) && !(also && used[also].has(key(v)))); if (x) used[kind].add(key(x)); return x || null; };
+// уроки курса, потом уроки грамматики
+const LESSON_POOL = LESSON_ORDER.map((l) => ({ id: l.id, l })).concat(GRAMMAR.map((g) => ({ id: 'g:' + g.id, g })));
+const seenCaptions = new Set(plan.items.map((p) => p.caption));
+const short = [];
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const TG = 'Больше слов каждый день — в Telegram: t.me/srpski_coach';
@@ -92,6 +100,33 @@ function lessonSlides(id, l) {
     ${foot('Сохраните 📌')}</div>`);
   return s;
 }
+// урок грамматики: правило → таблица → примеры → приложение
+function grammarSlides(id, g) {
+  const t = g.table;
+  const cell = (c, j, head) => `<td style="padding:16px 18px; border-top:2px solid #d8dee9; font:${head || !j ? 700 : 500} 32px/1.25 'Golos Text'; color:${head || !j ? 'var(--enamel)' : 'var(--ink)'}">${esc(c)}</td>`;
+  return [`<div class="s blue" id="${id}-1">
+    <p class="eyebrow">Грамматика · ${esc(g.lvl)}</p>
+    <h1 style="margin-top:40px">${esc(g.title)}</h1>
+    <p class="lead" style="margin-top:36px; font-size:34px">${esc(g.intro)}</p>
+    ${foot('листайте →')}</div>`,
+  `<div class="s" id="${id}-2">
+    <p class="eyebrow">${esc(g.title)}</p>
+    <h2 style="margin-top:24px">Таблица</h2>
+    <table style="margin-top:36px; width:100%; border-collapse:collapse; background:#fff; border-radius:24px; overflow:hidden">
+      <tr>${t.head.map((c, j) => cell(c, j, true)).join('')}</tr>${t.rows.map((r) => '<tr>' + r.map((c, j) => cell(c, j)).join('') + '</tr>').join('')}</table>
+    ${foot('листайте →')}</div>`,
+  `<div class="s" id="${id}-3">
+    <p class="eyebrow">${esc(g.title)}</p>
+    <h2 style="margin-top:24px">Примеры</h2>
+    <div class="ph" style="gap:12px; margin-top:32px">${g.ex.slice(0, 5).map((e, i) => `<div><span class="n">${String(i + 1).padStart(2, '0')}</span><b>${esc(e[0])}</b><span>${esc(e[1])}</span></div>`).join('')}</div>
+    ${foot('листайте →')}</div>`,
+  `<div class="s blue" id="${id}-4">
+    <p class="eyebrow">Совет</p>
+    <h2 style="margin-top:24px">${esc(g.tip)}</h2>
+    <p class="lead" style="margin-top:40px">Тренировка с разбором ошибок — в бесплатном приложении Srpski, раздел «Грамматика».</p>
+    <div style="margin-top:auto; margin-bottom:48px"><span class="badge">Ссылка в профиле →</span></div>
+    ${foot('Сохраните 📌')}</div>`];
+}
 const senses = (ru) => ru.toLowerCase().replace(/\(.*?\)/g, '').split('/').map((x) => x.trim()).filter(Boolean);
 function quizData(it, seed) {
   const mine = new Set(senses(it.ru));
@@ -128,18 +163,27 @@ let wordN = plan.items.filter((p) => p.type === 'word').length;
 for (let d = 0; d < DAYS; d++) {
   const date = addDays(start, d);
   if (plan.items.some((p) => p.date === date)) continue;
-  const w = take(WORDS, 'word', (x) => x.id, 'quiz'); wordN++;
-  fresh.push({ date, time: '10:00', type: 'word', ref: w.id, n: wordN, it: w,
+  const w = take(WORDS, 'word', (x) => x.id, 'quiz');
+  if (!w) short.push(date + ' 10:00 слово дня');
+  else wordN++, fresh.push({ date, time: '10:00', type: 'word', ref: w.id, n: wordN, it: w,
     caption: `Слово дня: ${w.sr} — ${w.ru} 🇷🇸\n\nПроизношение: [${pron(w.sr)}]${w.note ? '\n' + w.note : ''}\n\nСохраните и попробуйте сказать сегодня вслух 📌\n\n${APP}\n${TG}\n\n${TAGS} #словодня` });
-  const l = take(LESSON_ORDER, 'lesson', (x) => x.id);
-  fresh.push({ date, time: '15:00', type: 'lesson', ref: l.id, l,
-    caption: `Урок ${l.id}: ${l.title} 🇷🇸\n\n${l.tip}\n\nВ карусели — ${Math.min(l.items.length, 12)} фраз с произношением. Сохраните, чтобы повторить 📌\nКакую фразу вы уже знали? Пишите в комментариях 👇\n\n${APP}\n${TG}\n\n${TAGS}` });
+  const lp = take(LESSON_POOL, 'lesson', (x) => x.id);
+  if (!lp) short.push(date + ' 15:00 урок');
+  else if (lp.l) { const l = lp.l; fresh.push({ date, time: '15:00', type: 'lesson', ref: l.id, l,
+    caption: `Урок ${l.id}: ${l.title} 🇷🇸\n\n${l.tip}\n\nВ карусели — ${Math.min(l.items.length, 12)} фраз с произношением. Сохраните, чтобы повторить 📌\nКакую фразу вы уже знали? Пишите в комментариях 👇\n\n${APP}\n${TG}\n\n${TAGS}` }); }
+  else { const g = lp.g; fresh.push({ date, time: '15:00', type: 'lesson', ref: lp.id, g,
+    caption: `Грамматика: ${g.title} 🇷🇸\n\n${g.tip}\n\nВ карусели — правило, таблица и примеры. Сохраните, чтобы не искать 📌\nОстались вопросы? Пишите в комментариях 👇\n\nТренировка с разбором ошибок — в бесплатном приложении Srpski, раздел «Грамматика», ссылка в профиле.\n${TG}\n\n${TAGS} #грамматика` }); }
   const q = take(QUIZ, 'quiz', (x) => x.id, 'word');
+  if (!q) { short.push(date + ' 18:00 викторина'); continue; }
   const seed = plan.items.length + fresh.length + 11;
   const qd = quizData(q, seed);
   fresh.push({ date, time: '18:00', type: 'quiz', ref: q.id, it: q, qd,
     caption: `Проверь себя 🧠 ${qd.q}\n\nA) ${qd.opts[0]}\nB) ${qd.opts[1]}\nC) ${qd.opts[2]}\n\nПишите ответ в комментариях, правильный — на втором слайде 👉\n\n${APP}\n${TG}\n\n${TAGS} #викторина` });
 }
+
+// подстраховка: одинаковых подписей быть не должно
+for (let i = fresh.length - 1; i >= 0; i--) { if (seenCaptions.has(fresh[i].caption)) { short.push(fresh[i].date + ' ' + fresh[i].time + ' (повтор подписи)'); fresh.splice(i, 1); } else seenCaptions.add(fresh[i].caption); }
+if (short.length) console.log('⚠️ Новый контент закончился, слоты не созданы:', short.join(', '), '— добавьте уроки/слова, повторов не будет.');
 
 (async () => {
   if (!fresh.length) return console.log('Новых дней нет: всё уже в плане.');
@@ -147,7 +191,7 @@ for (let d = 0; d < DAYS; d++) {
   const blocks = [];
   for (const p of fresh) {
     const id = `${p.date}-${p.type}`;
-    p.slides = p.type === 'word' ? wordSlides(id, p.it, p.n) : p.type === 'lesson' ? lessonSlides(id, p.l) : quizSlides(id, p.it, p.qd);
+    p.slides = p.type === 'word' ? wordSlides(id, p.it, p.n) : p.type === 'lesson' ? (p.g ? grammarSlides(id, p.g) : lessonSlides(id, p.l)) : quizSlides(id, p.it, p.qd);
     blocks.push(...p.slides);
   }
   const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700;800&display=swap"><style>${css}</style></head><body>${blocks.join('\n')}</body></html>`;
@@ -183,7 +227,7 @@ for (let d = 0; d < DAYS; d++) {
       void rows;
     } else p.telegram_image = p.images[0];
     p.status = 'pending';
-    delete p.slides; delete p.it; delete p.l;
+    delete p.slides; delete p.it; delete p.l; delete p.g;
     if (p.qd) { p.quiz = { question: p.qd.q, options: p.qd.opts, correct: p.qd.correct }; delete p.qd; }
   }
   await b.close();

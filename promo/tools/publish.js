@@ -76,6 +76,11 @@ async function telegram(p, igUrl) {
 
 (async () => {
   const now = belgrade(Date.now() + 5 * 6e4), oldest = belgrade(Date.now() - 90 * 6e4);
+  // ручной запуск («Run workflow» в GitHub) — опубликовать ближайший пост из очереди прямо сейчас
+  if (process.env.GITHUB_EVENT_NAME === 'workflow_dispatch' || process.argv.includes('--now')) {
+    const next = plan.items.find((p) => p.status === 'pending' && `${p.date} ${p.time}` >= oldest);
+    if (next) { console.log('Ручной запуск: публикую сейчас', next.date, next.time); next.time = belgrade(Date.now()).slice(11); next.date = belgrade(Date.now()).slice(0, 10); }
+  }
   const due = plan.items.filter((p) => p.status === 'pending' && `${p.date} ${p.time}` <= now);
   if (!due.length) { console.log('Нечего публиковать, сейчас', belgrade(Date.now())); return; }
   for (const p of due) if (`${p.date} ${p.time}` < oldest) p.status = 'skipped';
@@ -88,7 +93,7 @@ async function telegram(p, igUrl) {
     if (IG_TOKEN) { try { igUrl = await instagram(p); console.log('Instagram:', igUrl); } catch (e) { errors.push('IG: ' + e.message); } }
     if (TG_TOKEN) { try { tgId = await telegram(p, igUrl); console.log('Telegram: сообщение', tgId); } catch (e) { errors.push('TG: ' + e.message); } }
     if (igUrl || tgId) Object.assign(p, { status: 'published', instagram_url: igUrl, telegram_message_id: tgId, published_at: belgrade(Date.now()) });
-    if (errors.length) { errors.forEach((e) => console.log('::error::' + e.replace(/\n/g, ' '))); process.exitCode = 1; }
+    if (errors.length) { errors.forEach((e) => console.log('::error::' + e.replace(/\n/g, ' ') + (/Unauthorized|Not Found/.test(e) && e.startsWith('TG') ? ' — токен бота недействителен: обновите секрет TELEGRAM_BOT_TOKEN' : ''))); process.exitCode = 1; }
     if (!IG_TOKEN && !TG_TOKEN) { console.log('::error::Нет секретов TELEGRAM_BOT_TOKEN / IG_ACCESS_TOKEN'); process.exitCode = 1; }
   } else console.log('Пропущенные слоты помечены skipped');
   if (!DRY) fs.writeFileSync(PLAN, JSON.stringify(plan, null, 1));
