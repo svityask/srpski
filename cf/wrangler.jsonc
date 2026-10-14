@@ -1,3 +1,4 @@
+// Пока не подключено: сборка Cloudflare с этим конфигом падала — ждём журнал сборки. Чтобы включить, верните оба файла в корень (и "directory": ".").
 // Деплой на Cloudflare Workers (zdravo.srpski.workers.dev): статика приложения + маленький воркер с API (worker.js).
 // Секреты задаются в панели Cloudflare (Workers → zdravo → Settings → Variables and Secrets), не здесь:
 //   TELEGRAM_BOT_TOKEN, FEEDBACK_CHAT_ID — для отзывов из приложения.
@@ -5,7 +6,7 @@
   "name": "zdravo",
   "main": "worker.js",
   "compatibility_date": "2025-09-01",
-  "assets": { "directory": ".", "binding": "ASSETS" },
+  "assets": { "directory": "..", "binding": "ASSETS" },
   "analytics_engine_datasets": [{ "binding": "AE", "dataset": "srpski_events" }],
   "keep_vars": true,
   "observability": { "enabled": true }
