@@ -86,7 +86,8 @@ async function telegram(p, igUrl) {
     if (IG_TOKEN) { try { igUrl = await instagram(p); console.log('Instagram:', igUrl); } catch (e) { errors.push('IG: ' + e.message); } }
     if (TG_TOKEN) { try { tgId = await telegram(p, igUrl); console.log('Telegram: сообщение', tgId); } catch (e) { errors.push('TG: ' + e.message); } }
     if (igUrl || tgId) Object.assign(p, { status: 'published', instagram_url: igUrl, telegram_message_id: tgId, published_at: belgrade(Date.now()) });
-    if (errors.length) { console.error(errors.join('\n')); process.exitCode = 1; }
+    if (errors.length) { errors.forEach((e) => console.log('::error::' + e.replace(/\n/g, ' '))); process.exitCode = 1; }
+    if (!IG_TOKEN && !TG_TOKEN) { console.log('::error::Нет секретов TELEGRAM_BOT_TOKEN / IG_ACCESS_TOKEN'); process.exitCode = 1; }
   } else console.log('Пропущенные слоты помечены skipped');
   if (!DRY) fs.writeFileSync(PLAN, JSON.stringify(plan, null, 1));
 })();
