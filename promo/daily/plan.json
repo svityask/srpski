@@ -137,7 +137,7 @@
   },
   {
    "date": "2026-10-14",
-   "time": "20:42",
+   "time": "20:50",
    "type": "quiz",
    "ref": "4.1|bez šećera",
    "caption": "Проверь себя 🧠 Что значит «bez šećera»?\n\nA) свинина\nB) вода\nC) без сахара\n\nПишите ответ в комментариях, правильный — на втором слайде 👉\n\nВсе уроки с озвучкой — в бесплатном приложении Srpski, ссылка в профиле.\nБольше слов каждый день — в Telegram: t.me/srpski_coach\n\n#сербскийязык #сербия #белград #русскиевсербии #изучениеязыков #викторина",
@@ -146,7 +146,7 @@
     "promo/daily/2026-10-14/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-14/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "published",
    "quiz": {
     "question": "Что значит «bez šećera»?",
     "options": [
@@ -155,7 +155,10 @@
      "без сахара"
     ],
     "correct": 2
-   }
+   },
+   "instagram_url": null,
+   "telegram_message_id": 29,
+   "published_at": "2026-10-14 20:50"
   },
   {
    "date": "2026-10-15",
