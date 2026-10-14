@@ -31,7 +31,7 @@
     "promo/daily/2026-10-12/15-app-6.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-12/15-app-telegram.jpg",
-   "status": "pending"
+   "status": "skipped"
   },
   {
    "date": "2026-10-12",
@@ -44,7 +44,7 @@
     "promo/daily/2026-10-12/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-12/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "skipped",
    "quiz": {
     "question": "Что значит «Ovo je moja prijateljica»?",
     "options": [
@@ -66,7 +66,7 @@
     "promo/daily/2026-10-13/10-word-1.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-13/10-word-1.jpg",
-   "status": "pending"
+   "status": "skipped"
   },
   {
    "date": "2026-10-13",
@@ -82,7 +82,7 @@
     "promo/daily/2026-10-13/15-save-5.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-13/15-save-telegram.jpg",
-   "status": "pending"
+   "status": "skipped"
   },
   {
    "date": "2026-10-13",
@@ -95,7 +95,7 @@
     "promo/daily/2026-10-13/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-13/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "skipped",
    "quiz": {
     "question": "Как сказать по-сербски «тридцать»?",
     "options": [
@@ -117,7 +117,7 @@
     "promo/daily/2026-10-14/10-word-1.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-14/10-word-1.jpg",
-   "status": "pending"
+   "status": "skipped"
   },
   {
    "date": "2026-10-14",
@@ -133,11 +133,11 @@
     "promo/daily/2026-10-14/15-lesson-5.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-14/15-lesson-telegram.jpg",
-   "status": "pending"
+   "status": "skipped"
   },
   {
    "date": "2026-10-14",
-   "time": "18:00",
+   "time": "20:35",
    "type": "quiz",
    "ref": "4.1|bez šećera",
    "caption": "Проверь себя 🧠 Что значит «bez šećera»?\n\nA) свинина\nB) вода\nC) без сахара\n\nПишите ответ в комментариях, правильный — на втором слайде 👉\n\nВсе уроки с озвучкой — в бесплатном приложении Srpski, ссылка в профиле.\nБольше слов каждый день — в Telegram: t.me/srpski_coach\n\n#сербскийязык #сербия #белград #русскиевсербии #изучениеязыков #викторина",

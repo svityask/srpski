@@ -1,1 +1,39 @@
-
+# Автопубликация постов @srpski_coach в Telegram и Instagram — бесплатно, без Zapier.
+# Каждый час проверяет очередь promo/daily/plan.json (время в ней — белградское) и публикует пост, чьё время наступило.
+# Секреты: TELEGRAM_BOT_TOKEN, IG_ACCESS_TOKEN (необязательно).
+name: publish
+on:
+  schedule:
+    - cron: '2 * * * *'
+  workflow_dispatch:
+  # обновил очередь — сразу проверить, нет ли поста к публикации (коммиты самого бота задание не запускают)
+  push:
+    branches: [main]
+    paths: ['promo/daily/plan.json']
+permissions:
+  contents: write
+concurrency:
+  group: publish
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Publish due post
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: node promo/tools/publish.js
+      - name: Save queue
+        if: always()
+        run: |
+          git diff --quiet promo/daily/plan.json && exit 0
+          git config user.name "srpski-bot"
+          git config user.email "srpski-bot@users.noreply.github.com"
+          git add promo/daily/plan.json
+          git commit -m "Publish: update queue"
+          for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && exit 0; sleep 5; done
+          exit 1
