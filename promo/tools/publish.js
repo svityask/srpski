@@ -14,7 +14,9 @@ const PLAN = path.join(ROOT, 'promo/daily/plan.json');
 const RAW = 'https://raw.githubusercontent.com/svityask/srpski/main/';
 const APP_URL = 'https://zdravo.srpski.workers.dev/';
 const CHAT = process.env.TG_CHAT || '@srpski_coach';
-const IG = 'https://graph.instagram.com/v21.0';
+// токен IGAA… (вход через Instagram) → graph.instagram.com/me; токен EAA… (Graph API Explorer, системный пользователь) → graph.facebook.com/<id Instagram>
+const IG_FB = /^EAA/.test((process.env.IG_TOKEN || '').trim().replace(/^["']/, ''));
+const IG = IG_FB ? 'https://graph.facebook.com/v21.0' : 'https://graph.instagram.com/v21.0';
 const DRY = process.argv.includes('--dry');
 // в секрет иногда попадают пробелы, кавычки или весь текст из @BotFather — берём сам токен
 const TG_TOKEN = ((process.env.TG_TOKEN || '').match(/\d{6,}:[\w-]{30,}/) || [''])[0];
@@ -41,15 +43,26 @@ async function api(url, params, method = 'POST') {
   return j;
 }
 
+// id Instagram-аккаунта для токена Facebook: из секрета IG_USER_ID или из подключённой страницы
+async function igUser(t) {
+  if (!IG_FB) return 'me';
+  if (process.env.IG_USER_ID) return process.env.IG_USER_ID.trim();
+  const pages = (await api(`${IG}/me/accounts`, { ...t, fields: 'instagram_business_account' }, 'GET')).data || [];
+  const acc = pages.map((x) => x.instagram_business_account).find(Boolean);
+  if (!acc) throw new Error('к токену не привязана страница Facebook с Instagram — добавьте секрет IG_USER_ID');
+  return acc.id;
+}
+
 async function instagram(p) {
   const t = { access_token: IG_TOKEN };
+  const me = await igUser(t);
   const urls = p.images.map((f) => RAW + f);
   let creation;
-  if (urls.length === 1) creation = (await api(`${IG}/me/media`, { ...t, image_url: urls[0], caption: p.caption })).id;
+  if (urls.length === 1) creation = (await api(`${IG}/${me}/media`, { ...t, image_url: urls[0], caption: p.caption })).id;
   else {
     const kids = [];
-    for (const u of urls) kids.push((await api(`${IG}/me/media`, { ...t, image_url: u, is_carousel_item: 'true' })).id);
-    creation = (await api(`${IG}/me/media`, { ...t, media_type: 'CAROUSEL', children: kids.join(','), caption: p.caption })).id;
+    for (const u of urls) kids.push((await api(`${IG}/${me}/media`, { ...t, image_url: u, is_carousel_item: 'true' })).id);
+    creation = (await api(`${IG}/${me}/media`, { ...t, media_type: 'CAROUSEL', children: kids.join(','), caption: p.caption })).id;
   }
   // контейнер готовится несколько секунд
   for (let k = 0; k < 20; k++) {
@@ -58,7 +71,7 @@ async function instagram(p) {
     if (st.status_code === 'ERROR') throw new Error('Instagram не принял картинки');
     await sleep(3000);
   }
-  const media = (await api(`${IG}/me/media_publish`, { ...t, creation_id: creation })).id;
+  const media = (await api(`${IG}/${me}/media_publish`, { ...t, creation_id: creation })).id;
   return (await api(`${IG}/${media}`, { ...t, fields: 'permalink' }, 'GET')).permalink;
 }
 
