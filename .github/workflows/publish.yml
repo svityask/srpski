@@ -8,10 +8,10 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'publish — опубликовать ближайший пост; make-test — только отправить пример в Make'
+        description: 'publish — опубликовать ближайший пост; make-test — только отправить пример в Make; make-last — переотправить в Make последний опубликованный пост'
         default: publish
         type: choice
-        options: [publish, make-test]
+        options: [publish, make-test, make-last]
   # обновил очередь — сразу проверить, нет ли поста к публикации (коммиты самого бота задание не запускают)
   push:
     branches: [main]

@@ -100,9 +100,10 @@ async function telegram(p, igUrl) {
 
 (async () => {
   // проверка связи с Make: шлём пример поста (карусель из 2 картинок) без публикации в Telegram и без изменения очереди
-  if (process.env.MODE === 'make-test') {
+  if (process.env.MODE === 'make-test' || process.env.MODE === 'make-last') {
     if (!MAKE_HOOK) { console.log('::error::Нет секрета MAKE_WEBHOOK_URL'); process.exitCode = 1; return; }
     const sample = plan.items.find((x) => x.images.length > 1);
+    if (process.env.MODE === 'make-last') { const last = plan.items.filter((x) => x.status === 'published').pop(); await make(last); console.log('Повторно отправлен в Make:', last.date, last.ref); return; }
     await make(sample); console.log('Тестовые данные отправлены в Make:', sample.date, sample.ref); return;
   }
   const now = belgrade(Date.now() + 5 * 6e4), oldest = belgrade(Date.now() - 90 * 6e4);
