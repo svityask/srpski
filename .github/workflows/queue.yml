@@ -1,5 +1,5 @@
-# Продление очереди постов: раз в неделю, если в promo/daily/plan.json осталось меньше 10 дней,
-# генерирует ещё 14 дней новых (неповторяющихся) постов с картинками и сохраняет в репозиторий.
+# Продление очереди постов: раз в неделю проверяет ближайшие 3 недели и, если в каком-то дне нет
+# «слова дня» (10:00) или вечернего поста (18:00), создаёт недостающие — только новые, без повторов.
 name: queue
 on:
   schedule:
@@ -20,22 +20,25 @@ jobs:
       - name: Check queue length
         id: check
         run: |
-          last=$(node -e "const p=require('./promo/daily/plan.json').items;console.log(p[p.length-1].date)")
-          left=$(( ( $(date -d "$last" +%s) - $(date +%s) ) / 86400 ))
-          echo "Очередь до $last, осталось дней: $left"
-          if [ "$left" -lt 10 ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "run=1" >> "$GITHUB_OUTPUT"; fi
+          holes=$(node -e "
+            const p=require('./promo/daily/plan.json').items; let n=0;
+            for(let i=1;i<=21;i++){const d=new Date(Date.now()+i*864e5).toISOString().slice(0,10);const day=p.filter(x=>x.date===d);
+              if(!day.some(x=>x.type==='word'))n++; if(!day.some(x=>x.type==='lesson'||x.type==='quiz'))n++;}
+            console.log(n)")
+          echo "Пустых слотов в ближайшие 3 недели: $holes"
+          if [ "$holes" -gt 0 ]; then echo "run=1" >> "$GITHUB_OUTPUT"; fi
       - name: Install Playwright
         if: steps.check.outputs.run
         run: |
           npm i --prefix /tmp/pw playwright@1.56.1
           npx --prefix /tmp/pw playwright install --with-deps chromium
           sudo apt-get install -y -q fonts-noto-color-emoji
-      - name: Generate 14 days
+      - name: Fill empty slots
         if: steps.check.outputs.run
         env:
           PLAYWRIGHT: /tmp/pw/node_modules/playwright
         run: |
-          node promo/tools/daily.js --days 14 | tee /tmp/daily.log
+          node promo/tools/daily.js --days 21 | tee /tmp/daily.log
           if grep -q 'закончился' /tmp/daily.log; then echo "::warning::Новый контент для постов заканчивается — нужны новые уроки/слова (повторов не будет)"; fi
       - name: Save queue
         if: steps.check.outputs.run
@@ -44,6 +47,6 @@ jobs:
           git diff --cached --quiet && exit 0
           git config user.name "srpski-bot"
           git config user.email "srpski-bot@users.noreply.github.com"
-          git commit -q -m "Queue: +14 days of new posts"
+          git commit -q -m "Queue: new posts for empty slots"
           for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && exit 0; sleep 5; done
           exit 1

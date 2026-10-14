@@ -1,11 +1,11 @@
 // Генератор ежедневных публикаций @srpski_coach (Instagram + Telegram).
 //
-//   node promo/tools/daily.js --from 2026-10-12 --days 14
+//   node promo/tools/daily.js --days 21     — заполнить пустые слоты с завтрашнего дня на 21 день
 //
-// Каждый день — три слота (время Белграда):
-//   10:00 word  — «Слово дня»: одна карточка 4:5
-//   15:00 lesson — карусель по уроку приложения
-//   18:00 quiz  — «Проверь себя»: карусель вопрос → ответ (+ опрос-викторина в Telegram)
+// Каждый день — два поста (время Белграда):
+//   10:00 word  — «Слово дня»: одна карточка 4:5 (каждый день)
+//   18:00 lesson — карусель по уроку приложения (через день)
+//   18:00 quiz  — «Проверь себя»: карусель вопрос → ответ (+ опрос-викторина в Telegram) (через день)
 // Картинки — promo/daily/<дата>/, очередь с подписями — promo/daily/plan.json.
 // Уже запланированные дни не перезаписываются; слова и уроки не повторяются, пока не кончатся.
 'use strict';
@@ -30,11 +30,9 @@ COURSE.forEach((u, ui) => u.lessons.forEach((l) => l.items.forEach((a) => ITEMS.
 const LESSONS = COURSE.flatMap((u, ui) => u.lessons.map((l) => Object.assign(l, { unit: u, un: ui + 1 })));
 
 const args = Object.fromEntries(process.argv.slice(2).reduce((a, x, i, arr) => (x.startsWith('--') ? a.concat([[x.slice(2), arr[i + 1]]]) : a), []));
-const DAYS = +(args.days || 14);
+const DAYS = +(args.days || 21);
 const plan = fs.existsSync(PLAN) ? JSON.parse(fs.readFileSync(PLAN, 'utf8')) : { items: [] };
-const lastDate = plan.items.length ? plan.items[plan.items.length - 1].date : null;
 const addDays = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
-const start = args.from || (lastDate ? addDays(lastDate, 1) : new Date().toISOString().slice(0, 10));
 
 const used = { word: new Set(), lesson: new Set(), quiz: new Set() };
 plan.items.forEach((p) => used[p.type] && used[p.type].add(p.ref));
@@ -157,28 +155,45 @@ function quizSlides(id, it, qd) {
     ${foot('@srpski_coach')}</div>`];
 }
 
-// --- собираем новые дни ---
+// --- собираем новые дни: 2 поста в день — 10:00 «слово дня», 18:00 урок или викторина (через день) ---
+// Заполняем недостающие слоты с завтрашнего дня на DAYS дней вперёд (дни, где пост уже есть, не трогаем).
 const fresh = [];
 let wordN = plan.items.filter((p) => p.type === 'word').length;
-for (let d = 0; d < DAYS; d++) {
-  const date = addDays(start, d);
-  if (plan.items.some((p) => p.date === date)) continue;
-  const w = take(WORDS, 'word', (x) => x.id, 'quiz');
-  if (!w) short.push(date + ' 10:00 слово дня');
-  else wordN++, fresh.push({ date, time: '10:00', type: 'word', ref: w.id, n: wordN, it: w,
-    caption: `Слово дня: ${w.sr} — ${w.ru} 🇷🇸\n\nПроизношение: [${pron(w.sr)}]${w.note ? '\n' + w.note : ''}\n\nСохраните и попробуйте сказать сегодня вслух 📌\n\n${APP}\n${TG}\n\n${TAGS} #словодня` });
+const EVENING = ['lesson', 'quiz'];
+const dayNum = (d) => Math.round(Date.parse(d + 'T12:00:00Z') / 864e5);
+function addLesson(date, time) {
   const lp = take(LESSON_POOL, 'lesson', (x) => x.id);
-  if (!lp) short.push(date + ' 15:00 урок');
-  else if (lp.l) { const l = lp.l; fresh.push({ date, time: '15:00', type: 'lesson', ref: l.id, l,
+  if (!lp) return false;
+  if (lp.l) { const l = lp.l; fresh.push({ date, time, type: 'lesson', ref: l.id, l,
     caption: `Урок ${l.id}: ${l.title} 🇷🇸\n\n${l.tip}\n\nВ карусели — ${Math.min(l.items.length, 12)} фраз с произношением. Сохраните, чтобы повторить 📌\nКакую фразу вы уже знали? Пишите в комментариях 👇\n\n${APP}\n${TG}\n\n${TAGS}` }); }
-  else { const g = lp.g; fresh.push({ date, time: '15:00', type: 'lesson', ref: lp.id, g,
+  else { const g = lp.g; fresh.push({ date, time, type: 'lesson', ref: lp.id, g,
     caption: `Грамматика: ${g.title} 🇷🇸\n\n${g.tip}\n\nВ карусели — правило, таблица и примеры. Сохраните, чтобы не искать 📌\nОстались вопросы? Пишите в комментариях 👇\n\nТренировка с разбором ошибок — в бесплатном приложении Srpski, раздел «Грамматика», ссылка в профиле.\n${TG}\n\n${TAGS} #грамматика` }); }
+  return true;
+}
+function addQuiz(date, time) {
   const q = take(QUIZ, 'quiz', (x) => x.id, 'word');
-  if (!q) { short.push(date + ' 18:00 викторина'); continue; }
-  const seed = plan.items.length + fresh.length + 11;
-  const qd = quizData(q, seed);
-  fresh.push({ date, time: '18:00', type: 'quiz', ref: q.id, it: q, qd,
+  if (!q) return false;
+  const qd = quizData(q, plan.items.length + fresh.length + 11);
+  fresh.push({ date, time, type: 'quiz', ref: q.id, it: q, qd,
     caption: `Проверь себя 🧠 ${qd.q}\n\nA) ${qd.opts[0]}\nB) ${qd.opts[1]}\nC) ${qd.opts[2]}\n\nПишите ответ в комментариях, правильный — на втором слайде 👉\n\n${APP}\n${TG}\n\n${TAGS} #викторина` });
+  return true;
+}
+const todayBg = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Belgrade' }).format(new Date());
+const from = args.from || addDays(todayBg, 1);
+for (let d = 0; d < DAYS; d++) {
+  const date = addDays(from, d);
+  const day = plan.items.filter((p) => p.date === date);
+  if (!day.some((p) => p.type === 'word')) {
+    const w = take(WORDS, 'word', (x) => x.id, 'quiz');
+    if (!w) short.push(date + ' 10:00 слово дня');
+    else wordN++, fresh.push({ date, time: '10:00', type: 'word', ref: w.id, n: wordN, it: w,
+      caption: `Слово дня: ${w.sr} — ${w.ru} 🇷🇸\n\nПроизношение: [${pron(w.sr)}]${w.note ? '\n' + w.note : ''}\n\nСохраните и попробуйте сказать сегодня вслух 📌\n\n${APP}\n${TG}\n\n${TAGS} #словодня` });
+  }
+  if (!day.some((p) => EVENING.includes(p.type))) {
+    const lessonDay = dayNum(date) % 2 === 0;
+    const ok = lessonDay ? addLesson(date, '18:00') || addQuiz(date, '18:00') : addQuiz(date, '18:00') || addLesson(date, '18:00');
+    if (!ok) short.push(date + ' 18:00 урок/викторина');
+  }
 }
 
 // подстраховка: одинаковых подписей быть не должно
@@ -202,14 +217,14 @@ if (short.length) console.log('⚠️ Новый контент закончил
   await page.goto('file://' + tmp); await page.waitForLoadState('networkidle'); await page.evaluate(() => document.fonts.ready);
   const over = await page.$$eval('.s', (els) => els.filter((e) => e.scrollHeight > e.clientHeight + 2).map((e) => e.id));
   if (over.length) console.log('Не влезает (проверьте):', over.join(', '));
-  const cleaned = new Set();
   for (const p of fresh) {
+    // папка дня может уже содержать картинки других постов — имена файлов уникальны по ref
     const dir = path.join(OUT, p.date);
-    if (!cleaned.has(dir)) { fs.rmSync(dir, { recursive: true, force: true }); cleaned.add(dir); }
     fs.mkdirSync(dir, { recursive: true });
+    const slug = String(p.ref).replace(/[^\w.-]+/g, '_');
     p.images = [];
     for (let k = 1; k <= p.slides.length; k++) {
-      const file = `${p.time.slice(0, 2)}-${p.type}-${k}.jpg`;
+      const file = `${p.time.slice(0, 2)}-${p.type}-${slug}-${k}.jpg`;
       await (await page.$(`[id="${p.date}-${p.type}-${k}"]`)).screenshot({ path: path.join(dir, file), type: 'jpeg', quality: 90 });
       p.images.push(`promo/daily/${p.date}/${file}`);
     }
@@ -220,7 +235,7 @@ if (short.length) console.log('⚠️ Новый контент закончил
       const gtmp = path.join(OUT, '_grid.html'); fs.writeFileSync(gtmp, grid);
       const gp = await b.newPage({ viewport: { width: 1200, height: 1500 } });
       await gp.goto('file://' + gtmp); await gp.waitForLoadState('load');
-      const gfile = `${p.time.slice(0, 2)}-${p.type}-telegram.jpg`;
+      const gfile = `${p.time.slice(0, 2)}-${p.type}-${slug}-telegram.jpg`;
       await (await gp.$('#g')).screenshot({ path: path.join(dir, gfile), type: 'jpeg', quality: 88 });
       await gp.close(); fs.unlinkSync(gtmp);
       p.telegram_image = `promo/daily/${p.date}/${gfile}`;

@@ -145,7 +145,7 @@ document.addEventListener('click', (e) => {
   const fmt = (d) => new Date(d + 'T12:00:00').toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' });
   const nowB = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Belgrade', dateStyle: 'short', timeStyle: 'short' }).format(new Date());
   const today = nowB.slice(0, 10);
-  const KIND = { word: 'Слово дня · 1 фото', lesson: 'Урок · карусель', quiz: 'Проверь себя · карусель + опрос', promo: 'Карусель' };
+  const KIND = { word: 'Слово дня · 1 фото', lesson: 'Урок · карусель', quiz: 'Проверь себя · карусель + опрос', promo: 'Карусель', update: 'Обновление приложения · 1 фото' };
   const img = (f) => f.replace(/^promo\//, '');
   const tg = (p) => p.caption.split('\n').filter((l) => !l.startsWith('#') && !/ссылка в профиле|t\.me\/srpski_coach/.test(l)).join('\n').replace(/\n{3,}/g, '\n\n').trim() +
     '\n\n📸 Instagram: instagram.com/srpski_coach\n📱 Приложение: zdravo.srpski.workers.dev';
