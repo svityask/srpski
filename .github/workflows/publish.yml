@@ -6,6 +6,12 @@ on:
   schedule:
     - cron: '2 * * * *'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'publish — опубликовать ближайший пост; make-test — только отправить пример в Make'
+        default: publish
+        type: choice
+        options: [publish, make-test]
   # обновил очередь — сразу проверить, нет ли поста к публикации (коммиты самого бота задание не запускают)
   push:
     branches: [main]
@@ -28,6 +34,7 @@ jobs:
           IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           MAKE_HOOK: ${{ secrets.MAKE_WEBHOOK_URL }}
+          MODE: ${{ inputs.mode }}
         run: node promo/tools/publish.js
       - name: Save queue
         if: always()
