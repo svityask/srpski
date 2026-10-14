@@ -222,7 +222,18 @@
   let dictTab = 'words', dictQ = '';
   const main = $('#main');
 
+  // анонимная статистика: какие разделы проходят — без имён, адресов и прогресса (только на сайте Cloudflare, где есть API)
+  const APP_VER = 'srpski-10';
+  const standalone = () => !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
+  const API_ON = location.protocol === 'https:' && /\.workers\.dev$/.test(location.hostname);
+  function track(e, d, n) {
+    if (!API_ON) return;
+    try { navigator.sendBeacon('api/e', JSON.stringify({ e, d: d || '', n: n || 0, sa: standalone() ? 1 : 0 })); } catch (er) { /* не важно */ }
+  }
+  // новая версия приложения скачана — перезагружаемся, как только человек не в уроке
+  let updReady = false;
   function render() {
+    if (updReady && !document.body.classList.contains('playing')) { location.reload(); return; }
     applyTheme();
     const V = { course: vCourse, learn: vLearn, review: vReview, cards: vCards, dict: vDict, more: vMore, map: vMap, level: vLevel, cases: vCases, grammar: vGrammar, gram: vGram, dialogs: vDialogs, dialog: vDialog, reading: vReading, read: vRead, speak: vSpeak, garden: vGarden, cheat: vCheat, wod: vWod, drill: vDrill, exams: vExams };
     if (!V[view]) view = 'course';
@@ -437,13 +448,23 @@
       '<h3 class="sub">Звук</h3><div class="card">' + tog('autoplay', 'Озвучивать слова', 'Новые слова и правильные ответы') + tog('sfx', 'Сигналы ответа') +
       '<label class="row"><span><b>Скорость речи</b><small>' + Math.round(S.rate * 100) + '%</small></span><input type="range" id="set-rate" min="0.6" max="1.2" step="0.05" value="' + S.rate + '" data-rate></label>' +
       '<div class="row"><span><small>' + voice + '</small></span><button class="btn sm" data-say="Dobar dan, kako ste?">Проверить</button></div></div>' +
-      '<h3 class="sub">Прогресс</h3><div class="card"><div class="row"><span><b>Сохранить копию</b><small>Код прогресса — сохраните в Заметки, чтобы перенести на другое устройство</small></span><button class="btn sm" data-export>Копировать</button></div>' +
-      '<div class="row col"><label for="imp"><b>Восстановить из кода</b></label><textarea id="imp" rows="2" placeholder="Вставьте код прогресса"></textarea><button class="btn sm" data-import>Восстановить</button></div>' +
+      '<h3 class="sub">Прогресс</h3><div class="card"><div class="row"><span><b>Резервная копия</b><small>' + (S.lastBackup ? 'Последняя: ' + new Date(S.lastBackup).toLocaleDateString('ru-RU') : 'Файл можно сохранить в «Файлы» или iCloud и восстановить на любом телефоне') + '</small></span><button class="btn sm" data-backup>Сохранить</button></div>' +
+      '<div class="row"><span><b>Восстановить из файла</b><small>Файл srpski-progress-….json</small></span><label class="btn sm" for="impf">Выбрать</label><input type="file" id="impf" accept=".json,application/json" hidden></div>' +
+      '<details class="row col"><summary><b>Перенос кодом</b> <small>(через Заметки)</small></summary><div class="row"><span><small>Код прогресса — вставьте в Заметки, чтобы перенести</small></span><button class="btn sm" data-export>Копировать</button></div>' +
+      '<label for="imp"><b>Восстановить из кода</b></label><textarea id="imp" rows="2" placeholder="Вставьте код прогресса"></textarea><button class="btn sm" data-import>Восстановить</button></details>' +
       '<div class="row"><span><b>Сбросить прогресс</b><small>Удалит уроки, тесты и повторение</small></span><button class="btn sm danger" data-reset>' + (resetArm ? 'Точно сбросить' : 'Сбросить') + '</button></div></div>' +
       '<p class="hint" id="msg" role="status"></p>' +
+      '<h3 class="sub">Обратная связь</h3><div class="card"><div class="row col"><label for="fb"><b>Нашли ошибку или не хватает темы?</b><small>Напишите — читаем каждое сообщение</small></label>' +
+      '<textarea id="fb" rows="3" maxlength="2000" placeholder="Например: в уроке 3.2 опечатка… / Добавьте тему «банк»"></textarea>' +
+      '<input class="ans" id="fbc" maxlength="200" autocomplete="email" placeholder="Ваш контакт для ответа (необязательно)">' +
+      '<button class="btn sm" data-fb>Отправить</button><p class="hint" id="fbmsg" role="status"></p></div></div>' +
       '<p class="hint">Чтобы открыть как приложение: в Safari нажмите «Поделиться» → «На экран „Домой“». Прогресс хранится только на этом телефоне.</p>';
   }
   const flash = (t) => { const m = $('#msg'); if (m) m.textContent = t; };
+  function restore(o) {
+    if (!o || typeof o !== 'object' || !o.lessons) throw new Error('bad backup');
+    S = Object.assign({}, DEF, o); save(); render(); flash('Прогресс восстановлен.');
+  }
 
   // ---------- раздел «Учиться»: дорожная карта, падежи, диалоги, чтение, говорение, сад ----------
   const CASES = window.CASES || { list: [], nouns: {}, drills: [] };
@@ -1158,6 +1179,7 @@
   }
   function finish() {
     dropRun();
+    track('done', P.kind + ':' + (P.l ? P.l.id : P.u ? P.u.id : P.ref || ''), P.n ? Math.round((P.ok / P.n) * 100) : 100);
     setBar(1);
     cnt.textContent = '';
     const pct = P.n ? Math.round((P.ok / P.n) * 100) : 100;
@@ -1247,11 +1269,31 @@
       return;
     }
     if (d.import !== undefined) {
-      try {
-        const o = JSON.parse(decodeURIComponent(escape(atob($('#imp').value.trim()))));
-        if (!o || typeof o !== 'object' || !o.lessons) throw new Error();
-        S = Object.assign({}, DEF, o); save(); render(); flash('Прогресс восстановлен.');
-      } catch (er) { flash('Код не подошёл. Скопируйте его целиком, без пробелов по краям.'); }
+      try { restore(JSON.parse(decodeURIComponent(escape(atob($('#imp').value.trim()))))); } catch (er) { flash('Код не подошёл. Скопируйте его целиком, без пробелов по краям.'); }
+      return;
+    }
+    if (d.fb !== undefined) {
+      const text = $('#fb').value.trim(), m = $('#fbmsg');
+      if (!text) { m.textContent = 'Напишите пару слов в поле выше.'; return; }
+      b.disabled = true; m.textContent = 'Отправляем…';
+      fetch('api/feedback', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text, contact: $('#fbc').value.trim(), view: view, ver: APP_VER, sa: standalone() }) })
+        .then((r) => r.json()).then((j) => { if (!j.ok) throw new Error(); $('#fb').value = ''; m.textContent = 'Спасибо! Сообщение отправлено.'; })
+        .catch(() => { m.innerHTML = 'Не получилось отправить. Напишите нам в Telegram: <a href="https://t.me/srpski_coach" target="_blank" rel="noopener">@srpski_coach</a>'; })
+        .finally(() => { b.disabled = false; });
+      return;
+    }
+    if (d.backup !== undefined) {
+      S.lastBackup = Date.now(); save();
+      const name = 'srpski-progress-' + new Date().toISOString().slice(0, 10) + '.json';
+      const blob = new Blob([JSON.stringify({ app: 'srpski', v: 1, saved: S.lastBackup, state: S })], { type: 'application/json' });
+      const file = typeof File === 'function' ? new File([blob], name, { type: 'application/json' }) : null;
+      // на iPhone — меню «Поделиться» с пунктом «Сохранить в Файлы»; на компьютере — обычное скачивание
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'Прогресс Srpski' }).then(() => { render(); flash('Копия сохранена.'); }, () => { /* передумали */ });
+      } else {
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000); render(); flash('Файл ' + name + ' сохранён в «Загрузки».');
+      }
       return;
     }
     if (d.reset !== undefined) {
@@ -1282,6 +1324,9 @@
     if (t.id === 'ctopic') { S.cardsTopic = t.value; save(); buildDeck(); render(); }
     if (t.dataset.rate !== undefined) { S.rate = +t.value; save(); render(); speak('Dobar dan'); }
     if (t.id === 'dunit') { drillUnit = t.value; render(); }
+    if (t.id === 'impf' && t.files && t.files[0]) {
+      t.files[0].text().then((txt) => { const o = JSON.parse(txt); restore(o && o.state ? o.state : o); }).catch(() => flash('Этот файл не похож на копию прогресса Srpski.'));
+    }
     if (t.dataset.dtr !== undefined) { dlgTr = t.checked; render(); }
     if (t.dataset.rdall !== undefined) { rdAll = t.checked; render(); }
   });
@@ -1297,7 +1342,11 @@
   window.addEventListener('focus', refreshDay);
   setInterval(refreshDay, 60 * 1000);
   { const r = loadRun(); if (r && r.open) resume(r); }
-  if (!S.welcomed && !Object.keys(S.lessons).length && !loadRun()) showWelcome();
+  if (!S.welcomed && !Object.keys(S.lessons).length && !loadRun()) { track('new'); showWelcome(); }
+  // раз в день — «открыл приложение» (для счёта активных людей), один раз — «установил на экран Домой»
+  const pingOpen = () => { if (S.lastOpen !== today()) { S.lastOpen = today(); save(); track('open', '', Object.keys(S.lessons).length); } };
+  pingOpen(); document.addEventListener('visibilitychange', () => { if (!document.hidden) pingOpen(); });
+  if (standalone() && !S.installed) { S.installed = true; save(); track('install'); }
   function showWelcome() {
     const w = document.createElement('section'); w.id = 'welcome'; w.setAttribute('aria-label', 'Добро пожаловать');
     const draw = () => {
@@ -1317,6 +1366,25 @@
   // просим браузер не чистить данные приложения
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* не важно */ }
   if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|anthropic/.test(location.hostname)) {
-    navigator.serviceWorker.register('sw.js').catch(() => { /* офлайн недоступен — не страшно */ });
+    const had = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      // приложение с экрана «Домой» на iPhone часто не перезапускается, а просыпается — проверяем обновление при каждом возвращении
+      const check = () => reg.update().catch(() => { /* офлайн */ });
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
+      setInterval(check, 30 * 60 * 1000);
+    }).catch(() => { /* офлайн недоступен — не страшно */ });
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!had) return; // первый запуск: служебный файл только что установился, обновлять нечего
+      updReady = true;
+      try { sessionStorage.setItem('srpski.updated', '1'); } catch (e) { /* не важно */ }
+      if (!document.body.classList.contains('playing')) location.reload();
+    });
   }
+  try {
+    if (sessionStorage.getItem('srpski.updated')) {
+      sessionStorage.removeItem('srpski.updated');
+      const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = 'Приложение обновлено ✓ Прогресс на месте.';
+      document.body.appendChild(t); setTimeout(() => t.remove(), 4000);
+    }
+  } catch (e) { /* не важно */ }
 })();
