@@ -16,7 +16,9 @@ const APP_URL = 'https://zdravo.srpski.workers.dev/';
 const CHAT = process.env.TG_CHAT || '@srpski_coach';
 const IG = 'https://graph.instagram.com/v21.0';
 const DRY = process.argv.includes('--dry');
-const { TG_TOKEN, IG_TOKEN } = process.env;
+// в секрет иногда попадают пробелы, кавычки или весь текст из @BotFather — берём сам токен
+const TG_TOKEN = ((process.env.TG_TOKEN || '').match(/\d{6,}:[\w-]{30,}/) || [''])[0];
+const IG_TOKEN = (process.env.IG_TOKEN || '').trim().replace(/^["']|["']$/g, '');
 
 const plan = JSON.parse(fs.readFileSync(PLAN, 'utf8'));
 const belgrade = (ms) => {
