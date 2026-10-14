@@ -20,3 +20,9 @@
 ## Автопубликация
 
 `.github/workflows/publish.yml` каждый час запускает `promo/tools/publish.js`: пост, чьё время наступило (не старше 90 минут), уходит в Telegram (секрет `TELEGRAM_BOT_TOKEN`) и Instagram (секрет `IG_ACCESS_TOKEN`). «Run workflow» в разделе Actions публикует ближайший пост сразу.
+
+## Автопубликация
+
+- `.github/workflows/publish.yml` — каждый час публикует пост, время которого наступило: Telegram напрямую (секрет `TELEGRAM_BOT_TOKEN`), Instagram через сценарий Make.com (секрет `MAKE_WEBHOOK_URL`; в Make: Webhook → Router → «Create a photo post» при `count` = 1 и «Create a carousel post» при `count` ≠ 1).
+- `.github/workflows/queue.yml` — по понедельникам, если в очереди меньше 10 дней, генерирует ещё 14 дней новых постов.
+- Ручной запуск publish: `publish` — ближайший пост сейчас, `make-test` — пример в Make, `make-last` — переотправить последний пост только в Instagram.

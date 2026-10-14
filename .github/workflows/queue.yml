@@ -1,0 +1,49 @@
+# Продление очереди постов: раз в неделю, если в promo/daily/plan.json осталось меньше 10 дней,
+# генерирует ещё 14 дней новых (неповторяющихся) постов с картинками и сохраняет в репозиторий.
+name: queue
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publish
+jobs:
+  extend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check queue length
+        id: check
+        run: |
+          last=$(node -e "const p=require('./promo/daily/plan.json').items;console.log(p[p.length-1].date)")
+          left=$(( ( $(date -d "$last" +%s) - $(date +%s) ) / 86400 ))
+          echo "Очередь до $last, осталось дней: $left"
+          if [ "$left" -lt 10 ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "run=1" >> "$GITHUB_OUTPUT"; fi
+      - name: Install Playwright
+        if: steps.check.outputs.run
+        run: |
+          npm i --prefix /tmp/pw playwright@1.56.1
+          npx --prefix /tmp/pw playwright install --with-deps chromium
+          sudo apt-get install -y -q fonts-noto-color-emoji
+      - name: Generate 14 days
+        if: steps.check.outputs.run
+        env:
+          PLAYWRIGHT: /tmp/pw/node_modules/playwright
+        run: |
+          node promo/tools/daily.js --days 14 | tee /tmp/daily.log
+          if grep -q 'закончился' /tmp/daily.log; then echo "::warning::Новый контент для постов заканчивается — нужны новые уроки/слова (повторов не будет)"; fi
+      - name: Save queue
+        if: steps.check.outputs.run
+        run: |
+          git add promo/daily
+          git diff --cached --quiet && exit 0
+          git config user.name "srpski-bot"
+          git config user.email "srpski-bot@users.noreply.github.com"
+          git commit -q -m "Queue: +14 days of new posts"
+          for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && exit 0; sleep 5; done
+          exit 1
