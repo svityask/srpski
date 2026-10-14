@@ -27,6 +27,7 @@ jobs:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           IG_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          MAKE_HOOK: ${{ secrets.MAKE_WEBHOOK_URL }}
         run: node promo/tools/publish.js
       - name: Save queue
         if: always()

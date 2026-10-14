@@ -20,6 +20,8 @@ const IG = IG_FB ? 'https://graph.facebook.com/v21.0' : 'https://graph.instagram
 const DRY = process.argv.includes('--dry');
 // в секрет иногда попадают пробелы, кавычки или весь текст из @BotFather — берём сам токен
 const TG_TOKEN = ((process.env.TG_TOKEN || '').match(/\d{6,}:[\w-]{30,}/) || [''])[0];
+// без токена Meta: пост уходит в сценарий Make.com (бесплатно), а тот публикует в Instagram своим подключением
+const MAKE_HOOK = (process.env.MAKE_HOOK || '').trim();
 const IG_TOKEN = (process.env.IG_TOKEN || '').trim().replace(/^["']|["']$/g, '');
 
 const plan = JSON.parse(fs.readFileSync(PLAN, 'utf8'));
@@ -75,6 +77,15 @@ async function instagram(p) {
   return (await api(`${IG}/${media}`, { ...t, fields: 'permalink' }, 'GET')).permalink;
 }
 
+async function make(p) {
+  const images = p.images.map((f) => RAW + f);
+  const res = await fetch(MAKE_HOOK, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
+    caption: p.caption, count: images.length, image: images[0], images,
+    media: images.map((u) => ({ media_type: 'IMAGE', image_url: u })), date: p.date, time: p.time, ref: p.ref,
+  }) });
+  if (!res.ok) throw new Error('Make → ' + res.status + ' ' + (await res.text()).slice(0, 200));
+}
+
 async function telegram(p, igUrl) {
   const tg = (m, params) => api(`https://api.telegram.org/bot${TG_TOKEN}/${m}`, params);
   const msg = await tg('sendPhoto', { chat_id: CHAT, photo: RAW + p.telegram_image, caption: tgCaption(p, igUrl), parse_mode: 'HTML' });
@@ -104,8 +115,9 @@ async function telegram(p, igUrl) {
     let igUrl = null, tgId = null;
     const errors = [];
     if (IG_TOKEN) { try { igUrl = await instagram(p); console.log('Instagram:', igUrl); } catch (e) { errors.push('IG: ' + e.message); } }
+    if (!IG_TOKEN && MAKE_HOOK) { try { await make(p); console.log('Instagram: отправлено в Make'); } catch (e) { errors.push('IG: ' + e.message); } }
     if (TG_TOKEN) { try { tgId = await telegram(p, igUrl); console.log('Telegram: сообщение', tgId); } catch (e) { errors.push('TG: ' + e.message); } }
-    if (igUrl || tgId) Object.assign(p, { status: 'published', instagram_url: igUrl, telegram_message_id: tgId, published_at: belgrade(Date.now()) });
+    if (igUrl || tgId || (MAKE_HOOK && !errors.some((e) => e.startsWith('IG')))) Object.assign(p, { status: 'published', instagram_url: igUrl, telegram_message_id: tgId, published_at: belgrade(Date.now()) });
     if (errors.length) { errors.forEach((e) => console.log('::error::' + e.replace(/\n/g, ' ') + (/Unauthorized|Not Found/.test(e) && e.startsWith('TG') ? ' — токен бота недействителен: обновите секрет TELEGRAM_BOT_TOKEN' : ''))); process.exitCode = 1; }
     if (!IG_TOKEN && !TG_TOKEN) { console.log('::error::Нет секретов TELEGRAM_BOT_TOKEN / IG_ACCESS_TOKEN'); process.exitCode = 1; }
   } else console.log('Пропущенные слоты помечены skipped');
