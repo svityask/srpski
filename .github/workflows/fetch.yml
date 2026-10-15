@@ -1,0 +1,39 @@
+# Служебное: скачать файлы по ссылкам (например, кадры из OpenArt) в promo/media/<dir>/ и сохранить в репозиторий.
+name: fetch
+on:
+  workflow_dispatch:
+    inputs:
+      dir:
+        description: 'Папка внутри promo/media'
+        required: true
+      urls:
+        description: 'Ссылки через пробел'
+        required: true
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download
+        env:
+          DIR: ${{ inputs.dir }}
+          URLS: ${{ inputs.urls }}
+        run: |
+          case "$DIR" in *..*|/*) echo "bad dir"; exit 1;; esac
+          mkdir -p "promo/media/$DIR"; i=1
+          for u in $URLS; do
+            case "$u" in https://*) ;; *) echo "skip $u"; continue;; esac
+            ext="${u##*.}"; ext="${ext%%\?*}"
+            curl -sSfL "$u" -o "promo/media/$DIR/$i.$ext"; i=$((i+1))
+          done
+          ls -la "promo/media/$DIR"
+      - name: Save
+        run: |
+          git add promo/media
+          git diff --cached --quiet && exit 0
+          git config user.name "srpski-bot"; git config user.email "srpski-bot@users.noreply.github.com"
+          git commit -q -m "Media: ${{ inputs.dir }}"
+          for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && exit 0; sleep 5; done
+          exit 1
