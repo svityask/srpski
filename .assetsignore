@@ -8,4 +8,3 @@ promo/tools
 worker.js
 wrangler.jsonc
 node_modules
-cf

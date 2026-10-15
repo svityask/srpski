@@ -1,6 +1,6 @@
 // Cloudflare Worker перед статикой приложения: файлы сайта отдаёт ASSETS, здесь — только два адреса API.
 //   POST /api/feedback — сообщение из приложения → Telegram (секреты TELEGRAM_BOT_TOKEN и FEEDBACK_CHAT_ID в настройках воркера)
-//   POST /api/e        — анонимное событие (открыл приложение, прошёл урок) → Workers Analytics Engine
+//   POST /api/e        — анонимное событие (открыл приложение, прошёл урок) → журнал воркера (Workers Logs, раздел Observability)
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 const hits = new Map(); // простая защита от спама: не больше 5 сообщений в час с одного адреса (в пределах экземпляра)
 
@@ -25,8 +25,8 @@ async function feedback(req, env) {
 async function event(req, env, ctx) {
   let b; try { b = JSON.parse(await req.text()); } catch (e) { return new Response(null, { status: 204 }); }
   const name = String(b.e || '').slice(0, 32);
-  if (env.AE && /^[a-z_]+$/.test(name)) {
-    env.AE.writeDataPoint({ indexes: [name], blobs: [name, String(b.d || '').slice(0, 64), (req.cf && req.cf.country) || '', b.sa ? 'home' : 'web'], doubles: [+b.n || 0] });
+  if (/^[a-z_]+$/.test(name)) {
+    console.log(JSON.stringify({ ev: name, d: String(b.d || '').slice(0, 64), n: +b.n || 0, where: b.sa ? 'home' : 'web', country: (req.cf && req.cf.country) || '' }));
   }
   return new Response(null, { status: 204 });
 }
