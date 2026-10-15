@@ -5,7 +5,7 @@
 //
 // Telegram — Bot API (фото + подпись + опрос-викторина), Instagram — API Meta с входом через Instagram
 // (graph.instagram.com, токен из кабинета разработчика). Без IG_TOKEN публикуется только Telegram.
-// Публикуются слоты не старше 90 минут: если запуск пропущен, старые посты помечаются skipped, чтобы не было пачки сразу.
+// Публикуются слоты не старше 3 часов: если запуск пропущен, старые посты помечаются skipped, чтобы не было пачки сразу.
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -106,7 +106,7 @@ async function telegram(p, igUrl) {
     if (process.env.MODE === 'make-last') { const last = plan.items.filter((x) => x.status === 'published').pop(); await make(last); console.log('Повторно отправлен в Make:', last.date, last.ref); return; }
     await make(sample); console.log('Тестовые данные отправлены в Make:', sample.date, sample.ref); return;
   }
-  const now = belgrade(Date.now() + 5 * 6e4), oldest = belgrade(Date.now() - 90 * 6e4);
+  const now = belgrade(Date.now() + 5 * 6e4), oldest = belgrade(Date.now() - 180 * 6e4);
   // ручной запуск («Run workflow» в GitHub) — опубликовать ближайший пост из очереди прямо сейчас
   if (process.env.GITHUB_EVENT_NAME === 'workflow_dispatch' || process.argv.includes('--now')) {
     const next = plan.items.find((p) => p.status === 'pending' && `${p.date} ${p.time}` >= oldest);

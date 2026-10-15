@@ -1,10 +1,10 @@
 # Автопубликация постов @srpski_coach в Telegram и Instagram — бесплатно, без Zapier.
-# Каждый час проверяет очередь promo/daily/plan.json (время в ней — белградское) и публикует пост, чьё время наступило.
+# Каждые 15 минут (GitHub часто пропускает запуски по расписанию) проверяет очередь promo/daily/plan.json (время в ней — белградское) и публикует пост, чьё время наступило.
 # Секреты: TELEGRAM_BOT_TOKEN, IG_ACCESS_TOKEN (необязательно).
 name: publish
 on:
   schedule:
-    - cron: '2 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
       mode:
