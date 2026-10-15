@@ -1,5 +1,7 @@
 // Cloudflare Worker перед статикой приложения: файлы сайта отдаёт ASSETS, здесь — только два адреса API.
 //   POST /api/feedback — сообщение из приложения → Telegram (секреты TELEGRAM_BOT_TOKEN и FEEDBACK_CHAT_ID в настройках воркера)
+//   cron каждые 10 минут — будильник автопостинга: если в promo/daily/plan.json есть пост, чьё время наступило,
+//                          запускает GitHub Actions publish.yml (секрет GH_TOKEN). Расписание GitHub часто пропускает запуски.
 //   POST /api/e        — анонимное событие (открыл приложение, прошёл урок) → журнал воркера (Workers Logs, раздел Observability)
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 const hits = new Map(); // простая защита от спама: не больше 5 сообщений в час с одного адреса (в пределах экземпляра)
@@ -31,7 +33,28 @@ async function event(req, env, ctx) {
   return new Response(null, { status: 204 });
 }
 
+const bg = (ms) => {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Belgrade', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date(ms)).map((x) => [x.type, x.value]));
+  return `${p.year}-${p.month}-${p.day} ${p.hour === '24' ? '00' : p.hour}:${p.minute}`;
+};
+async function alarm(env) {
+  if (!env.GH_TOKEN) return 'no GH_TOKEN';
+  const plan = await (await fetch('https://raw.githubusercontent.com/svityask/srpski/main/promo/daily/plan.json?t=' + Date.now(), { cf: { cacheTtl: 0 } })).json();
+  const now = bg(Date.now() + 5 * 6e4), oldest = bg(Date.now() - 180 * 6e4);
+  const due = plan.items.find((p) => p.status === 'pending' && `${p.date} ${p.time}` <= now && `${p.date} ${p.time}` >= oldest);
+  if (!due) return 'nothing due';
+  const r = await fetch('https://api.github.com/repos/svityask/srpski/actions/workflows/publish.yml/dispatches', {
+    method: 'POST',
+    headers: { authorization: `Bearer ${env.GH_TOKEN}`, accept: 'application/vnd.github+json', 'user-agent': 'srpski-worker', 'content-type': 'application/json' },
+    body: JSON.stringify({ ref: 'main', inputs: { mode: 'auto' } }),
+  });
+  const res = `dispatch ${due.date} ${due.time} ${due.type}: ${r.status}`;
+  console.log(res);
+  return res;
+}
+
 export default {
+  async scheduled(event, env, ctx) { ctx.waitUntil(alarm(env)); },
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
     if (req.method === 'POST' && url.pathname === '/api/feedback') return feedback(req, env);

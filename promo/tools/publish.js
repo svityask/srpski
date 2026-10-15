@@ -108,7 +108,8 @@ async function telegram(p, igUrl) {
   }
   const now = belgrade(Date.now() + 5 * 6e4), oldest = belgrade(Date.now() - 180 * 6e4);
   // ручной запуск («Run workflow» в GitHub) — опубликовать ближайший пост из очереди прямо сейчас
-  if (process.env.GITHUB_EVENT_NAME === 'workflow_dispatch' || process.argv.includes('--now')) {
+  // mode=auto — запуск по будильнику Cloudflare: ведёт себя как расписание (публикует только то, чьё время наступило)
+  if ((process.env.GITHUB_EVENT_NAME === 'workflow_dispatch' && process.env.MODE !== 'auto') || process.argv.includes('--now')) {
     const next = plan.items.find((p) => p.status === 'pending' && `${p.date} ${p.time}` >= oldest);
     if (next) { console.log('Ручной запуск: публикую сейчас', next.date, next.time); next.time = belgrade(Date.now()).slice(11); next.date = belgrade(Date.now()).slice(0, 10); }
   }
