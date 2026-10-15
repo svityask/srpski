@@ -220,7 +220,10 @@
     "promo/daily/2026-10-15/15-lesson-4.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-15/15-lesson-telegram.jpg",
-   "status": "pending"
+   "status": "published",
+   "instagram_url": null,
+   "telegram_message_id": 34,
+   "published_at": "2026-10-15 18:00"
   },
   {
    "date": "2026-10-16",
