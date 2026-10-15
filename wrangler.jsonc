@@ -1,11 +1,13 @@
 // Деплой на Cloudflare Workers (zdravo.srpski.workers.dev): статика приложения + маленький воркер с API (worker.js).
 // Секреты задаются в панели Cloudflare (Workers → zdravo → Settings → Variables and Secrets), не здесь:
-//   TELEGRAM_BOT_TOKEN, FEEDBACK_CHAT_ID — для отзывов из приложения.
+//   TELEGRAM_BOT_TOKEN — токен бота @BotFather, для отзывов из приложения.
 {
   "name": "zdravo",
   "main": "worker.js",
   "compatibility_date": "2025-09-01",
   "assets": { "directory": ".", "binding": "ASSETS" },
+  // куда присылать отзывы: личный чат владельца с ботом (не секрет — это просто адрес)
+  "vars": { "FEEDBACK_CHAT_ID": "673873149" },
   "keep_vars": true,
   "observability": { "enabled": true }
 }
