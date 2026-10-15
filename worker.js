@@ -54,7 +54,7 @@ async function alarm(env) {
 }
 
 export default {
-  async scheduled(event, env, ctx) { ctx.waitUntil(alarm(env)); },
+  async scheduled(event, env, ctx) { ctx.waitUntil(alarm(env).catch((e) => console.log('alarm skipped: ' + e.message))); },
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
     if (req.method === 'POST' && url.pathname === '/api/feedback') return feedback(req, env);
