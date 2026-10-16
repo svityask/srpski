@@ -46,6 +46,7 @@ const api = async (url, opt = {}) => {
     fs.mkdirSync(dir, { recursive: true });
     for (const l of lines) {
       const body = { text: l.text, model_id: l.model || cfg.model || 'eleven_multilingual_v2', voice_settings: { ...cfg.settings, ...(l.settings || {}) } };
+      for (const k of ['previous_text', 'next_text', 'seed', 'language_code']) if (l[k] != null) body[k] = l[k]; // контекст соседних фраз — короткие куски не «додумываются»
       const r = await api(`/text-to-speech/${v.voice_id}?output_format=mp3_44100_128`, { method: 'POST', body: JSON.stringify(body) });
       fs.writeFileSync(path.join(dir, `${l.id}.mp3`), Buffer.from(await r.arrayBuffer()));
       chars += l.text.length;
