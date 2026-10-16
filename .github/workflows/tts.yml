@@ -1,0 +1,44 @@
+# Озвучка роликов через ElevenLabs: текст из promo/reels/voice/<ролик>.json → MP3 в promo/media/voice/ (на сайт не попадает).
+name: tts
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: 'Файл с текстом'
+        default: 'promo/reels/voice/kafa.json'
+        required: true
+      voices:
+        description: 'Голоса через запятую (George,Brian…)'
+        required: false
+      only:
+        description: 'Только эти строки (id через запятую), пусто — все'
+        required: false
+permissions:
+  contents: write
+concurrency:
+  group: media
+jobs:
+  tts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Synthesize
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          FILE: ${{ inputs.file }}
+          VOICES: ${{ inputs.voices }}
+          ONLY: ${{ inputs.only }}
+        run: |
+          case "$FILE" in promo/reels/voice/*.json) ;; *) echo "bad file"; exit 1;; esac
+          node promo/tools/tts.js "$FILE" "$VOICES" "$ONLY"
+      - name: Save
+        run: |
+          git add promo/media/voice
+          git diff --cached --quiet && exit 0
+          git config user.name "srpski-bot"; git config user.email "srpski-bot@users.noreply.github.com"
+          git commit -q -m "Voice: ${{ inputs.file }}"
+          for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && exit 0; sleep 5; done
+          exit 1
