@@ -251,7 +251,10 @@
    "cover": "promo/instagram/polako-1-cover.jpg",
    "images": [],
    "telegram_image": "promo/instagram/polako-1-cover.jpg",
-   "status": "pending"
+   "status": "published",
+   "instagram_url": null,
+   "telegram_message_id": 36,
+   "published_at": "2026-10-16 14:44"
   },
   {
    "date": "2026-10-16",
