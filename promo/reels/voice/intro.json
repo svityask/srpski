@@ -1,0 +1,18 @@
+{
+ "model": "eleven_multilingual_v2",
+ "settings": {
+  "stability": 0.4,
+  "similarity_boost": 0.8,
+  "style": 0.45,
+  "use_speaker_boost": true,
+  "speed": 1.0
+ },
+ "lines": [
+  {
+   "id": "m1",
+   "text": "Dobar dan! Dobro došli u Srbiju!",
+   "seed": 3,
+   "next_text": "Ja sam Miloš."
+  }
+ ]
+}
