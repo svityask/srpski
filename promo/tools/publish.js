@@ -32,7 +32,7 @@ const belgrade = (ms) => {
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 function tgCaption(p, igUrl) {
   const body = p.caption.split('\n').filter((l) => !l.startsWith('#') && !/ссылка в профиле|t\.me\/srpski_coach/.test(l)).join('\n').replace(/\n{3,}/g, '\n\n').trim();
-  const ig = igUrl ? `<a href="${igUrl}">${p.images.length > 1 ? 'Карусель целиком' : 'Пост'} в Instagram</a>` : '<a href="https://www.instagram.com/srpski_coach/">Instagram @srpski_coach</a>';
+  const ig = igUrl ? `<a href="${igUrl}">${p.video ? 'Reels' : (p.images || []).length > 1 ? 'Карусель целиком' : 'Пост'} в Instagram</a>` : '<a href="https://www.instagram.com/srpski_coach/">Instagram @srpski_coach</a>';
   return `${esc(body)}\n\n📸 ${ig}\n📱 <a href="${APP_URL}">Приложение Srpski</a> — уроки с озвучкой`;
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -78,17 +78,20 @@ async function instagram(p) {
 }
 
 async function make(p) {
-  const images = p.images.map((f) => RAW + f);
+  const images = (p.images || []).map((f) => RAW + f);
   const res = await fetch(MAKE_HOOK, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
     caption: p.caption, count: images.length, image: images[0], images,
     media: images.map((u) => ({ media_type: 'IMAGE', image_url: u })), date: p.date, time: p.time, ref: p.ref,
+    kind: p.video ? 'reel' : 'post', video: p.video ? RAW + p.video : '', cover: p.cover ? RAW + p.cover : '',
   }) });
   if (!res.ok) throw new Error('Make → ' + res.status + ' ' + (await res.text()).slice(0, 200));
 }
 
 async function telegram(p, igUrl) {
   const tg = (m, params) => api(`https://api.telegram.org/bot${TG_TOKEN}/${m}`, params);
-  const msg = await tg('sendPhoto', { chat_id: CHAT, photo: RAW + p.telegram_image, caption: tgCaption(p, igUrl), parse_mode: 'HTML' });
+  const msg = p.video // ролик (Reels): видео по ссылке, до 20 МБ
+    ? await tg('sendVideo', { chat_id: CHAT, video: RAW + p.video, caption: tgCaption(p, igUrl), parse_mode: 'HTML', supports_streaming: 'true', width: '1080', height: '1920' })
+    : await tg('sendPhoto', { chat_id: CHAT, photo: RAW + p.telegram_image, caption: tgCaption(p, igUrl), parse_mode: 'HTML' });
   if (p.quiz) {
     await tg('sendPoll', {
       chat_id: CHAT, question: p.quiz.question, options: JSON.stringify(p.quiz.options), type: 'quiz',
@@ -102,7 +105,7 @@ async function telegram(p, igUrl) {
   // проверка связи с Make: шлём пример поста (карусель из 2 картинок) без публикации в Telegram и без изменения очереди
   if (process.env.MODE === 'make-test' || process.env.MODE === 'make-last') {
     if (!MAKE_HOOK) { console.log('::error::Нет секрета MAKE_WEBHOOK_URL'); process.exitCode = 1; return; }
-    const sample = plan.items.find((x) => x.images.length > 1);
+    const sample = plan.items.find((x) => (x.images || []).length > 1);
     if (process.env.MODE === 'make-last') { const last = plan.items.filter((x) => x.status === 'published').pop(); await make(last); console.log('Повторно отправлен в Make:', last.date, last.ref); return; }
     await make(sample); console.log('Тестовые данные отправлены в Make:', sample.date, sample.ref); return;
   }
@@ -123,7 +126,8 @@ async function telegram(p, igUrl) {
     let igUrl = null, tgId = null;
     const errors = [];
     if (IG_TOKEN) { try { igUrl = await instagram(p); console.log('Instagram:', igUrl); } catch (e) { errors.push('IG: ' + e.message); } }
-    if (!IG_TOKEN && MAKE_HOOK) { try { await make(p); console.log('Instagram: отправлено в Make'); } catch (e) { errors.push('IG: ' + e.message); } }
+    if (!IG_TOKEN && MAKE_HOOK && p.video && process.env.MAKE_REELS !== '1') console.log('Instagram: ролик не отправлен — в Make ещё нет ветки для Reels (переменная MAKE_REELS)');
+    else if (!IG_TOKEN && MAKE_HOOK) { try { await make(p); console.log('Instagram: отправлено в Make'); } catch (e) { errors.push('IG: ' + e.message); } }
     if (TG_TOKEN) { try { tgId = await telegram(p, igUrl); console.log('Telegram: сообщение', tgId); } catch (e) { errors.push('TG: ' + e.message); } }
     if (igUrl || tgId || (MAKE_HOOK && !errors.some((e) => e.startsWith('IG')))) Object.assign(p, { status: 'published', instagram_url: igUrl, telegram_message_id: tgId, published_at: belgrade(Date.now()) });
     if (errors.length) { errors.forEach((e) => console.log('::error::' + e.replace(/\n/g, ' ') + (/Unauthorized|Not Found/.test(e) && e.startsWith('TG') ? ' — токен бота недействителен: обновите секрет TELEGRAM_BOT_TOKEN' : ''))); process.exitCode = 1; }
