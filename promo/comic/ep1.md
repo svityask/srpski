@@ -37,9 +37,11 @@ Dobro došli! — добро пожаловать!
 
 #сербскийязык #сербия #белград #релокация #русскиевсербии #комикс
 
+Референс персонажей: лист «Три персонажа» (Миша / Аня / Милош) — прикладывать к каждой генерации как образец.
+
 ## Промпты для картинок (одна стилистика, без текста)
 Общий стиль: `hand-drawn comic book illustration, bold ink outlines, warm watercolor coloring, Belgrade, cinematic lighting, vertical 9:16, no text, no letters, no signs with writing, empty speech bubbles not included`
-Персонажи (повторять в каждом промпте): `Misha: Russian man ~30, messy brown hair, stubble, olive jacket, big hiking backpack` · `Anya: woman ~28, long auburn hair, red t-shirt, jeans, small backpack, paper map` · `Milos: Serbian man ~30, short dark hair, friendly grin, light blue t-shirt`
+Персонажи (повторять в каждом промпте): `Misha: man ~30, messy brown hair, stubble, olive-green hooded jacket with patches, olive cargo pants, brown boots, big hiking backpack` · `Anya: woman ~28, bright red shoulder-length hair, red t-shirt, blue jeans, red sneakers, small backpack, paper map` · `Milos: Serbian man ~30, curly dark hair, short beard, big smile, brown-yellow plaid flannel shirt over white tee, jeans`
 1. night bus station in Belgrade, Misha and Anya with backpacks, Anya holding a nearly empty wallet, tired but excited
 2. small old apartment doorway, elderly Serbian landlady in a floral robe pointing a finger, Misha confused
 4. long queue of people outside a grey police administration building in the morning, Misha confident, Anya doubtful
