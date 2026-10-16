@@ -1,0 +1,51 @@
+# Служебное: подготовка кадров для роликов — ИИ-увеличение (EDSR ×4) и карта глубины (Depth Anything V2) для 2.5D-камеры.
+# Берёт promo/media/<dir>/*.png, кладёт рядом *_x4.png и *_depth.png.
+name: enhance
+on:
+  workflow_dispatch:
+    inputs:
+      dir:
+        description: 'Папка внутри promo/media'
+        required: true
+permissions:
+  contents: write
+concurrency:
+  group: media
+jobs:
+  enhance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Models
+        run: |
+          pip install -q onnxruntime opencv-contrib-python-headless numpy
+          curl -sSfL -o /tmp/depth.onnx https://huggingface.co/onnx-community/depth-anything-v2-small/resolve/main/onnx/model.onnx
+          curl -sSfL -o /tmp/EDSR_x4.pb https://github.com/Saafke/EDSR_Tensorflow/raw/master/models/EDSR_x4.pb
+      - name: Process
+        env:
+          DIR: ${{ inputs.dir }}
+        run: |
+          case "$DIR" in *..*|/*) echo "bad dir"; exit 1;; esac
+          python3 - <<'PY'
+          import cv2, numpy as np, onnxruntime as ort, glob, os
+          d = 'promo/media/' + os.environ['DIR']
+          sr = cv2.dnn_superres.DnnSuperResImpl_create(); sr.readModel('/tmp/EDSR_x4.pb'); sr.setModel('edsr', 4)
+          s = ort.InferenceSession('/tmp/depth.onnx'); name = s.get_inputs()[0].name
+          for f in sorted(glob.glob(d + '/*.png')):
+              if f.endswith(('_x4.png', '_depth.png')): continue
+              im = cv2.imread(f); base = f[:-4]
+              cv2.imwrite(base + '_x4.png', sr.upsample(im)); print('x4', f)
+              x = cv2.resize(cv2.cvtColor(im, cv2.COLOR_BGR2RGB), (518, 518), interpolation=cv2.INTER_CUBIC).astype(np.float32) / 255
+              x = ((x - [0.485, 0.456, 0.406]) / [0.229, 0.224, 0.225]).transpose(2, 0, 1)[None].astype(np.float32)
+              dep = s.run(None, {name: x})[0].squeeze()
+              dep = (dep - dep.min()) / (dep.max() - dep.min() + 1e-6)
+              cv2.imwrite(base + '_depth.png', (cv2.resize(dep, (im.shape[1] * 4, im.shape[0] * 4), interpolation=cv2.INTER_CUBIC) * 65535).astype(np.uint16)); print('depth', f)
+          PY
+      - name: Save
+        run: |
+          git add promo/media
+          git diff --cached --quiet && exit 0
+          git config user.name "srpski-bot"; git config user.email "srpski-bot@users.noreply.github.com"
+          git commit -q -m "Media: enhance ${{ inputs.dir }}"
+          for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && exit 0; sleep 5; done
+          exit 1
