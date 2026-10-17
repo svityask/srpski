@@ -32,6 +32,7 @@ elif cmd == 'run':
         if shot.get('skip'): continue
         def val(v):
             if isinstance(v, str) and v.startswith('file:'): return handle_file(v[5:])
+            if isinstance(v, str) and v.startswith('gallery:'): return [{'image': handle_file(x), 'caption': None} for x in v[8:].split(',')]
             if isinstance(v, str) and v.startswith('b64:'):  # data URL: data:image/png;base64,...
                 import base64; return 'data:image/png;base64,' + base64.b64encode(open(v[4:], 'rb').read()).decode()
             return v
@@ -47,7 +48,7 @@ elif cmd == 'run':
                 import base64; fn = f"/tmp/{shot['name']}.mp4"; open(fn, 'wb').write(base64.b64decode(x.split(',')[-1])); return fn
             if isinstance(x, dict):
                 print('  keys:', list(x.keys()))
-                for k in ('video', 'path', 'value', 'video_path', 'url', 'output', 'result'):
+                for k in ('video', 'image', 'path', 'value', 'video_path', 'url', 'output', 'result'):
                     if x.get(k):
                         f = find(x[k])
                         if f: return f
