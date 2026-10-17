@@ -1,0 +1,65 @@
+{
+ "model": "eleven_multilingual_v2",
+ "settings": {
+  "stability": 0.45,
+  "similarity_boost": 0.8,
+  "style": 0.35,
+  "use_speaker_boost": true,
+  "speed": 1.0
+ },
+ "lines": [
+  {
+   "id": "clerk1",
+   "text": "Gde je vlasnik stana?",
+   "seed": 5
+  },
+  {
+   "id": "clerk2",
+   "text": "A ugovor o zakupu?",
+   "seed": 5
+  },
+  {
+   "id": "vesna1",
+   "text": "Ma dobro, deco, sad ću, samo da nađem naočare, gde su mi ključevi, joj, ne znam gde mi je glava danas!",
+   "seed": 5,
+   "settings": {
+    "speed": 1.2,
+    "style": 0.6
+   }
+  },
+  {
+   "id": "vesna2",
+   "text": "Aaa! Pa što ne kažete odmah? Dolazim za pola sata!",
+   "seed": 5,
+   "settings": {
+    "style": 0.6
+   }
+  },
+  {
+   "id": "anya1",
+   "text": "Izvinite, govorite polako, molim vas.",
+   "seed": 5,
+   "settings": {
+    "speed": 0.9
+   }
+  },
+  {
+   "id": "anya2",
+   "text": "Treba nam prijava boravka.",
+   "seed": 5,
+   "settings": {
+    "speed": 0.9
+   }
+  },
+  {
+   "id": "misha1",
+   "text": "…Чего?",
+   "seed": 5
+  },
+  {
+   "id": "misha2",
+   "text": "Я не понял ни слова!",
+   "seed": 5
+  }
+ ]
+}
