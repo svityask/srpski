@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Golos+Text:wght@500;600;700&display=block" rel="stylesheet">
+<style>html,body{margin:0;background:transparent}
+.o{position:absolute;left:0;top:0;width:1080px;height:1920px;display:none}
+#bub{position:absolute;left:58px;right:96px;top:96px;background:#fff;border:8px solid #14110f;border-radius:56px;padding:40px 46px 38px;box-shadow:0 18px 0 rgba(20,17,15,.18)}
+#bub b{display:block;font:800 74px/1.08 Unbounded;color:#14110f;letter-spacing:-.01em}
+#bub i{display:block;font:600 34px/1.3 'Golos Text';font-style:normal;color:#a3262f;margin-top:18px}
+#bub:after{content:"";position:absolute;left:var(--tx,400px);bottom:-78px;border-left:34px solid transparent;border-right:16px solid transparent;border-top:80px solid #14110f}
+#bub:before{content:"";position:absolute;left:calc(var(--tx,400px) + 9px);bottom:-60px;border-left:23px solid transparent;border-right:9px solid transparent;border-top:62px solid #fff;z-index:2}
+#sign{position:absolute;left:50%;top:var(--sy,330px);transform:translateX(-50%);background:#1c3f8c;color:#fff;border:9px solid #fff;outline:7px solid #1c3f8c;border-radius:20px;padding:16px 58px 12px;font:800 96px Unbounded;letter-spacing:.02em;box-shadow:0 20px 40px rgba(0,0,0,.35)}
+</style></head><body>
+<div class="o" id="O_bub"><div id="bub"><b>Dobar dan! Dobro došli u&nbsp;Srbiju!</b><i>[добар дан! добро дошли у Србию!]<br>Добрый день! Добро пожаловать в Сербию!</i></div></div>
+<div class="o" id="O_sign"><div id="sign">BEOGRAD</div></div>
+<div class="o" id="O_end"><div style="position:absolute;left:0;right:0;top:640px;text-align:center;color:#f3ead8">
+<div style="font:800 170px/1 Unbounded;letter-spacing:-.02em;text-shadow:0 10px 40px rgba(0,0,0,.6)">POLAKO</div>
+<div style="font:700 50px 'Golos Text';color:#e8b13a;margin-top:34px;letter-spacing:.06em">СЕРИЯ 2 · СКОРО</div>
+<div style="font:600 40px/1.35 'Golos Text';margin-top:120px;color:#fff">МУП, очереди и первый бурек</div>
+<div style="display:inline-block;margin-top:70px;background:#1c3f8c;color:#fff;border:6px solid #fff;border-radius:999px;padding:22px 54px;font:800 40px Unbounded">Srpski · ссылка в профиле</div>
+</div></div>
+<div class="o" id="O_cap"><div style="position:absolute;left:64px;top:150px;background:#e8b13a;border:7px solid #14110f;padding:22px 34px 18px;font:800 46px Unbounded;color:#14110f;letter-spacing:.02em;box-shadow:10px 10px 0 #14110f;transform:rotate(-1.5deg)">БЕЛГРАД · ПЕРВЫЙ ВЕЧЕР</div></div>
+<script>window.show=(id,vars)=>{document.querySelectorAll('.o').forEach(e=>e.style.display='none');const e=document.getElementById(id);e.style.display='block';for(const k in vars)document.documentElement.style.setProperty(k,vars[k]);}</script>
+</body></html>
