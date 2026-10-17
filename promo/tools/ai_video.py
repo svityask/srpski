@@ -32,8 +32,8 @@ elif cmd == 'run':
         if shot.get('skip'): continue
         def val(v):
             if isinstance(v, str) and v.startswith('file:'): return handle_file(v[5:])
-            if isinstance(v, str) and v.startswith('b64:'):
-                import base64; return base64.b64encode(open(v[4:], 'rb').read()).decode()
+            if isinstance(v, str) and v.startswith('b64:'):  # data URL: data:image/png;base64,...
+                import base64; return 'data:image/png;base64,' + base64.b64encode(open(v[4:], 'rb').read()).decode()
             return v
         args = {k: val(v) for k, v in {**job.get('defaults', {}), **shot['args']}.items()}
         for attempt in range(2):
