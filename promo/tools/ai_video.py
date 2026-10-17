@@ -30,7 +30,12 @@ elif cmd == 'run':
     c = Client(sp, token=TOKEN, verbose=False)
     for shot in job['shots']:
         if shot.get('skip'): continue
-        args = {k: (handle_file(v[5:]) if isinstance(v, str) and v.startswith('file:') else v) for k, v in shot['args'].items()}
+        def val(v):
+            if isinstance(v, str) and v.startswith('file:'): return handle_file(v[5:])
+            if isinstance(v, str) and v.startswith('b64:'):
+                import base64; return base64.b64encode(open(v[4:], 'rb').read()).decode()
+            return v
+        args = {k: val(v) for k, v in {**job.get('defaults', {}), **shot['args']}.items()}
         for attempt in range(2):
             try:
                 t = time.time(); r = c.predict(api_name=job['api_name'], **args); print(shot['name'], 'ok', round(time.time() - t), 's', str(r)[:300]); break
@@ -38,7 +43,16 @@ elif cmd == 'run':
         if r is None: continue
         def find(x):
             if isinstance(x, str) and os.path.exists(x): return x
-            if isinstance(x, dict): return find(x.get('video') or x.get('path') or x.get('value'))
+            if isinstance(x, str) and len(x) > 1000:  # base64 video
+                import base64; fn = f"/tmp/{shot['name']}.mp4"; open(fn, 'wb').write(base64.b64decode(x.split(',')[-1])); return fn
+            if isinstance(x, dict):
+                print('  keys:', list(x.keys()))
+                for k in ('video', 'path', 'value', 'video_path', 'url', 'output', 'result'):
+                    if x.get(k):
+                        f = find(x[k])
+                        if f: return f
+                if x.get('url', '').startswith('http'):
+                    import urllib.request; fn = f"/tmp/{shot['name']}.mp4"; urllib.request.urlretrieve(x['url'], fn); return fn
             if isinstance(x, (list, tuple)):
                 for y in x:
                     f = find(y)
