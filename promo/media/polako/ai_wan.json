@@ -11,20 +11,13 @@
  },
  "shots": [
   {
-   "name": "p3",
-   "args": {
-    "image_b64": "b64:promo/media/polako/clean/p3.png",
-    "duration_seconds": 5,
-    "prompt": "Hand-drawn comic book animation inside a cosy Serbian kafana. The curly-haired bearded man in a plaid shirt smiles warmly at the camera, raises his small coffee cup in a friendly greeting, nods and speaks cheerfully, steam rises gently from the cup, warm sunset light through the window. Subtle slow camera push-in, consistent cartoon style, no text."
-   }
-  },
-  {
    "name": "p2",
    "args": {
     "image_b64": "b64:promo/media/polako/clean/p2.png",
     "duration_seconds": 4,
     "prompt": "Hand-drawn comic book animation at sunset. The airliner descends onto the runway, its rear wheels touch down and puffs of white tyre smoke burst from the wheels, the plane rolls forward toward the camera, runway lights glow, Belgrade skyline with a TV tower in the background. Cinematic, slight camera shake on touchdown, consistent cartoon style."
-   }
+   },
+   "skip": false
   },
   {
    "name": "p1",
@@ -32,7 +25,17 @@
     "image_b64": "b64:promo/media/polako/clean/p1.png",
     "duration_seconds": 5,
     "prompt": "Hand-drawn comic book animation. A white passenger airliner with a red and blue stripe cruises steadily above a sea of fluffy white clouds in a deep blue sky. The camera smoothly tracks alongside the plane, clouds drift past below, sunlight glints on the fuselage. Cinematic, smooth motion, consistent cartoon style."
-   }
+   },
+   "skip": false
+  },
+  {
+   "name": "p3",
+   "args": {
+    "image_b64": "b64:promo/media/polako/clean/p3.png",
+    "duration_seconds": 5,
+    "prompt": "Hand-drawn comic book animation inside a cosy Serbian kafana. The curly-haired bearded man in a plaid shirt smiles warmly at the camera, raises his small coffee cup in a friendly greeting, nods and speaks cheerfully, steam rises gently from the cup, warm sunset light through the window. Subtle slow camera push-in, consistent cartoon style, no text."
+   },
+   "skip": true
   }
  ]
 }
