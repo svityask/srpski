@@ -1,0 +1,36 @@
+# Служебное: ИИ-видео из кадров через бесплатные GPU-демо Hugging Face (promo/tools/ai_video.py).
+name: ai
+on:
+  workflow_dispatch:
+    inputs:
+      cmd:
+        description: 'discover | api <space> | run <space> <job.json>'
+        required: true
+        default: 'discover'
+permissions:
+  contents: write
+concurrency:
+  group: media
+jobs:
+  ai:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -q gradio_client huggingface_hub
+      - name: Run
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          CMD: ${{ inputs.cmd }}
+        run: python promo/tools/ai_video.py $CMD
+      - name: Save
+        run: |
+          git add promo/media || true
+          git diff --cached --quiet && exit 0
+          git config user.name "srpski-bot"; git config user.email "srpski-bot@users.noreply.github.com"
+          git commit -q -m "Media: AI video"
+          for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && exit 0; sleep 5; done
+          exit 1
