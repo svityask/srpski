@@ -11,12 +11,14 @@
   {
    "id": "clerk1",
    "text": "Gde je vlasnik stana?",
-   "seed": 5
+   "seed": 5,
+   "voice": "Laura"
   },
   {
    "id": "clerk2",
    "text": "A ugovor o zakupu?",
-   "seed": 5
+   "seed": 5,
+   "voice": "Laura"
   },
   {
    "id": "vesna1",
@@ -25,7 +27,8 @@
    "settings": {
     "speed": 1.2,
     "style": 0.6
-   }
+   },
+   "voice": "Matilda"
   },
   {
    "id": "vesna2",
@@ -33,7 +36,8 @@
    "seed": 5,
    "settings": {
     "style": 0.6
-   }
+   },
+   "voice": "Matilda"
   },
   {
    "id": "anya1",
@@ -41,7 +45,8 @@
    "seed": 5,
    "settings": {
     "speed": 0.9
-   }
+   },
+   "voice": "Jessica"
   },
   {
    "id": "anya2",
@@ -49,17 +54,20 @@
    "seed": 5,
    "settings": {
     "speed": 0.9
-   }
+   },
+   "voice": "Jessica"
   },
   {
    "id": "misha1",
    "text": "…Чего?",
-   "seed": 5
+   "seed": 5,
+   "voice": "Liam"
   },
   {
    "id": "misha2",
    "text": "Я не понял ни слова!",
-   "seed": 5
+   "seed": 5,
+   "voice": "Liam"
   }
  ]
 }

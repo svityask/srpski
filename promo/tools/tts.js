@@ -39,12 +39,14 @@ const api = async (url, opt = {}) => {
   const only = (onlyArg || '').split(',').map((s) => s.trim()).filter(Boolean);
   const lines = cfg.lines.filter((l) => !only.length || only.includes(l.id));
   let chars = 0;
-  for (const name of want) {
+  // у строки может быть свой голос (поле voice) — тогда все роли озвучиваются за один запуск
+  const groups = want.length ? want.map((w) => [w, lines]) : [...new Set(lines.map((l) => l.voice))].map((w) => [w, lines.filter((l) => l.voice === w)]);
+  for (const [name, part] of groups) {
     const v = voices.find((x) => x.voice_id === name || x.name.toLowerCase().startsWith(name.toLowerCase()));
     if (!v) { console.log(`⚠️ Голос «${name}» не найден — пропускаю`); continue; }
     const dir = path.join(OUT, tag, name.replace(/[^\w-]/g, ''));
     fs.mkdirSync(dir, { recursive: true });
-    for (const l of lines) {
+    for (const l of part) {
       const body = { text: l.text, model_id: l.model || cfg.model || 'eleven_multilingual_v2', voice_settings: { ...cfg.settings, ...(l.settings || {}) } };
       for (const k of ['previous_text', 'next_text', 'seed', 'language_code']) if (l[k] != null) body[k] = l[k]; // контекст соседних фраз — короткие куски не «додумываются»
       const r = await api(`/text-to-speech/${v.voice_id}?output_format=mp3_44100_128`, { method: 'POST', body: JSON.stringify(body) });
