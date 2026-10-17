@@ -9,7 +9,7 @@ cmd = sys.argv[1]
 if cmd == 'discover':
     api = HfApi(token=TOKEN)
     seen = set()
-    for q in ['image-to-video', 'wan2', 'ltx-video', 'wan 2.2', 'i2v', 'framepack', 'hunyuan video', 'kandinsky video']:
+    for q in (sys.argv[2].split(',') if len(sys.argv) > 2 else ['image-to-video', 'wan2', 'ltx-video', 'wan 2.2', 'i2v', 'framepack', 'hunyuan video', 'kandinsky video']):
         try:
             for s in api.list_spaces(search=q, sort='likes', limit=25, expand=['runtime', 'likes', 'sdk', 'lastModified']):
                 if s.id in seen: continue
