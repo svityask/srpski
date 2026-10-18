@@ -1,9 +1,11 @@
+import { DurableObject } from 'cloudflare:workers';
 // Cloudflare Worker перед статикой приложения: файлы сайта отдаёт ASSETS, здесь — только два адреса API.
 //   POST /api/feedback — сообщение из приложения → Telegram (секреты TELEGRAM_BOT_TOKEN и FEEDBACK_CHAT_ID в настройках воркера)
 //   cron каждые 10 минут — будильник автопостинга: если в promo/daily/plan.json есть пост, чьё время наступило,
 //                          запускает GitHub Actions publish.yml (секрет GH_TOKEN). Расписание GitHub часто пропускает запуски.
 //   POST /api/tg       — Telegram-бот: пишут «МУП», «банк», «врач», «аренда» → шлём шпаргалку-карусель (лидмагнит)
-//   POST /api/e        — анонимное событие (открыл приложение, прошёл урок) → журнал воркера (Workers Logs, раздел Observability)
+//   POST /api/e        — анонимное событие (открыл приложение, прошёл урок) → журнал воркера + счётчик в Durable Object Stats
+//   cron пн 07:00 UTC  — недельный отчёт (открытия, новые, установки, уроки, лиды бота, подписчики канала) в личку владельцу
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 const hits = new Map(); // простая защита от спама: не больше 5 сообщений в час с одного адреса (в пределах экземпляра)
 
@@ -30,6 +32,7 @@ async function event(req, env, ctx) {
   const name = String(b.e || '').slice(0, 32);
   if (/^[a-z_]+$/.test(name)) {
     console.log(JSON.stringify({ ev: name, d: String(b.d || '').slice(0, 64), n: +b.n || 0, where: b.sa ? 'home' : 'web', country: (req.cf && req.cf.country) || '' }));
+    if (['open', 'new', 'install', 'done'].includes(name)) count(env, ctx, name, b.sa ? 'home' : 'web');
   }
   return new Response(null, { status: 204 });
 }
@@ -44,7 +47,7 @@ async function tg(env, m, body) {
 async function bot(req, env) {
   if (!env.TELEGRAM_BOT_TOKEN) return new Response(null, { status: 204 });
   // секрет вебхука = первые 32 символа sha256(токена): его же ставит workflow tg-bot.yml
-  if (req.headers.get('x-telegram-bot-api-secret-token') !== (await hex(env.TELEGRAM_BOT_TOKEN)).slice(0, 32)) return new Response(null, { status: 403 });
+  if (req.headers.get('x-telegram-bot-api-secret-token') !== (await hex(env.TELEGRAM_BOT_TOKEN.trim())).slice(0, 32)) return new Response(null, { status: 403 });
   const u = await req.json().catch(() => ({}));
   const msg = u.message || (u.callback_query && u.callback_query.message);
   if (!msg || !msg.chat || msg.chat.type !== 'private') return new Response(null, { status: 204 });
@@ -58,10 +61,47 @@ async function bot(req, env) {
     await tg(env, 'sendMessage', { chat_id: chat, text: 'Zdravo! 👋 Я пришлю шпаргалку с фразами для жизни в Сербии.\n\nНапишите слово: МУП, банк, врач или аренда — или выберите ниже 👇', reply_markup: menu });
   } else {
     console.log(JSON.stringify({ ev: 'lead', d: hit.id }));
+    await count(env, null, 'lead', hit.id);
     await tg(env, 'sendMediaGroup', { chat_id: chat, media: hit.images.slice(0, 10).map((f, i) => ({ type: 'photo', media: RAW + f, ...(i === 0 ? { caption: `Шпаргалка: ${hit.title} 🇷🇸` } : {}) })) });
     await tg(env, 'sendMessage', { chat_id: chat, text: `Все эти фразы с озвучкой — в бесплатном приложении Srpski: ${APP}\n\nЕщё шпаргалки 👇`, reply_markup: menu, disable_web_page_preview: true });
   }
   return new Response(null, { status: 204 });
+}
+
+// --- Статистика: счётчики событий по дням в Durable Object (SQLite) + еженедельный отчёт в Telegram ---
+export class Stats extends DurableObject {
+  constructor(ctx, env) {
+    super(ctx, env);
+    this.sql = ctx.storage.sql;
+    this.sql.exec('CREATE TABLE IF NOT EXISTS c (day TEXT, ev TEXT, d TEXT, n INTEGER, PRIMARY KEY (day, ev, d))');
+  }
+  add(day, ev, d) { this.sql.exec('INSERT INTO c VALUES (?, ?, ?, 1) ON CONFLICT DO UPDATE SET n = n + 1', day, ev, d); }
+  sum(from, to) { return this.sql.exec('SELECT ev, d, SUM(n) AS n FROM c WHERE day >= ? AND day < ? GROUP BY ev, d', from, to).toArray(); }
+}
+const stats = (env) => env.STATS && env.STATS.get(env.STATS.idFromName('main'));
+function count(env, ctx, ev, d) {
+  const s = stats(env); if (!s) return;
+  const p = s.add(bg(Date.now()).slice(0, 10), ev, String(d || '')).catch((e) => console.log('stats: ' + e.message));
+  if (ctx) ctx.waitUntil(p); else return p;
+}
+async function report(env) {
+  const s = stats(env); if (!s || !env.TELEGRAM_BOT_TOKEN || !env.FEEDBACK_CHAT_ID) return 'stats not configured';
+  const day = (k) => bg(Date.now() - k * 864e5).slice(0, 10);
+  const [now, prev] = await Promise.all([s.sum(day(7), day(0)), s.sum(day(14), day(7))]);
+  const tot = (rows, ev, d) => rows.filter((r) => r.ev === ev && (d == null || r.d === d)).reduce((a, r) => a + r.n, 0);
+  const line = (label, ev, d) => { const a = tot(now, ev, d), b = tot(prev, ev, d); return `${label}: <b>${a}</b>${b ? ` (${a >= b ? '+' : ''}${Math.round(((a - b) / b) * 100)}%)` : ''}`; };
+  const leads = now.filter((r) => r.ev === 'lead').map((r) => `${r.d} ${r.n}`).join(', ');
+  const tgc = await (await tg(env, 'getChatMemberCount', { chat_id: '@srpski_coach' })).json().catch(() => ({}));
+  const plan = await (await fetch(RAW + 'promo/daily/plan.json?t=' + Date.now(), { cf: { cacheTtl: 0 } })).json().catch(() => ({ items: [] }));
+  const posts = plan.items.filter((p) => p.status === 'published' && p.date >= day(7) && p.date < day(0)).length;
+  const text = [
+    `📊 <b>Srpski — неделя ${day(7)} … ${day(1)}</b>`, '',
+    line('Открытий (уник. в день)', 'open'), line('Новых пользователей', 'new'), line('Установок на экран', 'install'),
+    line('Пройдено уроков', 'done'), line('Лидов из бота', 'lead') + (leads ? ` — ${leads}` : ''), '',
+    `Telegram @srpski_coach: <b>${tgc.result ?? '?'}</b> подписчиков`, `Постов опубликовано: <b>${posts}</b>`,
+  ].join('\n');
+  const r = await tg(env, 'sendMessage', { chat_id: env.FEEDBACK_CHAT_ID, text, parse_mode: 'HTML' });
+  return 'report ' + r.status;
 }
 
 const bg = (ms) => {
@@ -84,13 +124,19 @@ async function alarm(env) {
   return res;
 }
 
+const WEEKLY = '0 7 * * 1'; // понедельник 07:00 UTC = 09:00 по Белграду (летом)
 export default {
-  async scheduled(event, env, ctx) { ctx.waitUntil(alarm(env).catch((e) => console.log('alarm skipped: ' + e.message))); },
+  async scheduled(event, env, ctx) {
+    if (event.cron === WEEKLY) return ctx.waitUntil(report(env).then(console.log, (e) => console.log('report failed: ' + e.message)));
+    ctx.waitUntil(alarm(env).catch((e) => console.log('alarm skipped: ' + e.message)));
+  },
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
     if (req.method === 'POST' && url.pathname === '/api/feedback') return feedback(req, env);
     if (req.method === 'POST' && url.pathname === '/api/e') return event(req, env, ctx);
     if (req.method === 'POST' && url.pathname === '/api/tg') return bot(req, env);
+    // ручной запуск отчёта (workflow tg-bot.yml): тот же секрет, что у вебхука
+    if (req.method === 'POST' && url.pathname === '/api/report' && env.TELEGRAM_BOT_TOKEN && req.headers.get('x-secret') === (await hex(env.TELEGRAM_BOT_TOKEN.trim())).slice(0, 32)) return json({ ok: true, r: await report(env) });
     if (url.pathname.startsWith('/api/')) return json({ ok: false }, 404);
     return env.ASSETS.fetch(req);
   },

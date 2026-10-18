@@ -15,3 +15,4 @@ jobs:
           curl -s "https://api.telegram.org/bot$T/setWebhook" -d url=https://zdravo.srpski.workers.dev/api/tg -d secret_token=$SEC -d 'allowed_updates=["message","callback_query"]'; echo
           curl -s "https://api.telegram.org/bot$T/setMyCommands" -H 'content-type: application/json' -d '{"commands":[{"command":"start","description":"Шпаргалки: МУП, банк, врач, аренда"}]}'; echo
           curl -s "https://api.telegram.org/bot$T/getWebhookInfo" | python3 -c "import json,sys;r=json.load(sys.stdin)['result'];print('webhook:',r.get('url'),'pending:',r.get('pending_update_count'),'err:',r.get('last_error_message'))"
+          sleep 1; echo "test report:"; curl -s -X POST https://zdravo.srpski.workers.dev/api/report -H "x-secret: $SEC"; echo

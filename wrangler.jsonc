@@ -11,6 +11,10 @@
   "vars": { "FEEDBACK_CHAT_ID": "673873149" },
   "keep_vars": true,
   // будильник автопостинга: раз в 10 минут проверяет очередь и при необходимости запускает GitHub Actions
-  "triggers": { "crons": ["*/10 * * * *"] },
+  // + еженедельный отчёт по понедельникам (worker.js → report)
+  "triggers": { "crons": ["*/10 * * * *", "0 7 * * 1"] },
+  // счётчики событий /api/e и лидов бота: Durable Object на SQLite (есть на бесплатном тарифе)
+  "durable_objects": { "bindings": [{ "name": "STATS", "class_name": "Stats" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Stats"] }],
   "observability": { "enabled": true }
 }
