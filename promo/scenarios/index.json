@@ -10,6 +10,7 @@
    "карт"
   ],
   "images": [
+   "promo/scenarios/sheets/banka.jpg",
    "promo/daily/2026-10-22/13-scenario-banka-1.jpg",
    "promo/daily/2026-10-22/13-scenario-banka-2.jpg",
    "promo/daily/2026-10-22/13-scenario-banka-3.jpg",
@@ -31,6 +32,7 @@
    "болит"
   ],
   "images": [
+   "promo/scenarios/sheets/lekar.jpg",
    "promo/daily/2026-10-25/13-scenario-lekar-1.jpg",
    "promo/daily/2026-10-25/13-scenario-lekar-2.jpg",
    "promo/daily/2026-10-25/13-scenario-lekar-3.jpg",
@@ -53,6 +55,7 @@
    "beli karton"
   ],
   "images": [
+   "promo/scenarios/sheets/mup.jpg",
    "promo/daily/2026-10-19/13-scenario-mup-1.jpg",
    "promo/daily/2026-10-19/13-scenario-mup-2.jpg",
    "promo/daily/2026-10-19/13-scenario-mup-3.jpg",
@@ -73,6 +76,7 @@
    "жиль"
   ],
   "images": [
+   "promo/scenarios/sheets/stan.jpg",
    "promo/daily/2026-10-28/13-scenario-stan-1.jpg",
    "promo/daily/2026-10-28/13-scenario-stan-2.jpg",
    "promo/daily/2026-10-28/13-scenario-stan-3.jpg",

@@ -64,7 +64,7 @@
   <p class="eyebrow">@srpski_coach</p>
   <h1>Материалы для Instagram</h1>
   <p class="lead">Рилсы, посты и подписи в одном месте. На iPhone: видео → «Поделиться» → «Сохранить видео»; картинку — долгое нажатие → «Добавить в Фото».</p>
-  <nav><a href="#reels">Рилсы</a><a href="#posts">Посты</a><a href="#profile">Профиль и баннер</a></nav>
+  <nav><a href="#reels">Рилсы</a><a href="#posts">Посты</a><a href="#chats">Для чатов</a><a href="#profile">Профиль и баннер</a></nav>
   <div id="list"></div>
 </main>
 <div class="toast" id="toast" role="status"></div>
@@ -125,6 +125,7 @@ for (const r of REELS) h += `<div class="card"><div class="card-h"><h2>${esc(r.t
   <p class="hint">Музыка: ${esc(r.music)}</p>${caption(r.caption)}</div>`;
 h += '</section><section id="posts"><h3>Посты по дням — выкладывать вручную</h3><div id="daily"><p class="hint">Загружаю очередь…</p></div><h3 style="margin-top:26px">Посты из запаса</h3>';
 for (const p of POSTS) h += `<div class="card"><div class="card-h"><h2>${esc(p.title)}</h2>${p.done ? '<span class="badge">✓ выложен</span>' : ''}</div>${strip(p.imgs)}<p class="hint">Нажмите на слайд, чтобы открыть и сохранить.</p>${caption(p.caption)}</div>`;
+h += '</section><section id="chats"><h3>Шпаргалки для чатов релокантов</h3><div id="seed"><p class="hint">Загружаю…</p></div>';
 h += '</section><section id="profile"><h3>Профиль и баннер</h3>';
 for (const p of PROFILE) h += `<div class="card"><h2>${esc(p.title)}</h2>${strip(p.imgs, p.cls)}</div>`;
 h += '</section>';
@@ -180,6 +181,12 @@ document.addEventListener('click', (e) => {
   box.addEventListener('change', (e) => { const id = e.target.dataset.done; if (!id) return; if (e.target.checked) mine[id] = 1; else delete mine[id]; try { localStorage.setItem(KEY, JSON.stringify(mine)); } catch (er) { /* не важно */ } draw(); });
   draw();
 })();
+fetch('scenarios/seeding.json').then((r) => r.json()).then((d) => {
+  let h = `<div class="card"><h2>Как постить</h2><p class="hint">${esc(d.rules)}</p><p class="hint">${esc(d.chats)}</p></div>`;
+  for (const it of d.items) h += `<div class="card"><h2>${esc(it.id.toUpperCase())}</h2><div class="strip tall"><a href="../${it.sheet}" download><img src="../${it.sheet}" alt="" loading="lazy"></a></div>
+    ${caption(it.reply).replace('Подпись</summary>', 'Ответ на вопрос в чате</summary>')}${caption(it.post).replace('Подпись</summary>', 'Отдельный пост в чат</summary>')}</div>`;
+  document.getElementById('seed').innerHTML = h;
+}).catch(() => { document.getElementById('seed').innerHTML = '<p class="hint">Не загрузилось</p>'; });
 </script>
 </body>
 </html>
