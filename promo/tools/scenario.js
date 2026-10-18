@@ -23,7 +23,7 @@ const slides = [
    <div class="cv-plate" lang="sr">${esc(s.plate || 'MUP')}</div><div style="margin-top:auto;margin-bottom:40px"><span class="badge">Листайте →</span></div>${foot(1)}</div>`,
   ...s.steps.map((st, k) => `<div class="s sc"><p class="eyebrow">Шаг ${k + 1} · ${esc(st.h)}</p><div class="dlg">${st.lines.map((l) =>
     `<div class="${l.me ? 'me' : 'them'}"><small>${l.me ? 'Вы' : 'Вам скажут'}</small><b lang="sr">${esc(l.sr)}</b><span>[${esc(l.tr)}] — ${esc(l.ru)}</span></div>`).join('')}</div>${foot(k + 2)}</div>`),
-  `<div class="s sc"><p class="eyebrow">Важно знать</p><h2 style="margin-top:28px">Перед походом</h2><div class="ph">${s.tips.map((t, k) =>
+  `<div class="s sc"><p class="eyebrow">Важно знать</p><h2 style="margin-top:28px">${esc(s.tipsTitle || "Перед походом")}</h2><div class="ph">${s.tips.map((t, k) =>
     `<div><span class="n">${String(k + 1).padStart(2, '0')}</span><span>${esc(t)}</span></div>`).join('')}</div>${foot(N - 1)}</div>`,
   `<div class="s blue sc"><p class="eyebrow">Сохраните 📌</p><h1 style="margin-top:40px">Перешлите тому, кто только переехал</h1>
    <p class="lead" style="margin-top:36px">Все фразы с озвучкой — в бесплатном приложении Srpski</p>

@@ -482,6 +482,24 @@
   },
   {
    "date": "2026-10-22",
+   "time": "13:00",
+   "type": "scenario",
+   "ref": "banka",
+   "caption": "Счёт в сербском банке: что спросят и что ответить 🏦\n\nŽelim da otvorim račun — Хочу открыть счёт\nKoja dokumenta su potrebna? — Какие документы нужны?\nDinarski ili devizni račun? — Динарский или валютный счёт?\n\nСохраните 📌 Перешлите тому, кто только переехал.\nВсе фразы с озвучкой — в бесплатном приложении Srpski, ссылка в профиле · t.me/srpski_coach\n\n#сербскийязык #сербия #белград #русскиевсербии #релокация #изучениеязыков",
+   "images": [
+    "promo/daily/2026-10-22/13-scenario-banka-1.jpg",
+    "promo/daily/2026-10-22/13-scenario-banka-2.jpg",
+    "promo/daily/2026-10-22/13-scenario-banka-3.jpg",
+    "promo/daily/2026-10-22/13-scenario-banka-4.jpg",
+    "promo/daily/2026-10-22/13-scenario-banka-5.jpg",
+    "promo/daily/2026-10-22/13-scenario-banka-6.jpg",
+    "promo/daily/2026-10-22/13-scenario-banka-7.jpg"
+   ],
+   "telegram_image": "promo/daily/2026-10-22/13-scenario-banka-1.jpg",
+   "status": "pending"
+  },
+  {
+   "date": "2026-10-22",
    "time": "18:00",
    "type": "quiz",
    "ref": "9.1|kirija",
@@ -580,6 +598,24 @@
   },
   {
    "date": "2026-10-25",
+   "time": "13:00",
+   "type": "scenario",
+   "ref": "lekar",
+   "caption": "У врача в Сербии: как объяснить, что болит 🩺\n\nŠta vas boli? — Что у вас болит?\nBoli me grlo i glava — Болит горло и голова\nImam temperaturu — У меня температура\nСкорая — 194\n\nСохраните 📌 Перешлите тому, кто только переехал.\nВсе фразы с озвучкой — в бесплатном приложении Srpski, ссылка в профиле · t.me/srpski_coach\n\n#сербскийязык #сербия #белград #русскиевсербии #релокация #изучениеязыков",
+   "images": [
+    "promo/daily/2026-10-25/13-scenario-lekar-1.jpg",
+    "promo/daily/2026-10-25/13-scenario-lekar-2.jpg",
+    "promo/daily/2026-10-25/13-scenario-lekar-3.jpg",
+    "promo/daily/2026-10-25/13-scenario-lekar-4.jpg",
+    "promo/daily/2026-10-25/13-scenario-lekar-5.jpg",
+    "promo/daily/2026-10-25/13-scenario-lekar-6.jpg",
+    "promo/daily/2026-10-25/13-scenario-lekar-7.jpg"
+   ],
+   "telegram_image": "promo/daily/2026-10-25/13-scenario-lekar-1.jpg",
+   "status": "pending"
+  },
+  {
+   "date": "2026-10-25",
    "time": "18:00",
    "type": "lesson",
    "ref": "4.2",
@@ -668,6 +704,24 @@
     "promo/daily/2026-10-29/10-word-1.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-29/10-word-1.jpg",
+   "status": "pending"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "13:00",
+   "type": "scenario",
+   "ref": "stan",
+   "caption": "Аренда квартиры в Сербии: 8 фраз для звонка по объявлению 🏠\n\nDa li je stan još slobodan? — Квартира ещё свободна?\nDa li su računi uključeni? — Коммуналка включена?\nMože li prijava boravka? — Можно зарегистрироваться?\n\nСохраните 📌 Перешлите тому, кто только переехал.\nВсе фразы с озвучкой — в бесплатном приложении Srpski, ссылка в профиле · t.me/srpski_coach\n\n#сербскийязык #сербия #белград #русскиевсербии #релокация #изучениеязыков",
+   "images": [
+    "promo/daily/2026-10-28/13-scenario-stan-1.jpg",
+    "promo/daily/2026-10-28/13-scenario-stan-2.jpg",
+    "promo/daily/2026-10-28/13-scenario-stan-3.jpg",
+    "promo/daily/2026-10-28/13-scenario-stan-4.jpg",
+    "promo/daily/2026-10-28/13-scenario-stan-5.jpg",
+    "promo/daily/2026-10-28/13-scenario-stan-6.jpg",
+    "promo/daily/2026-10-28/13-scenario-stan-7.jpg"
+   ],
+   "telegram_image": "promo/daily/2026-10-28/13-scenario-stan-1.jpg",
    "status": "pending"
   },
   {
