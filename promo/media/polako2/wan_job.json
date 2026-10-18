@@ -1,0 +1,62 @@
+{
+ "api_name": "/generate_video",
+ "out": "promo/media/polako2/ai",
+ "defaults": {
+  "steps": 6,
+  "negative_prompt": "text, letters, subtitles, watermark, logo, deformed, extra fingers, blurry, low quality, morphing, distorted face, flicker",
+  "guidance_scale": 1,
+  "guidance_scale_2": 1,
+  "seed": 42,
+  "randomize_seed": false
+ },
+ "shots": [
+  {
+   "name": "s1",
+   "args": {
+    "image_b64": "b64:promo/media/polako2/clean/s1.png",
+    "duration_seconds": 3,
+    "prompt": "The red-haired woman urgently shakes the sleepy man's shoulder, he blinks, yawns and sits up, the phone on the nightstand lights up. Hand-drawn comic book animation, consistent cartoon style, smooth motion, no text."
+   }
+  },
+  {
+   "name": "s2",
+   "args": {
+    "image_b64": "b64:promo/media/polako2/clean/s2.png",
+    "duration_seconds": 4,
+    "prompt": "The man proudly slides his passport across the counter and smiles confidently, people in the queue behind him shift and look around, subtle camera push-in. Hand-drawn comic book animation, consistent cartoon style, smooth motion, no text."
+   }
+  },
+  {
+   "name": "s3",
+   "args": {
+    "image_b64": "b64:promo/media/polako2/clean/s3.png",
+    "duration_seconds": 4,
+    "prompt": "The red-haired woman holds the phone to her ear, listens anxiously and shakes her head, the man paces nervously and runs his hand through his hair, slight handheld camera. Hand-drawn comic book animation, consistent cartoon style, smooth motion, no text."
+   }
+  },
+  {
+   "name": "s4",
+   "args": {
+    "image_b64": "b64:promo/media/polako2/clean/s4.png",
+    "duration_seconds": 4,
+    "prompt": "The elderly grandmother talks very fast and excitedly into the phone, waving her free hand, nodding and laughing, her curlers bouncing. Hand-drawn comic book animation, consistent cartoon style, smooth motion, no text."
+   }
+  },
+  {
+   "name": "s5",
+   "args": {
+    "image_b64": "b64:promo/media/polako2/clean/s5.png",
+    "duration_seconds": 4,
+    "prompt": "The red-haired woman speaks calmly and confidently into the phone with a small smile, the man next to her stares at her in amazement, then slowly smiles. Hand-drawn comic book animation, consistent cartoon style, smooth motion, no text."
+   }
+  },
+  {
+   "name": "s6",
+   "args": {
+    "image_b64": "b64:promo/media/polako2/clean/s6.png",
+    "duration_seconds": 3,
+    "prompt": "The trio stand at the counter smiling with relief, the grandmother proudly raises her documents, behind the glass the clerk raises one eyebrow sceptically. Hand-drawn comic book animation, consistent cartoon style, smooth motion, no text."
+   }
+  }
+ ]
+}
