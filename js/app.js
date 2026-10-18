@@ -223,7 +223,7 @@
   const main = $('#main');
 
   // анонимная статистика: какие разделы проходят — без имён, адресов и прогресса (только на сайте Cloudflare, где есть API)
-  const APP_VER = 'srpski-10';
+  const APP_VER = 'srpski-11';
   const standalone = () => !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
   const API_ON = location.protocol === 'https:' && /\.workers\.dev$/.test(location.hostname);
   function track(e, d, n) {
@@ -1124,7 +1124,8 @@
     }
     save(); P.answered = true; persistRun();
     beep(ok);
-    feedback(ok, x.it, exactNote);
+    // в диктанте и аудировании фраза на экране не показана — после верного ответа всегда даём её с переводом
+    feedback(ok, x.it, exactNote || (ok && (x.t === 'dict' || x.t === 'listen') ? 'Перевод: ' : ''));
     if (S.autoplay && x.t !== 'listen') speak(x.it.say);
   }
   function feedback(ok, it, note) {
