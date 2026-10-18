@@ -29,7 +29,7 @@ elif cmd == 'run':
     out = job['out']; os.makedirs(out, exist_ok=True)
     c = Client(sp, token=TOKEN, verbose=False)
     for shot in job['shots']:
-        if shot.get('skip'): continue
+        if shot.get('skip') or any(f.startswith(shot['name'] + '.') for f in os.listdir(out)): continue  # уже готово — не тратим лимит
         def val(v):
             if isinstance(v, str) and v.startswith('file:'): return handle_file(v[5:])
             if isinstance(v, str) and v.startswith('gallery:'): return [{'image': handle_file(x), 'caption': None} for x in v[8:].split(',')]
