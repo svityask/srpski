@@ -372,6 +372,24 @@
   },
   {
    "date": "2026-10-19",
+   "time": "13:00",
+   "type": "scenario",
+   "ref": "mup",
+   "caption": "Регистрация в МУПе: что скажут в окошке и что ответить 🇷🇸\n\nDobar dan, treba mi prijava boravka — Добрый день, мне нужна регистрация\nGde je vlasnik stana? — Где хозяин квартиры?\nMožete li ponoviti polako? — Можете повторить медленно?\n\nСохраните перед походом в МУП 📌 Перешлите тому, кто только переехал.\nА у вас как прошла регистрация? 👇\n\nВсе фразы с озвучкой — в бесплатном приложении Srpski, ссылка в профиле · t.me/srpski_coach\n\n#сербскийязык #сербия #белград #русскиевсербии #релокация #изучениеязыков",
+   "images": [
+    "promo/daily/2026-10-19/13-scenario-mup-1.jpg",
+    "promo/daily/2026-10-19/13-scenario-mup-2.jpg",
+    "promo/daily/2026-10-19/13-scenario-mup-3.jpg",
+    "promo/daily/2026-10-19/13-scenario-mup-4.jpg",
+    "promo/daily/2026-10-19/13-scenario-mup-5.jpg",
+    "promo/daily/2026-10-19/13-scenario-mup-6.jpg",
+    "promo/daily/2026-10-19/13-scenario-mup-7.jpg"
+   ],
+   "telegram_image": "promo/daily/2026-10-19/13-scenario-mup-1.jpg",
+   "status": "pending"
+  },
+  {
+   "date": "2026-10-19",
    "time": "18:00",
    "type": "lesson",
    "ref": "3.2",
