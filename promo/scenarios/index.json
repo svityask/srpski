@@ -1,0 +1,85 @@
+[
+ {
+  "id": "banka",
+  "title": "Счёт в сербском банке",
+  "kw": [
+   "банк",
+   "banka",
+   "счёт",
+   "счет",
+   "карт"
+  ],
+  "images": [
+   "promo/daily/2026-10-22/13-scenario-banka-1.jpg",
+   "promo/daily/2026-10-22/13-scenario-banka-2.jpg",
+   "promo/daily/2026-10-22/13-scenario-banka-3.jpg",
+   "promo/daily/2026-10-22/13-scenario-banka-4.jpg",
+   "promo/daily/2026-10-22/13-scenario-banka-5.jpg",
+   "promo/daily/2026-10-22/13-scenario-banka-6.jpg",
+   "promo/daily/2026-10-22/13-scenario-banka-7.jpg"
+  ]
+ },
+ {
+  "id": "lekar",
+  "title": "У врача в Сербии",
+  "kw": [
+   "врач",
+   "лекар",
+   "lekar",
+   "доктор",
+   "аптек",
+   "болит"
+  ],
+  "images": [
+   "promo/daily/2026-10-25/13-scenario-lekar-1.jpg",
+   "promo/daily/2026-10-25/13-scenario-lekar-2.jpg",
+   "promo/daily/2026-10-25/13-scenario-lekar-3.jpg",
+   "promo/daily/2026-10-25/13-scenario-lekar-4.jpg",
+   "promo/daily/2026-10-25/13-scenario-lekar-5.jpg",
+   "promo/daily/2026-10-25/13-scenario-lekar-6.jpg",
+   "promo/daily/2026-10-25/13-scenario-lekar-7.jpg"
+  ]
+ },
+ {
+  "id": "mup",
+  "title": "Регистрация в МУПе",
+  "kw": [
+   "муп",
+   "mup",
+   "регистрац",
+   "прийав",
+   "prijav",
+   "белый картон",
+   "beli karton"
+  ],
+  "images": [
+   "promo/daily/2026-10-19/13-scenario-mup-1.jpg",
+   "promo/daily/2026-10-19/13-scenario-mup-2.jpg",
+   "promo/daily/2026-10-19/13-scenario-mup-3.jpg",
+   "promo/daily/2026-10-19/13-scenario-mup-4.jpg",
+   "promo/daily/2026-10-19/13-scenario-mup-5.jpg",
+   "promo/daily/2026-10-19/13-scenario-mup-6.jpg",
+   "promo/daily/2026-10-19/13-scenario-mup-7.jpg"
+  ]
+ },
+ {
+  "id": "stan",
+  "title": "Аренда квартиры",
+  "kw": [
+   "аренд",
+   "квартир",
+   "stan",
+   "кирия",
+   "жиль"
+  ],
+  "images": [
+   "promo/daily/2026-10-28/13-scenario-stan-1.jpg",
+   "promo/daily/2026-10-28/13-scenario-stan-2.jpg",
+   "promo/daily/2026-10-28/13-scenario-stan-3.jpg",
+   "promo/daily/2026-10-28/13-scenario-stan-4.jpg",
+   "promo/daily/2026-10-28/13-scenario-stan-5.jpg",
+   "promo/daily/2026-10-28/13-scenario-stan-6.jpg",
+   "promo/daily/2026-10-28/13-scenario-stan-7.jpg"
+  ]
+ }
+]

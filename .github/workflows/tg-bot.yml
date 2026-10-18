@@ -1,0 +1,17 @@
+# Служебное: подключить Telegram-бота к воркеру (вебхук /api/tg) и показать его имя.
+name: tg-bot
+on: workflow_dispatch
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set webhook
+        env:
+          T: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          T=$(echo "$T" | grep -oE '[0-9]{6,}:[A-Za-z0-9_-]{30,}' | head -1)
+          SEC=$(printf %s "$T" | sha256sum | cut -c1-32)
+          curl -s "https://api.telegram.org/bot$T/getMe" | python3 -c "import json,sys;print('BOT: @'+json.load(sys.stdin)['result']['username'])"
+          curl -s "https://api.telegram.org/bot$T/setWebhook" -d url=https://zdravo.srpski.workers.dev/api/tg -d secret_token=$SEC -d 'allowed_updates=["message","callback_query"]'; echo
+          curl -s "https://api.telegram.org/bot$T/setMyCommands" -H 'content-type: application/json' -d '{"commands":[{"command":"start","description":"Шпаргалки: МУП, банк, врач, аренда"}]}'; echo
+          curl -s "https://api.telegram.org/bot$T/getWebhookInfo" | python3 -c "import json,sys;r=json.load(sys.stdin)['result'];print('webhook:',r.get('url'),'pending:',r.get('pending_update_count'),'err:',r.get('last_error_message'))"
