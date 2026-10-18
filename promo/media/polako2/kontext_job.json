@@ -1,0 +1,54 @@
+{
+ "api_name": "/infer",
+ "out": "promo/media/polako2/frames",
+ "defaults": {
+  "seed": 7,
+  "randomize_seed": false,
+  "guidance_scale": 2.5,
+  "steps": 24
+ },
+ "shots": [
+  {
+   "name": "s1",
+   "args": {
+    "input_image": "file:promo/media/polako2/ref/k_pair.png",
+    "prompt": "Hand-drawn comic book illustration in exactly the same art style, line work and colouring as the reference image: bold black ink outlines, warm watercolor shading. Keep the characters' faces, hair and clothes exactly as in the references. Vertical 9:16 composition. No text, no letters, no speech bubbles, no signs with writing. Morning in a small cosy Belgrade apartment bedroom. the man from the reference (messy brown hair, stubble, olive-green hooded jacket) is asleep under a blanket, the woman from the reference (bright red hair, red t-shirt, blue jeans) leans over him and shakes his shoulder urgently, a smartphone glowing on the nightstand, morning light through the window."
+   }
+  },
+  {
+   "name": "s2",
+   "args": {
+    "input_image": "file:promo/media/polako2/ref/k_misha.png",
+    "prompt": "Hand-drawn comic book illustration in exactly the same art style, line work and colouring as the reference image: bold black ink outlines, warm watercolor shading. Keep the characters' faces, hair and clothes exactly as in the references. Vertical 9:16 composition. No text, no letters, no speech bubbles, no signs with writing. Inside a busy Serbian police administration office with a long queue of people. the man from the reference (messy brown hair, stubble, olive-green hooded jacket) stands at a counter window proudly placing his passport on the counter. Behind the glass a strict middle-aged female clerk with glasses looks at him sternly."
+   }
+  },
+  {
+   "name": "s3",
+   "args": {
+    "input_image": "file:promo/media/polako2/ref/k_pair.png",
+    "prompt": "Hand-drawn comic book illustration in exactly the same art style, line work and colouring as the reference image: bold black ink outlines, warm watercolor shading. Keep the characters' faces, hair and clothes exactly as in the references. Vertical 9:16 composition. No text, no letters, no speech bubbles, no signs with writing. Street outside a grey Yugoslav-era government building in Belgrade, daytime. the woman from the reference (bright red hair, red t-shirt, blue jeans) holds a phone to her ear looking worried, the man from the reference (messy brown hair, stubble, olive-green hooded jacket) paces nervously next to her, running his hand through his hair."
+   }
+  },
+  {
+   "name": "s4",
+   "args": {
+    "input_image": "file:promo/media/polako2/ref/k_milos.png",
+    "prompt": "Hand-drawn comic book illustration in exactly the same art style, line work and colouring as the reference image: bold black ink outlines, warm watercolor shading. Keep the characters' faces, hair and clothes exactly as in the references. Vertical 9:16 composition. No text, no letters, no speech bubbles, no signs with writing. Draw a NEW character in the same comic style: a plump elderly Serbian grandmother about 70 years old, grey hair in pink curlers, glasses on a chain, floral house robe, talking very fast and excitedly into an old cordless phone, waving her free hand, in a cosy old-fashioned Serbian kitchen with a lace curtain and a coffee pot."
+   }
+  },
+  {
+   "name": "s5",
+   "args": {
+    "input_image": "file:promo/media/polako2/ref/k_pair2.png",
+    "prompt": "Hand-drawn comic book illustration in exactly the same art style, line work and colouring as the reference image: bold black ink outlines, warm watercolor shading. Keep the characters' faces, hair and clothes exactly as in the references. Vertical 9:16 composition. No text, no letters, no speech bubbles, no signs with writing. Sunny Belgrade street. the woman from the reference (bright red hair, red t-shirt, blue jeans) speaks calmly and confidently into her phone with a small smile, the man from the reference (messy brown hair, stubble, olive-green hooded jacket) stands beside her staring at her in amazement with his mouth open."
+   }
+  },
+  {
+   "name": "s6",
+   "args": {
+    "input_image": "file:promo/media/polako2/ref/k_pair.png",
+    "prompt": "Hand-drawn comic book illustration in exactly the same art style, line work and colouring as the reference image: bold black ink outlines, warm watercolor shading. Keep the characters' faces, hair and clothes exactly as in the references. Vertical 9:16 composition. No text, no letters, no speech bubbles, no signs with writing. Inside the police administration office at the counter window. the man from the reference (messy brown hair, stubble, olive-green hooded jacket) and the woman from the reference (bright red hair, red t-shirt, blue jeans) stand smiling with relief next to a plump elderly grandmother in a floral robe and curlers who proudly holds documents. Behind the glass the strict female clerk with glasses raises one eyebrow sceptically."
+   }
+  }
+ ]
+}
