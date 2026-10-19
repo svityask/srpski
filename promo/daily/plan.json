@@ -389,7 +389,10 @@
     "promo/daily/2026-10-19/13-scenario-mup-7.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-19/13-scenario-mup-1.jpg",
-   "status": "pending"
+   "status": "published",
+   "instagram_url": null,
+   "telegram_message_id": 45,
+   "published_at": "2026-10-19 13:01"
   },
   {
    "date": "2026-10-19",
