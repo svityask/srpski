@@ -1,0 +1,75 @@
+{
+ "api_name": "/infer",
+ "out": "promo/media/tosa/sheet",
+ "defaults": {
+  "seed": 11,
+  "randomize_seed": false,
+  "guidance_scale": 2.5,
+  "steps": 24
+ },
+ "shots": [
+  {
+   "name": "e1_sleepy",
+   "args": {
+    "input_image": "file:promo/media/tosa/ref/k_tosa.png",
+    "prompt": "Hand-drawn children's book illustration in exactly the same art style, soft pencil line work and colouring as the reference image. Keep the cat exactly as in the reference: chubby grey silver tabby cat with dark stripes, M mark on the forehead, white chest, white muzzle and white paws, big amber half-closed eyes, pink nose, long white whiskers, the tip of the left ear cut flat, dark tip on the tail, dark blue collar with a round blue tag. Square composition, the whole cat in frame, plain soft cream background, no furniture. No text, no letters. The cat sits upright facing the viewer, sleepy half-closed eyes, calm relaxed expression."
+   }
+  },
+  {
+   "name": "e2_surprised",
+   "args": {
+    "input_image": "file:promo/media/tosa/ref/k_tosa.png",
+    "prompt": "Hand-drawn children's book illustration in exactly the same art style, soft pencil line work and colouring as the reference image. Keep the cat exactly as in the reference: chubby grey silver tabby cat with dark stripes, M mark on the forehead, white chest, white muzzle and white paws, big amber half-closed eyes, pink nose, long white whiskers, the tip of the left ear cut flat, dark tip on the tail, dark blue collar with a round blue tag. Square composition, the whole cat in frame, plain soft cream background, no furniture. No text, no letters. The cat sits facing the viewer, eyes wide open and round, ears straight up, mouth slightly open in surprise."
+   }
+  },
+  {
+   "name": "e3_happy",
+   "args": {
+    "input_image": "file:promo/media/tosa/ref/k_tosa.png",
+    "prompt": "Hand-drawn children's book illustration in exactly the same art style, soft pencil line work and colouring as the reference image. Keep the cat exactly as in the reference: chubby grey silver tabby cat with dark stripes, M mark on the forehead, white chest, white muzzle and white paws, big amber half-closed eyes, pink nose, long white whiskers, the tip of the left ear cut flat, dark tip on the tail, dark blue collar with a round blue tag. Square composition, the whole cat in frame, plain soft cream background, no furniture. No text, no letters. The cat stands facing the viewer, happy closed smiling eyes shaped like arcs, tail raised straight up, content smile."
+   }
+  },
+  {
+   "name": "e4_angry",
+   "args": {
+    "input_image": "file:promo/media/tosa/ref/k_tosa.png",
+    "prompt": "Hand-drawn children's book illustration in exactly the same art style, soft pencil line work and colouring as the reference image. Keep the cat exactly as in the reference: chubby grey silver tabby cat with dark stripes, M mark on the forehead, white chest, white muzzle and white paws, big amber half-closed eyes, pink nose, long white whiskers, the tip of the left ear cut flat, dark tip on the tail, dark blue collar with a round blue tag. Square composition, the whole cat in frame, plain soft cream background, no furniture. No text, no letters. The cat stands sideways, fur puffed up, tail bristled, ears flattened, annoyed indignant expression."
+   }
+  },
+  {
+   "name": "e5_sly",
+   "args": {
+    "input_image": "file:promo/media/tosa/ref/k_tosa.png",
+    "prompt": "Hand-drawn children's book illustration in exactly the same art style, soft pencil line work and colouring as the reference image. Keep the cat exactly as in the reference: chubby grey silver tabby cat with dark stripes, M mark on the forehead, white chest, white muzzle and white paws, big amber half-closed eyes, pink nose, long white whiskers, the tip of the left ear cut flat, dark tip on the tail, dark blue collar with a round blue tag. Square composition, the whole cat in frame, plain soft cream background, no furniture. No text, no letters. The cat sits facing the viewer, one eye squinted slyly, one front paw raised as if about to explain something, smug smile."
+   }
+  },
+  {
+   "name": "e6_sad",
+   "args": {
+    "input_image": "file:promo/media/tosa/ref/k_tosa.png",
+    "prompt": "Hand-drawn children's book illustration in exactly the same art style, soft pencil line work and colouring as the reference image. Keep the cat exactly as in the reference: chubby grey silver tabby cat with dark stripes, M mark on the forehead, white chest, white muzzle and white paws, big amber half-closed eyes, pink nose, long white whiskers, the tip of the left ear cut flat, dark tip on the tail, dark blue collar with a round blue tag. Square composition, the whole cat in frame, plain soft cream background, no furniture. No text, no letters. The cat sits facing the viewer, ears drooping to the sides, sad big eyes, head slightly lowered."
+   }
+  },
+  {
+   "name": "c1_police",
+   "args": {
+    "input_image": "file:promo/media/tosa/ref/k_tosa.png",
+    "prompt": "Hand-drawn children's book illustration in exactly the same art style, soft pencil line work and colouring as the reference image. Keep the cat exactly as in the reference: chubby grey silver tabby cat with dark stripes, M mark on the forehead, white chest, white muzzle and white paws, big amber half-closed eyes, pink nose, long white whiskers, the tip of the left ear cut flat, dark tip on the tail, dark blue collar with a round blue tag. Square composition, the whole cat in frame, plain soft cream background, no furniture. No text, no letters. The cat stands on its hind legs wearing a dark blue police officer cap, holding a folder of documents under one paw, serious official expression."
+   }
+  },
+  {
+   "name": "c2_waiter",
+   "args": {
+    "input_image": "file:promo/media/tosa/ref/k_tosa.png",
+    "prompt": "Hand-drawn children's book illustration in exactly the same art style, soft pencil line work and colouring as the reference image. Keep the cat exactly as in the reference: chubby grey silver tabby cat with dark stripes, M mark on the forehead, white chest, white muzzle and white paws, big amber half-closed eyes, pink nose, long white whiskers, the tip of the left ear cut flat, dark tip on the tail, dark blue collar with a round blue tag. Square composition, the whole cat in frame, plain soft cream background, no furniture. No text, no letters. The cat stands on its hind legs wearing a white waiter apron, balancing a small tray with a copper Turkish coffee pot and a tiny cup on one paw, polite expression."
+   }
+  },
+  {
+   "name": "c3_grandma",
+   "args": {
+    "input_image": "file:promo/media/tosa/ref/k_tosa.png",
+    "prompt": "Hand-drawn children's book illustration in exactly the same art style, soft pencil line work and colouring as the reference image. Keep the cat exactly as in the reference: chubby grey silver tabby cat with dark stripes, M mark on the forehead, white chest, white muzzle and white paws, big amber half-closed eyes, pink nose, long white whiskers, the tip of the left ear cut flat, dark tip on the tail, dark blue collar with a round blue tag. Square composition, the whole cat in frame, plain soft cream background, no furniture. No text, no letters. The cat sits wearing a floral headscarf tied under the chin and small round glasses on the nose, holding a plate of pastries, caring grandmotherly expression."
+   }
+  }
+ ]
+}
