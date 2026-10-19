@@ -139,7 +139,8 @@ async function telegram(p, igUrl) {
     if (IG_TOKEN) { try { igUrl = await instagram(p); console.log('Instagram:', igUrl); } catch (e) { errors.push('IG: ' + e.message); } }
     if (!IG_TOKEN && MAKE_HOOK && p.video && process.env.MAKE_REELS !== '1') console.log('Instagram: ролик не отправлен — в Make ещё нет ветки для Reels (переменная MAKE_REELS)');
     else if (!IG_TOKEN && MAKE_HOOK) { try { await make(p); console.log('Instagram: отправлено в Make'); } catch (e) { errors.push('IG: ' + e.message); } }
-    if (TG_TOKEN) { try { tgId = await telegram(p, igUrl); console.log('Telegram: сообщение', tgId); } catch (e) { errors.push('TG: ' + e.message); } }
+    // only: 'ig' — пост уже был в Telegram, повторяем только в Instagram
+    if (TG_TOKEN && p.only !== 'ig') { try { tgId = await telegram(p, igUrl); console.log('Telegram: сообщение', tgId); } catch (e) { errors.push('TG: ' + e.message); } }
     if (igUrl || tgId || (MAKE_HOOK && !errors.some((e) => e.startsWith('IG')))) Object.assign(p, { status: 'published', instagram_url: igUrl, telegram_message_id: tgId, published_at: belgrade(Date.now()) });
     if (errors.length) { errors.forEach((e) => console.log('::error::' + e.replace(/\n/g, ' ') + (/Unauthorized|Not Found/.test(e) && e.startsWith('TG') ? ' — токен бота недействителен: обновите секрет TELEGRAM_BOT_TOKEN' : ''))); process.exitCode = 1; }
     if (!IG_TOKEN && !TG_TOKEN) { console.log('::error::Нет секретов TELEGRAM_BOT_TOKEN / IG_ACCESS_TOKEN'); process.exitCode = 1; }
