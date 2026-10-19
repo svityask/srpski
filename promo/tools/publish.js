@@ -103,9 +103,14 @@ async function telegram(p, igUrl) {
 
 (async () => {
   // проверка связи с Make: шлём пример поста (карусель из 2 картинок) без публикации в Telegram и без изменения очереди
-  if (process.env.MODE === 'make-test' || process.env.MODE === 'make-last') {
+  if (['make-test', 'make-last', 'make-ref'].includes(process.env.MODE)) {
     if (!MAKE_HOOK) { console.log('::error::Нет секрета MAKE_WEBHOOK_URL'); process.exitCode = 1; return; }
     const sample = plan.items.find((x) => (x.images || []).length > 1);
+    if (process.env.MODE === 'make-ref') {
+      const r = process.env.REF || '', it = plan.items.find((x) => x.ref === r || (x.type === 'word' && String(x.n) === r));
+      if (!it) { console.log('::error::Нет поста', r); process.exitCode = 1; return; }
+      await make(it); console.log('Отправлен в Make:', it.date, it.type, it.ref); return;
+    }
     if (process.env.MODE === 'make-last') { const last = plan.items.filter((x) => x.status === 'published').pop(); await make(last); console.log('Повторно отправлен в Make:', last.date, last.ref); return; }
     await make(sample); console.log('Тестовые данные отправлены в Make:', sample.date, sample.ref); return;
   }

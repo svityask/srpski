@@ -8,10 +8,13 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'publish — опубликовать ближайший пост сейчас; auto — как по расписанию (так запускает будильник Cloudflare); make-test — только отправить пример в Make; make-last — переотправить в Make последний опубликованный пост'
+        description: 'publish — опубликовать ближайший пост сейчас; auto — как по расписанию (так запускает будильник Cloudflare); make-test — только отправить пример в Make; make-last — переотправить в Make последний опубликованный пост; make-ref — отправить в Make пост из поля ref'
         default: publish
         type: choice
-        options: [publish, auto, make-test, make-last]
+        options: [publish, auto, make-test, make-last, make-ref]
+      ref:
+        description: 'для make-ref: ref поста (например 5.1|porodica) или номер слова дня (5)'
+        default: ''
   # обновил очередь — сразу проверить, нет ли поста к публикации (коммиты самого бота задание не запускают)
   push:
     branches: [main]
@@ -36,6 +39,7 @@ jobs:
           MAKE_HOOK: ${{ secrets.MAKE_WEBHOOK_URL }}
           MAKE_REELS: ${{ vars.MAKE_REELS }}
           MODE: ${{ inputs.mode }}
+          REF: ${{ inputs.ref }}
         run: node promo/tools/publish.js
       - name: Save queue
         if: always()
