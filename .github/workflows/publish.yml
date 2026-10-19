@@ -13,7 +13,7 @@ on:
         type: choice
         options: [publish, auto, make-test, make-last, make-ref]
       ref:
-        description: 'для make-ref: ref поста (например 5.1|porodica) или номер слова дня (5)'
+        description: 'для make-ref: ref поста (например 5.1|porodica) или номер слова дня (5); можно несколько через запятую: 6,7,8'
         default: ''
   # обновил очередь — сразу проверить, нет ли поста к публикации (коммиты самого бота задание не запускают)
   push:

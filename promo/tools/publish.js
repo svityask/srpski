@@ -107,9 +107,15 @@ async function telegram(p, igUrl) {
     if (!MAKE_HOOK) { console.log('::error::Нет секрета MAKE_WEBHOOK_URL'); process.exitCode = 1; return; }
     const sample = plan.items.find((x) => (x.images || []).length > 1);
     if (process.env.MODE === 'make-ref') {
-      const r = process.env.REF || '', it = plan.items.find((x) => x.ref === r || (x.type === 'word' && String(x.n) === r));
-      if (!it) { console.log('::error::Нет поста', r); process.exitCode = 1; return; }
-      await make(it); console.log('Отправлен в Make:', it.date, it.type, it.ref); return;
+      // несколько через запятую («6,7,8») — по порядку, с паузой, чтобы Instagram не счёл это спамом
+      const refs = (process.env.REF || '').split(',').map((r) => r.trim()).filter(Boolean);
+      for (const [k, r] of refs.entries()) {
+        const it = plan.items.find((x) => x.ref === r || (x.type === 'word' && String(x.n) === r));
+        if (!it) { console.log('::error::Нет поста', r); process.exitCode = 1; continue; }
+        if (k) await new Promise((ok) => setTimeout(ok, 90e3));
+        await make(it); console.log('Отправлен в Make:', it.date, it.type, it.ref);
+      }
+      return;
     }
     if (process.env.MODE === 'make-last') { const last = plan.items.filter((x) => x.status === 'published').pop(); await make(last); console.log('Повторно отправлен в Make:', last.date, last.ref); return; }
     await make(sample); console.log('Тестовые данные отправлены в Make:', sample.date, sample.ref); return;
