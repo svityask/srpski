@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Golos+Text:wght@500;600;700&family=JetBrains+Mono:wght@800&display=block" rel="stylesheet">
+<style>html,body{margin:0;background:transparent;width:1080px;height:1920px;overflow:hidden}
+#root{position:absolute;inset:0}
+.bub{position:absolute;left:58px;right:70px;top:var(--y,250px);background:#fff;border:8px solid #14110f;border-radius:52px;padding:30px 42px 32px;box-shadow:0 16px 0 rgba(20,17,15,.2)}
+.bub.ph{border-style:dashed}
+.bub .who{display:inline-block;font:700 26px 'Golos Text';letter-spacing:.12em;text-transform:uppercase;color:#fff;background:#14110f;border-radius:999px;padding:8px 20px 6px;margin-bottom:16px}
+.bub b{display:block;font:800 64px/1.1 Unbounded;color:#14110f;letter-spacing:-.01em}
+.bub b.ru{font-size:70px}
+.bub b.fast{font:800 40px/1.25 Unbounded}
+.bub i{display:block;font:600 32px/1.3 'Golos Text';font-style:normal;color:#a3262f;margin-top:14px}
+.bub:after{content:"";position:absolute;left:var(--tx,400px);bottom:-74px;border-left:30px solid transparent;border-right:16px solid transparent;border-top:76px solid #14110f}
+.bub:before{content:"";position:absolute;left:calc(var(--tx,400px) + 9px);bottom:-56px;border-left:20px solid transparent;border-right:9px solid transparent;border-top:58px solid #fff;z-index:2}
+.tm{position:absolute;font:800 var(--fs,64px)/1 'JetBrains Mono';color:var(--c,#fff);background:rgba(10,12,18,.82);border:6px solid var(--c,#fff);border-radius:22px;padding:14px 26px 10px;letter-spacing:.02em}
+.tm small{display:block;font:700 22px 'Golos Text';letter-spacing:.14em;color:var(--c,#fff);opacity:.85;margin-bottom:6px}
+.cap{position:absolute;left:60px;right:60px;bottom:var(--b,260px);background:#e8b13a;border:7px solid #14110f;padding:24px 34px 20px;font:800 46px/1.2 Unbounded;color:#14110f;box-shadow:10px 10px 0 #14110f;transform:rotate(-1.2deg)}
+.cap span{display:block;font:600 30px/1.3 'Golos Text';margin-top:10px}
+</style></head><body><div id="root"></div>
+<script>
+window.render=(k,d)=>{const r=document.getElementById('root');r.innerHTML='';
+ if(k==='bub'){r.innerHTML=`<div class="bub ${d.phone?'ph':''}" style="--y:${d.y||250}px;--tx:${d.tx||400}px"><div class="who">${d.who}</div><b class="${d.cls||''}">${d.b}</b>${d.i?`<i>${d.i}</i>`:''}</div>`}
+ if(k==='tm'){const big=d.big;r.innerHTML=`<div class="tm" style="--fs:${big?150:62}px;--c:${d.c||'#fff'};${big?'left:50%;top:'+(d.top||760)+'px;transform:translateX(-50%)':'right:48px;top:70px'}"><small>${d.label||'ДО ШТРАФА'}</small>${d.t}</div>`}
+ if(k==='cap'){r.innerHTML=`<div class="cap" style="--b:${d.b||260}px">${d.t}${d.s?`<span>${d.s}</span>`:''}</div>`}
+ if(k==='end'){r.innerHTML=`<div style="position:absolute;left:0;right:0;top:600px;text-align:center;color:#f3ead8">
+<div style="font:800 170px/1 Unbounded;letter-spacing:-.02em;text-shadow:0 10px 40px rgba(0,0,0,.6)">POLAKO</div>
+<div style="font:700 50px 'Golos Text';color:#e8b13a;margin-top:34px;letter-spacing:.06em">СЕРИЯ 3 · «ДОГОВОР»</div>
+<div style="font:600 42px/1.35 'Golos Text';margin-top:110px;color:#fff">Govorite polako, molim vas —<br>фраза, которая спасла Аню</div>
+<div style="display:inline-block;margin-top:70px;background:#1c3f8c;color:#fff;border:6px solid #fff;border-radius:999px;padding:22px 54px;font:800 40px Unbounded">Все фразы — в Srpski</div></div>`}
+};</script></body></html>
