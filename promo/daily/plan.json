@@ -514,7 +514,10 @@
    ],
    "telegram_image": "promo/daily/2026-10-19/10-word-1.jpg",
    "only": "ig",
-   "status": "pending"
+   "status": "published",
+   "instagram_url": null,
+   "telegram_message_id": null,
+   "published_at": "2026-10-21 15:01"
   },
   {
    "date": "2026-10-21",
