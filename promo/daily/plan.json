@@ -677,7 +677,7 @@
     "promo/daily/2026-10-19/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-19/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "published",
    "quiz": {
     "question": "Как сказать по-сербски «Респект / Уважаю»?",
     "options": [
@@ -686,7 +686,10 @@
      "divan"
     ],
     "correct": 0
-   }
+   },
+   "instagram_url": null,
+   "telegram_message_id": 60,
+   "published_at": "2026-10-24 18:01"
   },
   {
    "date": "2026-10-25",
