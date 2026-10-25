@@ -723,7 +723,10 @@
     "promo/daily/2026-10-25/13-scenario-lekar-7.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-25/13-scenario-lekar-1.jpg",
-   "status": "pending"
+   "status": "published",
+   "instagram_url": null,
+   "telegram_message_id": 63,
+   "published_at": "2026-10-25 13:01"
   },
   {
    "date": "2026-10-25",
