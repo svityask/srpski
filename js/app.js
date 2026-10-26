@@ -223,7 +223,23 @@
   const main = $('#main');
 
   // анонимная статистика: какие разделы проходят — без имён, адресов и прогресса (только на сайте Cloudflare, где есть API)
-  const APP_VER = 'srpski-11';
+  const APP_VER = 'srpski-12';
+  let fbShot = null; // скриншот к отзыву: JPEG в base64, ужат до 1600 px по длинной стороне
+  function shotHtml() {
+    return fbShot ? '<img src="data:image/jpeg;base64,' + fbShot + '" alt="Скриншот"><button class="btn sm ghost" data-fbx>Убрать скриншот</button>'
+      : '<label class="btn sm" for="fbfile">Прикрепить скриншот</label>';
+  }
+  function loadShot(file) {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      fbShot = c.toDataURL('image/jpeg', 0.82).split(',')[1]; const box = $('#fbshot'); if (box) box.innerHTML = shotHtml();
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); flash('Не удалось открыть картинку. Попробуйте другой скриншот.'); };
+    img.src = url;
+  }
   const standalone = () => !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
   const API_ON = location.protocol === 'https:' && /\.workers\.dev$/.test(location.hostname);
   function track(e, d, n) {
@@ -454,9 +470,10 @@
       '<label for="imp"><b>Восстановить из кода</b></label><textarea id="imp" rows="2" placeholder="Вставьте код прогресса"></textarea><button class="btn sm" data-import>Восстановить</button></details>' +
       '<div class="row"><span><b>Сбросить прогресс</b><small>Удалит уроки, тесты и повторение</small></span><button class="btn sm danger" data-reset>' + (resetArm ? 'Точно сбросить' : 'Сбросить') + '</button></div></div>' +
       '<p class="hint" id="msg" role="status"></p>' +
-      '<h3 class="sub">Обратная связь</h3><div class="card"><div class="row col"><label for="fb"><b>Нашли ошибку или не хватает темы?</b><small>Напишите — читаем каждое сообщение</small></label>' +
+      '<h3 class="sub">Обратная связь</h3><div class="card"><div class="row col"><label for="fb"><b>Нашли ошибку или не хватает темы?</b><small>Напишите и при желании приложите скриншот — читаем каждое сообщение</small></label>' +
       '<textarea id="fb" rows="3" maxlength="2000" placeholder="Например: в уроке 3.2 опечатка… / Добавьте тему «банк»"></textarea>' +
       '<input class="ans" id="fbc" maxlength="200" autocomplete="email" placeholder="Ваш контакт для ответа (необязательно)">' +
+      '<div class="fb-shot" id="fbshot">' + shotHtml() + '</div><input type="file" id="fbfile" accept="image/*" hidden>' +
       '<button class="btn sm" data-fb>Отправить</button><p class="hint" id="fbmsg" role="status"></p></div></div>' +
       '<p class="hint">Чтобы открыть как приложение: в Safari нажмите «Поделиться» → «На экран „Домой“». Прогресс хранится только на этом телефоне.</p>';
   }
@@ -1273,12 +1290,13 @@
       try { restore(JSON.parse(decodeURIComponent(escape(atob($('#imp').value.trim()))))); } catch (er) { flash('Код не подошёл. Скопируйте его целиком, без пробелов по краям.'); }
       return;
     }
+    if (d.fbx !== undefined) { fbShot = null; $('#fbshot').innerHTML = shotHtml(); return; }
     if (d.fb !== undefined) {
       const text = $('#fb').value.trim(), m = $('#fbmsg');
       if (!text) { m.textContent = 'Напишите пару слов в поле выше.'; return; }
       b.disabled = true; m.textContent = 'Отправляем…';
-      fetch('api/feedback', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text, contact: $('#fbc').value.trim(), view: view, ver: APP_VER, sa: standalone() }) })
-        .then((r) => r.json()).then((j) => { if (!j.ok) throw new Error(); $('#fb').value = ''; m.textContent = 'Спасибо! Сообщение отправлено.'; })
+      fetch('api/feedback', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text, contact: $('#fbc').value.trim(), view: view, ver: APP_VER, sa: standalone(), shot: fbShot || undefined }) })
+        .then((r) => r.json()).then((j) => { if (!j.ok) throw new Error(); $('#fb').value = ''; fbShot = null; $('#fbshot').innerHTML = shotHtml(); m.textContent = 'Спасибо! Сообщение отправлено.'; })
         .catch(() => { m.innerHTML = 'Не получилось отправить. Напишите нам в Telegram: <a href="https://t.me/srpski_coach" target="_blank" rel="noopener">@srpski_coach</a>'; })
         .finally(() => { b.disabled = false; });
       return;
@@ -1325,6 +1343,7 @@
     if (t.id === 'ctopic') { S.cardsTopic = t.value; save(); buildDeck(); render(); }
     if (t.dataset.rate !== undefined) { S.rate = +t.value; save(); render(); speak('Dobar dan'); }
     if (t.id === 'dunit') { drillUnit = t.value; render(); }
+    if (t.id === 'fbfile' && t.files && t.files[0]) { loadShot(t.files[0]); t.value = ''; }
     if (t.id === 'impf' && t.files && t.files[0]) {
       t.files[0].text().then((txt) => { const o = JSON.parse(txt); restore(o && o.state ? o.state : o); }).catch(() => flash('Этот файл не похож на копию прогресса Srpski.'));
     }

@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 // Cloudflare Worker перед статикой приложения: файлы сайта отдаёт ASSETS, здесь — только два адреса API.
-//   POST /api/feedback — сообщение из приложения → Telegram (секреты TELEGRAM_BOT_TOKEN и FEEDBACK_CHAT_ID в настройках воркера)
+//   POST /api/feedback — сообщение из приложения (можно со скриншотом) → Telegram (секреты TELEGRAM_BOT_TOKEN и FEEDBACK_CHAT_ID в настройках воркера)
 //   cron каждые 10 минут — будильник автопостинга: если в promo/daily/plan.json есть пост, чьё время наступило,
 //                          запускает GitHub Actions publish.yml (секрет GH_TOKEN). Расписание GitHub часто пропускает запуски.
 //   POST /api/tg       — Telegram-бот: пишут «МУП», «банк», «врач», «аренда» → шлём шпаргалку-карусель (лидмагнит)
@@ -24,6 +24,18 @@ async function feedback(req, env) {
   const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ chat_id: env.FEEDBACK_CHAT_ID, text: msg, disable_web_page_preview: true }),
   });
+  // скриншот (JPEG в base64, приложение ужимает до 1600 px) — ответом на сообщение с отзывом
+  const shot = typeof b.shot === 'string' && b.shot.length < 4e6 ? b.shot : '';
+  if (r.ok && shot) {
+    try {
+      const id = (await r.json()).result.message_id;
+      const fd = new FormData();
+      fd.append('chat_id', env.FEEDBACK_CHAT_ID); fd.append('reply_to_message_id', String(id)); fd.append('caption', '📎 Скриншот к отзыву');
+      fd.append('photo', new Blob([Uint8Array.from(atob(shot), (c) => c.charCodeAt(0))], { type: 'image/jpeg' }), 'screenshot.jpg');
+      const p = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd });
+      if (!p.ok) console.log('feedback photo: ' + p.status + ' ' + (await p.text()).slice(0, 200));
+    } catch (e) { console.log('feedback photo: ' + e.message); }
+  }
   return json({ ok: r.ok }, r.ok ? 200 : 502);
 }
 

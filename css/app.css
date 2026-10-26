@@ -169,6 +169,8 @@ textarea { font-size: 14px; resize: vertical; }
 .row small { color: var(--muted); font-size: 13px; }
 .row.col { flex-direction: column; align-items: stretch; }
 .row.col .btn { align-self: flex-start; }
+.fb-shot { display: flex; align-items: center; gap: 12px; }
+.fb-shot img { width: 64px; height: 96px; object-fit: cover; border-radius: 8px; border: 1.5px solid var(--line); }
 .row input[type="range"] { width: 42%; accent-color: var(--accent); }
 .sw { appearance: none; -webkit-appearance: none; flex-shrink: 0; width: 51px; height: 31px; border-radius: 16px; background: var(--line); position: relative; transition: background .2s; cursor: pointer; margin: 0; }
 .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .2s; }
