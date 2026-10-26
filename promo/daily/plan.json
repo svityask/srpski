@@ -773,7 +773,7 @@
     "promo/daily/2026-10-20/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-20/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "published",
    "quiz": {
     "question": "Что значит «Dobro sam»?",
     "options": [
@@ -782,7 +782,10 @@
      "Привет / Пока"
     ],
     "correct": 1
-   }
+   },
+   "instagram_url": null,
+   "telegram_message_id": 66,
+   "published_at": "2026-10-26 18:01"
   },
   {
    "date": "2026-10-27",
