@@ -854,7 +854,10 @@
     "promo/daily/2026-10-28/13-scenario-stan-7.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-28/13-scenario-stan-1.jpg",
-   "status": "pending"
+   "status": "published",
+   "instagram_url": null,
+   "telegram_message_id": 71,
+   "published_at": "2026-10-28 13:01"
   },
   {
    "date": "2026-10-28",
