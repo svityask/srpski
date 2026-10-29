@@ -223,7 +223,7 @@
   const main = $('#main');
 
   // анонимная статистика: какие разделы проходят — без имён, адресов и прогресса (только на сайте Cloudflare, где есть API)
-  const APP_VER = 'srpski-12';
+  const APP_VER = 'srpski-13';
   let fbShot = null; // скриншот к отзыву: JPEG в base64, ужат до 1600 px по длинной стороне
   function shotHtml() {
     return fbShot ? '<img src="data:image/jpeg;base64,' + fbShot + '" alt="Скриншот"><button class="btn sm ghost" data-fbx>Убрать скриншот</button>'
@@ -242,6 +242,14 @@
   }
   const standalone = () => !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
   const API_ON = location.protocol === 'https:' && /\.workers\.dev$/.test(location.hostname);
+  // откуда пришёл человек: ?src=ig|tg|bot|seo|chat в ссылке, иначе по реферу (для первого визита — в отчёт по источникам)
+  const SRC = (() => {
+    const q = (new URLSearchParams(location.search).get('src') || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 20);
+    if (q) { try { history.replaceState(null, '', location.pathname); } catch (er) { /* не важно */ } return q; }
+    const r = document.referrer;
+    if (!r || r.includes(location.hostname)) return 'direct';
+    return /instagram/.test(r) ? 'ig' : /t\.me|telegram/.test(r) ? 'tg' : /google/.test(r) ? 'google' : /yandex/.test(r) ? 'yandex' : 'other';
+  })();
   function track(e, d, n) {
     if (!API_ON) return;
     try { navigator.sendBeacon('api/e', JSON.stringify({ e, d: d || '', n: n || 0, sa: standalone() ? 1 : 0 })); } catch (er) { /* не важно */ }
@@ -1362,7 +1370,7 @@
   window.addEventListener('focus', refreshDay);
   setInterval(refreshDay, 60 * 1000);
   { const r = loadRun(); if (r && r.open) resume(r); }
-  if (!S.welcomed && !Object.keys(S.lessons).length && !loadRun()) { track('new'); showWelcome(); }
+  if (!S.welcomed && !Object.keys(S.lessons).length && !loadRun()) { track('new', SRC); showWelcome(); }
   // раз в день — «открыл приложение» (для счёта активных людей), один раз — «установил на экран Домой»
   const pingOpen = () => { if (S.lastOpen !== today()) { S.lastOpen = today(); save(); track('open', '', Object.keys(S.lessons).length); } };
   pingOpen(); document.addEventListener('visibilitychange', () => { if (!document.hidden) pingOpen(); });

@@ -12,7 +12,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '../..');
 const PLAN = path.join(ROOT, 'promo/daily/plan.json');
 const RAW = 'https://raw.githubusercontent.com/svityask/srpski/main/';
-const APP_URL = 'https://zdravo.srpski.workers.dev/';
+const APP_URL = 'https://zdravo.srpski.workers.dev/?src=tg';
 const CHAT = process.env.TG_CHAT || '@srpski_coach';
 // токен IGAA… (вход через Instagram) → graph.instagram.com/me; токен EAA… (Graph API Explorer, системный пользователь) → graph.facebook.com/<id Instagram>
 const IG_FB = /^EAA/.test((process.env.IG_TOKEN || '').trim().replace(/^["']/, ''));

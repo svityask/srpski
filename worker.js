@@ -44,14 +44,15 @@ async function event(req, env, ctx) {
   const name = String(b.e || '').slice(0, 32);
   if (/^[a-z_]+$/.test(name)) {
     console.log(JSON.stringify({ ev: name, d: String(b.d || '').slice(0, 64), n: +b.n || 0, where: b.sa ? 'home' : 'web', country: (req.cf && req.cf.country) || '' }));
-    if (['open', 'new', 'install', 'done'].includes(name)) count(env, ctx, name, b.sa ? 'home' : 'web');
+    if (name === 'new') count(env, ctx, 'new', /^[a-z0-9_-]{1,20}$/.test(b.d) ? b.d : 'direct');  // новые — по источнику
+    else if (['open', 'install', 'done'].includes(name)) count(env, ctx, name, b.sa ? 'home' : 'web');
   }
   return new Response(null, { status: 204 });
 }
 
 // --- Telegram-бот: шпаргалки по ключевым словам ---
 const RAW = 'https://raw.githubusercontent.com/svityask/srpski/main/';
-const APP = 'https://zdravo.srpski.workers.dev/';
+const APP = 'https://zdravo.srpski.workers.dev/?src=bot';
 async function hex(t) { return [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map((b) => b.toString(16).padStart(2, '0')).join(''); }
 async function tg(env, m, body) {
   return fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/${m}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
@@ -102,13 +103,14 @@ async function report(env) {
   const [now, prev] = await Promise.all([s.sum(day(7), day(0)), s.sum(day(14), day(7))]);
   const tot = (rows, ev, d) => rows.filter((r) => r.ev === ev && (d == null || r.d === d)).reduce((a, r) => a + r.n, 0);
   const line = (label, ev, d) => { const a = tot(now, ev, d), b = tot(prev, ev, d); return `${label}: <b>${a}</b>${b ? ` (${a >= b ? '+' : ''}${Math.round(((a - b) / b) * 100)}%)` : ''}`; };
-  const leads = now.filter((r) => r.ev === 'lead').map((r) => `${r.d} ${r.n}`).join(', ');
+  const by = (ev) => now.filter((r) => r.ev === ev).sort((a, c) => c.n - a.n).map((r) => `${r.d} ${r.n}`).join(', ');
+  const leads = by('lead'), srcs = by('new');
   const tgc = await (await tg(env, 'getChatMemberCount', { chat_id: '@srpski_coach' })).json().catch(() => ({}));
   const plan = await (await fetch(RAW + 'promo/daily/plan.json?t=' + Date.now(), { cf: { cacheTtl: 0 } })).json().catch(() => ({ items: [] }));
   const posts = plan.items.filter((p) => p.status === 'published' && p.date >= day(7) && p.date < day(0)).length;
   const text = [
     `📊 <b>Srpski — неделя ${day(7)} … ${day(1)}</b>`, '',
-    line('Открытий (уник. в день)', 'open'), line('Новых пользователей', 'new'), line('Установок на экран', 'install'),
+    line('Открытий (уник. в день)', 'open'), line('Новых пользователей', 'new') + (srcs ? `\n   откуда: ${srcs}` : ''), line('Установок на экран', 'install'),
     line('Пройдено уроков', 'done'), line('Лидов из бота', 'lead') + (leads ? ` — ${leads}` : ''), '',
     `Telegram @srpski_coach: <b>${tgc.result ?? '?'}</b> подписчиков`, `Постов опубликовано: <b>${posts}</b>`,
   ].join('\n');
