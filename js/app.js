@@ -223,7 +223,7 @@
   const main = $('#main');
 
   // анонимная статистика: какие разделы проходят — без имён, адресов и прогресса (только на сайте Cloudflare, где есть API)
-  const APP_VER = 'srpski-13';
+  const APP_VER = 'srpski-14';
   let fbShot = null; // скриншот к отзыву: JPEG в base64, ужат до 1600 px по длинной стороне
   function shotHtml() {
     return fbShot ? '<img src="data:image/jpeg;base64,' + fbShot + '" alt="Скриншот"><button class="btn sm ghost" data-fbx>Убрать скриншот</button>'
@@ -1203,6 +1203,33 @@
       if (k < 1) requestAnimationFrame(tick); else cv.remove();
     })(t0);
   }
+  // карточка «поделиться результатом»: картинка 1080×1350 + ссылка с меткой ?src=share (рост через друзей)
+  let lastRes = null;
+  function shareCard() {
+    if (!lastRes) return;
+    const c = document.createElement('canvas'); c.width = 1080; c.height = 1350; const x = c.getContext('2d');
+    const g = x.createRadialGradient(820, 120, 50, 600, 500, 1200); g.addColorStop(0, '#2a55b8'); g.addColorStop(.5, '#1c3f8c'); g.addColorStop(1, '#0f2656');
+    x.fillStyle = g; x.fillRect(0, 0, 1080, 1350);
+    const fit = (txt, font, max, y, col) => { let fs = +font.match(/(\d+)px/)[1]; do { x.font = font.replace(/\d+px/, fs + 'px'); fs -= 4; } while (x.measureText(txt).width > max && fs > 20); x.fillStyle = col; x.fillText(txt, 540, y); };
+    x.textAlign = 'center';
+    fit('Я УЧУ СЕРБСКИЙ В SRPSKI', '700 40px "Golos Text", sans-serif', 940, 170, '#f0b73a');
+    fit(lastRes.head, '700 84px Unbounded, sans-serif', 940, 330, '#fff');
+    fit('«' + lastRes.title + '»', '600 46px "Golos Text", sans-serif', 940, 420, 'rgba(255,255,255,.8)');
+    x.fillStyle = '#fff'; x.beginPath(); x.roundRect(140, 500, 800, 360, 40); x.fill();
+    fit(lastRes.pct + '%', '700 200px Unbounded, sans-serif', 700, 740, '#1c3f8c');
+    fit('верных ответов · ' + lastRes.streak + ' ' + plural(lastRes.streak, 'день', 'дня', 'дней') + ' подряд', '600 40px "Golos Text", sans-serif', 740, 820, '#5a6681');
+    fit('Попробуй и ты — бесплатно, без регистрации', '600 44px "Golos Text", sans-serif', 940, 1010, '#fff');
+    fit('zdravo.srpski.workers.dev', '700 52px Unbounded, sans-serif', 940, 1100, '#f0b73a');
+    fit('@srpski_coach', '600 36px "Golos Text", sans-serif', 940, 1260, 'rgba(255,255,255,.6)');
+    const url = 'https://zdravo.srpski.workers.dev/?src=share', text = lastRes.head + ' в Srpski — ' + lastRes.pct + '% верно 🇷🇸 Учу сербский, попробуй тоже:';
+    track('share', P ? P.kind : '');
+    c.toBlob((blob) => {
+      const file = blob && typeof File === 'function' ? new File([blob], 'srpski.png', { type: 'image/png' }) : null;
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ files: [file], text: text + ' ' + url }).catch(() => {});
+      else if (navigator.share) navigator.share({ text, url }).catch(() => {});
+      else if (navigator.clipboard) navigator.clipboard.writeText(text + ' ' + url).then(() => flash('Ссылка скопирована — отправьте её другу'));
+    }, 'image/png');
+  }
   function finish() {
     dropRun();
     track('done', P.kind + ':' + (P.l ? P.l.id : P.u ? P.u.id : P.ref || ''), P.n ? Math.round((P.ok / P.n) * 100) : 100);
@@ -1239,9 +1266,11 @@
     const wrongG = [...P.wrong].filter((id) => /^gap:/.test(id)).map((id) => GAP_BY[id.slice(4)]).filter(Boolean);
     stage.innerHTML = '<div class="res"><p class="eyebrow">' + esc(P.title) + '</p><h2 class="t-h">' + head + '</h2>' + sub +
       '<div class="res-row"><div><b>' + pct + '%</b><span>верно</span></div><div><b>+' + (P.ok + bonus) + '</b><span>XP</span></div><div><b>' + streak() + '</b><span>' + plural(streak(), 'день', 'дня', 'дней') + ' подряд</span></div></div>' +
+      (pct >= 70 ? '<button class="btn wide share-btn" data-act="share">Поделиться результатом</button>' : '') +
       (wrong.length || wrongC.length || wrongG.length ? '<h3 class="sub">Над этим стоит поработать</h3><ul class="list compact">' + wrong.map((it) => '<li><button data-say="' + esc(it.say) + '"><span lang="sr">' + esc(sr(it.sr)) + '</span><small>' + esc(it.ru) + '</small></button></li>').join('') +
         wrongC.map((d) => { const f = d.s.replace('___', CASES.nouns[d.n][CASE_I[d.c]]); return '<li><button data-say="' + esc(f) + '"><span lang="sr">' + esc(sr(f)) + '</span><small>' + esc(d.why) + '</small></button></li>'; }).join('') +
         wrongG.map((d) => { const f = d.s.replace('___', d.a); return '<li><button data-say="' + esc(f) + '"><span lang="sr">' + esc(sr(f)) + '</span><small>' + esc(d.why || d.ru) + '</small></button></li>'; }).join('') + '</ul>' : '<p class="res-sub">Без единой ошибки. Svaka čast!</p>') + '</div>';
+    lastRes = { title: P.title, head, pct, streak: streak() };
     const again = P.kind === 'lesson' ? 'data-lesson="' + P.l.id + '"' : P.kind === 'test' ? 'data-test="' + P.u.id + '"' : P.kind === 'review' ? 'data-review="any"' : 'data-start="' + P.kind + '" data-ref="' + esc(P.ref || '') + '"';
     foot.innerHTML = '<div class="duo"><button class="btn" ' + again + '>Ещё раз</button><button class="btn primary" data-act="done">Готово</button></div>';
     if (pct >= 70 && !((P.kind === 'test' || P.kind === 'exam') && pct < 80)) confetti();
@@ -1343,6 +1372,7 @@
       case 'dlgplay': { const dl = DIALOGS.find((x) => x.id === arg) || DIALOGS[0]; speakSeq(dl.lines.map(([w, t], k) => [t, w ? 1.15 : 0.85, k])); break; }
       case 'rdplay': { const t = READING.find((x) => x.id === arg) || READING[0]; speakSeq(t.text.map(([x], k) => [x, 1, k])); break; }
       case 'rdreset': rdQuiz = {}; render(); break;
+      case 'share': shareCard(); break;
     }
   });
   document.addEventListener('change', (e) => {

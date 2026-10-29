@@ -529,3 +529,5 @@ body.playing #tabs { display: none; }
 details.row > summary { cursor: pointer; padding: 2px 0; }
 details.row[open] > summary { margin-bottom: 6px; }
 details.row .row { padding: 6px 0; border-top: 0; }
+
+.share-btn { margin: 16px 0 4px; }

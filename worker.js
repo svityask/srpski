@@ -46,7 +46,7 @@ async function event(req, env, ctx) {
   if (/^[a-z_]+$/.test(name)) {
     console.log(JSON.stringify({ ev: name, d: String(b.d || '').slice(0, 64), n: +b.n || 0, where: b.sa ? 'home' : 'web', country: (req.cf && req.cf.country) || '' }));
     if (name === 'new') count(env, ctx, 'new', /^[a-z0-9_-]{1,20}$/.test(b.d) ? b.d : 'direct');  // новые — по источнику
-    else if (['open', 'install', 'done'].includes(name)) count(env, ctx, name, b.sa ? 'home' : 'web');
+    else if (['open', 'install', 'done', 'share'].includes(name)) count(env, ctx, name, b.sa ? 'home' : 'web');
   }
   return new Response(null, { status: 204 });
 }
@@ -136,7 +136,7 @@ async function report(env) {
   const text = [
     `📊 <b>Srpski — неделя ${day(7)} … ${day(1)}</b>`, '',
     line('Открытий (уник. в день)', 'open'), line('Новых пользователей', 'new') + (srcs ? `\n   откуда: ${srcs}` : ''), line('Установок на экран', 'install'),
-    line('Пройдено уроков', 'done'), line('Лидов из бота', 'lead') + (leads ? ` — ${leads}` : ''), '',
+    line('Пройдено уроков', 'done'), line('Поделились результатом', 'share'), line('Лидов из бота', 'lead') + (leads ? ` — ${leads}` : ''), '',
     `Telegram @srpski_coach: <b>${tgc.result ?? '?'}</b> подписчиков`, `Подписчики бота: <b>${await s.subCount().catch(() => '?')}</b>`, `Постов опубликовано: <b>${posts}</b>`,
   ].join('\n');
   const r = await tg(env, 'sendMessage', { chat_id: env.FEEDBACK_CHAT_ID, text, parse_mode: 'HTML' });
