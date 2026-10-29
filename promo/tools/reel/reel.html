@@ -1,0 +1,64 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Golos+Text:wght@500;600;700&display=block" rel="stylesheet">
+<style>
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#13306a}
+#s{position:absolute;inset:0;overflow:hidden;font-family:'Golos Text';color:#fff;background:radial-gradient(120% 70% at 75% 8%,#2a55b8 0%,#1c3f8c 45%,#0f2656 100%)}
+.dot{position:absolute;border-radius:50%;background:rgba(255,255,255,.07)}
+.eb{position:absolute;left:0;right:0;top:120px;text-align:center;font:700 34px 'Golos Text';letter-spacing:.16em;color:#f0b73a}
+.q{position:absolute;left:0;right:0;top:190px;text-align:center;font:800 64px/1.1 Unbounded}
+.plate{position:absolute;left:50%;top:330px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;background:#1c3f8c;border-radius:30px;padding:36px 64px 30px;
+ box-shadow:inset 0 0 0 9px #1c3f8c,inset 0 0 0 14px #fff,0 24px 60px rgba(0,0,0,.35);white-space:nowrap}
+.plate .a{font:800 var(--fs,112px)/1.05 Unbounded}.plate .c{margin-top:16px;padding-top:14px;border-top:4px solid rgba(255,255,255,.5);font:500 46px 'Golos Text';opacity:.9}
+.tr{position:absolute;left:0;right:0;top:640px;text-align:center;font:600 40px 'Golos Text';color:rgba(255,255,255,.75)}
+.opt{position:absolute;left:70px;right:70px;height:124px;border-radius:28px;background:#fff;color:#142039;display:flex;align-items:center;gap:30px;padding:0 36px;font:700 50px/1.1 'Golos Text';box-shadow:0 14px 0 rgba(0,0,0,.18)}
+.opt b{flex:none;width:72px;height:72px;border-radius:50%;background:#e9eef8;color:#1c3f8c;display:grid;place-items:center;font:800 38px Unbounded}
+.opt.ok{background:#18a06a;color:#fff}.opt.ok b{background:#fff;color:#18a06a}
+.ring{position:absolute;left:50%;top:1300px;width:150px;height:150px;margin-left:-75px;border-radius:50%;display:grid;place-items:center;font:800 76px Unbounded;color:#fff}
+.tosa{position:absolute;width:420px;left:590px;top:1340px;filter:drop-shadow(0 20px 30px rgba(0,0,0,.35))}
+.bub{position:absolute;left:70px;top:1440px;width:470px;background:#fff;color:#142039;border-radius:36px;padding:26px 30px;font:800 40px/1.2 Unbounded;box-shadow:0 12px 0 rgba(0,0,0,.18)}
+.bub:after{content:"";position:absolute;right:-30px;top:60px;border-top:22px solid transparent;border-bottom:22px solid transparent;border-left:40px solid #fff}
+.cta{position:absolute;left:70px;right:70px;top:1010px;text-align:center;background:#f0b73a;color:#142039;border-radius:28px;padding:30px;font:800 46px/1.2 Unbounded;box-shadow:0 14px 0 rgba(0,0,0,.2)}
+.cta span{display:block;margin-top:12px;font:700 32px 'Golos Text'}
+.conf{position:absolute;width:18px;height:30px;border-radius:4px}
+.brand{position:absolute;left:70px;bottom:60px;text-align:left;font:700 30px 'Golos Text';color:rgba(255,255,255,.6)}
+</style></head><body><div id="s"></div>
+<script>
+// детерминированная сцена: draw(t) рисует кадр на момент t (сек), D — данные ролика
+const E = (x) => x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.pow(1 - x, 3);
+const POP = (x) => x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.pow(1 - x, 3) + Math.sin(x * Math.PI) * .18;
+const R = (i) => { const x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); };
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+window.draw = (t, D) => {
+  const T = D.T; let h = '';
+  for (let i = 0; i < 14; i++) { const s = 60 + R(i) * 220; h += `<div class="dot" style="width:${s}px;height:${s}px;left:${R(i + 40) * 1080 - s / 2}px;top:${(R(i + 80) * 2100 + t * (20 + R(i) * 40)) % 2100 - 150}px"></div>`; }
+  const qa = E(t / .35);
+  h += `<div class="eb" style="opacity:${qa}">УГАДАЕШЬ ЗА 3 СЕКУНДЫ?</div><div class="q" style="opacity:${qa};transform:translateY(${(1 - qa) * 30}px)">Что значит</div>`;
+  const pa = POP((t - .25) / .5);
+  h += `<div class="plate" style="--fs:${D.fs}px;transform:translateX(-50%) scale(${.6 + .4 * pa});opacity:${Math.min(1, pa * 2)}"><span class="a">${esc(D.sr)}</span><span class="c">${esc(D.cyr)}</span></div>`;
+  h += `<div class="tr" style="opacity:${E((t - .9) / .4)}">[${esc(D.tr)}]</div>`;
+  const rev = t >= T.reveal, outro = t >= T.outro;
+  D.opts.forEach((o, i) => {
+    const a = POP((t - T.opts - i * .25) / .45); if (a <= 0) return;
+    const ok = rev && i === D.correct, dim = rev && i !== D.correct;
+    const y0 = 830 + i * 150, y = outro && ok ? y0 + (830 - y0) * E((t - T.outro) / .4) : y0;  // в финале верный ответ поднимается наверх
+    const sc = ok ? 1 + .06 * Math.sin(Math.min(1, (t - T.reveal) / .3) * Math.PI) : 1;
+    const op = outro ? (ok ? 1 : .35 * Math.max(0, 1 - (t - T.outro) / .3)) : (dim ? .35 : 1) * Math.min(1, a * 2);
+    h += `<div class="opt ${ok ? 'ok' : ''}" style="top:${y}px;opacity:${op};transform:translateX(${(1 - a) * -80}px) scale(${sc})"><b>${ok ? '✓' : 'ABC'[i]}</b>${esc(o)}</div>`;
+  });
+  if (t >= T.count && t < T.reveal) {
+    const k = Math.ceil(T.reveal - t), f = (T.reveal - t) % 1 || 1, pct = (1 - (t - T.count) / (T.reveal - T.count)) * 360;
+    h += `<div class="ring" style="background:conic-gradient(#f0b73a ${pct}deg,rgba(255,255,255,.15) 0);transform:scale(${.9 + .1 * f})"><div style="position:absolute;inset:12px;border-radius:50%;background:#16357a"></div><span style="position:relative">${k}</span></div>`;
+  }
+  if (rev && t < T.reveal + 1.4) for (let i = 0; i < 40; i++) {
+    const u = (t - T.reveal) / 1.4, ang = R(i) * Math.PI * 2, sp = 500 + R(i + 9) * 700;
+    h += `<div class="conf" style="left:${540 + Math.cos(ang) * sp * u}px;top:${980 + Math.sin(ang) * sp * u + 900 * u * u}px;background:${['#f0b73a', '#fff', '#18a06a', '#e8505b'][i % 4]};opacity:${1 - u};transform:rotate(${i * 40 + u * 720}deg)"></div>`;
+  }
+  if (outro) { const a = POP((t - T.outro - .35) / .5); h += `<div class="cta" style="opacity:${Math.min(1, a * 2)};transform:scale(${.7 + .3 * a})">Сохрани 📌<br>и проверь друга!<span>Srpski — бесплатно, ссылка в профиле</span></div>`; }
+  const ta = E((t - .4) / .5), bob = Math.sin(t * 3) * 6, jump = rev ? -Math.abs(Math.sin(Math.min(1.2, t - T.reveal) * Math.PI * 2.5)) * 50 * Math.max(0, 1 - (t - T.reveal) / 1.2) : 0;
+  h += `<img class="tosa" src="${rev ? D.imgHappy : (t < T.count ? D.imgSly : D.imgSurp)}" style="transform:translateY(${(1 - ta) * 500 + bob + jump}px)">`;
+  const bt = rev ? (outro ? '' : D.bravo) : (t < T.count ? 'Ну что, угадаешь?' : 'Быстрее!');
+  if (bt) h += `<div class="bub" style="opacity:${E((t - .8) / .3)}">${esc(bt)}</div>`;
+  h += `<div class="brand">@srpski_coach · Srpski</div>`;
+  document.getElementById('s').innerHTML = h;
+};
+</script></body></html>

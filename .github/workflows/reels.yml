@@ -1,0 +1,46 @@
+# Авто-Reels «Угадай слово за 3 секунды» с Тошей: раз в неделю 3 ролика → promo/media/reels/ и в очередь plan.json (пн/ср/пт 15:00).
+# Озвучка — ElevenLabs (секрет ELEVENLABS_API_KEY). Публикация — publish.js: Telegram сразу, Instagram — когда в Make есть ветка для Reels (переменная MAKE_REELS=1).
+name: reels
+on:
+  schedule:
+    - cron: '0 17 * * 0'   # воскресенье 17:00 UTC
+  workflow_dispatch:
+    inputs:
+      n:
+        description: 'Сколько роликов сделать'
+        default: '3'
+permissions:
+  contents: write
+concurrency:
+  group: media
+jobs:
+  reels:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Tools
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg fonts-noto-color-emoji >/dev/null
+          npm i --no-save --silent playwright@1.48.2 && npx playwright install --with-deps chromium >/dev/null
+      - name: Pick words
+        run: node promo/tools/reel/reel.js plan "${{ inputs.n || '3' }}"
+      - name: Voice
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: node promo/tools/tts.js promo/reels/voice/auto.json || echo "::warning::Озвучка не удалась — ролики будут без голоса"
+      - name: Render
+        env:
+          PLAYWRIGHT: playwright
+        run: node promo/tools/reel/reel.js render
+      - name: Save
+        run: |
+          git add promo/media/reels promo/media/voice promo/daily/plan.json
+          git diff --cached --quiet && exit 0
+          git config user.name "srpski-bot"; git config user.email "srpski-bot@users.noreply.github.com"
+          git commit -q -m "Reels: weekly word quizzes"
+          for i in 1 2 3; do git pull --rebase -q origin main && git push -q origin main && exit 0; sleep 5; done
+          exit 1
