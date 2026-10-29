@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /promo/
+Allow: /promo/scenarios/sheets/
+Sitemap: https://zdravo.srpski.workers.dev/sitemap.xml
