@@ -1,5 +1,28 @@
 [
  {
+  "id": "racuni",
+  "title": "Счета за квартиру",
+  "kw": [
+   "счета",
+   "коммунал",
+   "инфостан",
+   "infostan",
+   "račun",
+   "квитанц",
+   "электричеств"
+  ],
+  "images": [
+   "promo/scenarios/sheets/racuni.jpg",
+   "promo/daily/2026-11-12/13-scenario-racuni-1.jpg",
+   "promo/daily/2026-11-12/13-scenario-racuni-2.jpg",
+   "promo/daily/2026-11-12/13-scenario-racuni-3.jpg",
+   "promo/daily/2026-11-12/13-scenario-racuni-4.jpg",
+   "promo/daily/2026-11-12/13-scenario-racuni-5.jpg",
+   "promo/daily/2026-11-12/13-scenario-racuni-6.jpg",
+   "promo/daily/2026-11-12/13-scenario-racuni-7.jpg"
+  ]
+ },
+ {
   "id": "banka",
   "title": "Счёт в сербском банке",
   "kw": [
@@ -84,6 +107,66 @@
    "promo/daily/2026-10-28/13-scenario-stan-5.jpg",
    "promo/daily/2026-10-28/13-scenario-stan-6.jpg",
    "promo/daily/2026-10-28/13-scenario-stan-7.jpg"
+  ]
+ },
+ {
+  "id": "posta",
+  "title": "На почте",
+  "kw": [
+   "почт",
+   "посылк",
+   "pošt",
+   "paket",
+   "пакет"
+  ],
+  "images": [
+   "promo/scenarios/sheets/posta.jpg",
+   "promo/daily/2026-11-02/13-scenario-posta-1.jpg",
+   "promo/daily/2026-11-02/13-scenario-posta-2.jpg",
+   "promo/daily/2026-11-02/13-scenario-posta-3.jpg",
+   "promo/daily/2026-11-02/13-scenario-posta-4.jpg",
+   "promo/daily/2026-11-02/13-scenario-posta-5.jpg",
+   "promo/daily/2026-11-02/13-scenario-posta-6.jpg",
+   "promo/daily/2026-11-02/13-scenario-posta-7.jpg"
+  ]
+ },
+ {
+  "id": "taksi",
+  "title": "Такси",
+  "kw": [
+   "такси",
+   "taksi",
+   "taxi"
+  ],
+  "images": [
+   "promo/scenarios/sheets/taksi.jpg",
+   "promo/daily/2026-11-05/13-scenario-taksi-1.jpg",
+   "promo/daily/2026-11-05/13-scenario-taksi-2.jpg",
+   "promo/daily/2026-11-05/13-scenario-taksi-3.jpg",
+   "promo/daily/2026-11-05/13-scenario-taksi-4.jpg",
+   "promo/daily/2026-11-05/13-scenario-taksi-5.jpg",
+   "promo/daily/2026-11-05/13-scenario-taksi-6.jpg",
+   "promo/daily/2026-11-05/13-scenario-taksi-7.jpg"
+  ]
+ },
+ {
+  "id": "pijaca",
+  "title": "На рынке",
+  "kw": [
+   "рынок",
+   "рынк",
+   "pijac",
+   "базар"
+  ],
+  "images": [
+   "promo/scenarios/sheets/pijaca.jpg",
+   "promo/daily/2026-11-09/13-scenario-pijaca-1.jpg",
+   "promo/daily/2026-11-09/13-scenario-pijaca-2.jpg",
+   "promo/daily/2026-11-09/13-scenario-pijaca-3.jpg",
+   "promo/daily/2026-11-09/13-scenario-pijaca-4.jpg",
+   "promo/daily/2026-11-09/13-scenario-pijaca-5.jpg",
+   "promo/daily/2026-11-09/13-scenario-pijaca-6.jpg",
+   "promo/daily/2026-11-09/13-scenario-pijaca-7.jpg"
   ]
  }
 ]

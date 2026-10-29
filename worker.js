@@ -5,6 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 //                          запускает GitHub Actions publish.yml (секрет GH_TOKEN). Расписание GitHub часто пропускает запуски.
 //   POST /api/tg       — Telegram-бот: пишут «МУП», «банк», «врач», «аренда» → шлём шпаргалку-карусель (лидмагнит)
 //   POST /api/e        — анонимное событие (открыл приложение, прошёл урок) → журнал воркера + счётчик в Durable Object Stats
+//   cron чт 16:00 UTC  — рассылка новой шпаргалки подписчикам бота (порциями по 40 в каждом 10-минутном тике)
 //   cron пн 07:00 UTC  — недельный отчёт (открытия, новые, установки, уроки, лиды бота, подписчики канала) в личку владельцу
 const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 const hits = new Map(); // простая защита от спама: не больше 5 сообщений в час с одного адреса (в пределах экземпляра)
@@ -66,12 +67,19 @@ async function bot(req, env) {
   if (!msg || !msg.chat || msg.chat.type !== 'private') return new Response(null, { status: 204 });
   const chat = msg.chat.id;
   const text = ((u.callback_query && u.callback_query.data) || (u.message && u.message.text) || '').toLowerCase();
+  const st = stats(env);
+  if (text.startsWith('/stop')) {
+    if (st) await st.sub(chat, false);
+    await tg(env, 'sendMessage', { chat_id: chat, text: 'Готово, больше не буду присылать новые шпаргалки. Вернуться — напишите /start 👋' });
+    return new Response(null, { status: 204 });
+  }
+  if (st) await st.sub(chat, true).catch((e) => console.log('sub: ' + e.message));
   const idx = await (await fetch(RAW + 'promo/scenarios/index.json', { cf: { cacheTtl: 300 } })).json().catch(() => []);
   const hit = idx.find((s) => text.includes(s.id) || s.kw.some((k) => text.includes(k)));
   const menu = { inline_keyboard: [...idx.map((s) => [{ text: '📌 ' + s.title, callback_data: s.id }]), [{ text: '📱 Приложение Srpski', url: APP }]] };
   if (u.callback_query) await tg(env, 'answerCallbackQuery', { callback_query_id: u.callback_query.id });
   if (!hit) {
-    await tg(env, 'sendMessage', { chat_id: chat, text: 'Zdravo! 👋 Я пришлю шпаргалку с фразами для жизни в Сербии.\n\nНапишите слово: МУП, банк, врач или аренда — или выберите ниже 👇', reply_markup: menu });
+    await tg(env, 'sendMessage', { chat_id: chat, text: 'Zdravo! 👋 Я пришлю шпаргалку с фразами для жизни в Сербии.\n\nНапишите слово: МУП, банк, врач, аренда, почта, такси, рынок или счета — или выберите ниже 👇\n\nРаз в неделю пришлю новую шпаргалку. Отписаться — /stop', reply_markup: menu });
   } else {
     console.log(JSON.stringify({ ev: 'lead', d: hit.id }));
     await count(env, null, 'lead', hit.id);
@@ -90,6 +98,23 @@ export class Stats extends DurableObject {
   }
   add(day, ev, d) { this.sql.exec('INSERT INTO c VALUES (?, ?, ?, 1) ON CONFLICT DO UPDATE SET n = n + 1', day, ev, d); }
   sum(from, to) { return this.sql.exec('SELECT ev, d, SUM(n) AS n FROM c WHERE day >= ? AND day < ? GROUP BY ev, d', from, to).toArray(); }
+  // подписчики бота: каждый, кто написал боту, получает раз в неделю новую шпаргалку; /stop — отписка
+  subs() {
+    this.sql.exec('CREATE TABLE IF NOT EXISTS subs (chat INTEGER PRIMARY KEY, since TEXT, active INTEGER)');
+    this.sql.exec('CREATE TABLE IF NOT EXISTS digest (k TEXT PRIMARY KEY, v TEXT)');
+  }
+  sub(chat, on) { this.subs(); this.sql.exec('INSERT INTO subs VALUES (?, ?, ?) ON CONFLICT DO UPDATE SET active = excluded.active', chat, new Date().toISOString(), on ? 1 : 0); }
+  subCount() { this.subs(); return this.sql.exec('SELECT COUNT(*) AS n FROM subs WHERE active = 1').one().n; }
+  // рассылка: start() выбирает шпаргалку, batch() отдаёт следующую порцию чатов (Telegram/Workers: не больше ~40 за запуск)
+  dget(k) { this.subs(); const r = this.sql.exec('SELECT v FROM digest WHERE k = ?', k).toArray(); return r.length ? r[0].v : null; }
+  dset(k, v) { this.subs(); this.sql.exec('INSERT INTO digest VALUES (?, ?) ON CONFLICT DO UPDATE SET v = excluded.v', k, String(v)); }
+  start(id) { this.dset('cur', id); this.dset('cursor', 0); this.dset('sent:' + id, 1); }
+  batch(n) {
+    const id = this.dget('cur'); if (!id) return null;
+    const cur = +this.dget('cursor') || 0, rows = this.sql.exec('SELECT chat FROM subs WHERE active = 1 AND chat > ? ORDER BY chat LIMIT ?', cur, n).toArray().map((r) => r.chat);
+    if (rows.length) this.dset('cursor', rows[rows.length - 1]); else this.dset('cur', '');
+    return { id, chats: rows };
+  }
 }
 const stats = (env) => env.STATS && env.STATS.get(env.STATS.idFromName('main'));
 function count(env, ctx, ev, d) {
@@ -112,10 +137,29 @@ async function report(env) {
     `📊 <b>Srpski — неделя ${day(7)} … ${day(1)}</b>`, '',
     line('Открытий (уник. в день)', 'open'), line('Новых пользователей', 'new') + (srcs ? `\n   откуда: ${srcs}` : ''), line('Установок на экран', 'install'),
     line('Пройдено уроков', 'done'), line('Лидов из бота', 'lead') + (leads ? ` — ${leads}` : ''), '',
-    `Telegram @srpski_coach: <b>${tgc.result ?? '?'}</b> подписчиков`, `Постов опубликовано: <b>${posts}</b>`,
+    `Telegram @srpski_coach: <b>${tgc.result ?? '?'}</b> подписчиков`, `Подписчики бота: <b>${await s.subCount().catch(() => '?')}</b>`, `Постов опубликовано: <b>${posts}</b>`,
   ].join('\n');
   const r = await tg(env, 'sendMessage', { chat_id: env.FEEDBACK_CHAT_ID, text, parse_mode: 'HTML' });
   return 'report ' + r.status;
+}
+
+async function digestStart(env) {
+  const st = stats(env); if (!st || !env.TELEGRAM_BOT_TOKEN) return 'digest not configured';
+  const idx = await (await fetch(RAW + 'promo/scenarios/index.json?t=' + Date.now(), { cf: { cacheTtl: 0 } })).json();
+  for (const x of idx) if (!(await st.dget('sent:' + x.id))) { await st.start(x.id); return 'digest start ' + x.id; }
+  return 'digest: all sent';
+}
+async function digestTick(env) {
+  const st = stats(env); if (!st || !env.TELEGRAM_BOT_TOKEN) return;
+  const b = await st.batch(40); if (!b || !b.chats.length) return;
+  const idx = await (await fetch(RAW + 'promo/scenarios/index.json', { cf: { cacheTtl: 300 } })).json();
+  const x = idx.find((i) => i.id === b.id); if (!x) return;
+  for (const chat of b.chats) {
+    const r = await tg(env, 'sendPhoto', { chat_id: chat, photo: RAW + x.images[0], caption: `Новая шпаргалка недели: ${x.title} 🇷🇸\n\nСохраните — пригодится. С озвучкой — в приложении Srpski.\nОтписаться: /stop`,
+      reply_markup: { inline_keyboard: [[{ text: '📌 Вся карусель', callback_data: x.id }], [{ text: '📱 Приложение Srpski', url: APP }]] } });
+    if (r.status === 403) await st.sub(chat, false);  // пользователь заблокировал бота
+  }
+  console.log('digest', b.id, b.chats.length);
 }
 
 const bg = (ms) => {
@@ -139,10 +183,13 @@ async function alarm(env) {
 }
 
 const WEEKLY = '0 7 * * 1'; // понедельник 07:00 UTC = 09:00 по Белграду (летом)
+const DIGEST = '0 16 * * 4'; // четверг 16:00 UTC — старт еженедельной рассылки шпаргалки подписчикам бота
 export default {
   async scheduled(event, env, ctx) {
     if (event.cron === WEEKLY) return ctx.waitUntil(report(env).then(console.log, (e) => console.log('report failed: ' + e.message)));
+    if (event.cron === DIGEST) return ctx.waitUntil(digestStart(env).then(console.log, (e) => console.log('digest failed: ' + e.message)));
     ctx.waitUntil(alarm(env).catch((e) => console.log('alarm skipped: ' + e.message)));
+    ctx.waitUntil(digestTick(env).catch((e) => console.log('digest tick: ' + e.message)));
   },
   async fetch(req, env, ctx) {
     const url = new URL(req.url);

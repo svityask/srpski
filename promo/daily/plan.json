@@ -1028,6 +1028,24 @@
   },
   {
    "date": "2026-11-02",
+   "time": "13:00",
+   "type": "scenario",
+   "ref": "posta",
+   "caption": "На почте в Сербии: забрать посылку и отправить письмо 📦\n\nDošao sam po paket — Я пришёл за посылкой\nImate li obaveštenje? — У вас есть извещение?\nObično ili preporučeno? — Обычное или заказное?\n\nСохраните 📌 Перешлите тому, кто ждёт посылку.\nВсе фразы с озвучкой — в бесплатном приложении Srpski, ссылка в профиле · Шпаргалка в Telegram: напишите «почта» боту @srpski_coach_bot\n\n#сербскийязык #сербия #белград #русскиевсербии #релокация #изучениеязыков",
+   "images": [
+    "promo/daily/2026-11-02/13-scenario-posta-1.jpg",
+    "promo/daily/2026-11-02/13-scenario-posta-2.jpg",
+    "promo/daily/2026-11-02/13-scenario-posta-3.jpg",
+    "promo/daily/2026-11-02/13-scenario-posta-4.jpg",
+    "promo/daily/2026-11-02/13-scenario-posta-5.jpg",
+    "promo/daily/2026-11-02/13-scenario-posta-6.jpg",
+    "promo/daily/2026-11-02/13-scenario-posta-7.jpg"
+   ],
+   "telegram_image": "promo/daily/2026-11-02/13-scenario-posta-1.jpg",
+   "status": "pending"
+  },
+  {
+   "date": "2026-11-02",
    "time": "18:00",
    "type": "lesson",
    "ref": "6.1",
@@ -1117,6 +1135,24 @@
     "promo/daily/2026-11-06/10-word-1.jpg"
    ],
    "telegram_image": "promo/daily/2026-11-06/10-word-1.jpg",
+   "status": "pending"
+  },
+  {
+   "date": "2026-11-05",
+   "time": "13:00",
+   "type": "scenario",
+   "ref": "taksi",
+   "caption": "Такси в Сербии: доехать и не переплатить 🚕\n\nMožete li da uključite taksimetar? — Можете включить счётчик?\nKoliko otprilike košta? — Сколько примерно стоит?\nZadržite kusur — Сдачи не надо\n\nСохраните 📌 Перешлите тому, кто летит в Белград.\nВсе фразы с озвучкой — в бесплатном приложении Srpski, ссылка в профиле · Шпаргалка в Telegram: напишите «такси» боту @srpski_coach_bot\n\n#сербскийязык #сербия #белград #русскиевсербии #релокация #изучениеязыков",
+   "images": [
+    "promo/daily/2026-11-05/13-scenario-taksi-1.jpg",
+    "promo/daily/2026-11-05/13-scenario-taksi-2.jpg",
+    "promo/daily/2026-11-05/13-scenario-taksi-3.jpg",
+    "promo/daily/2026-11-05/13-scenario-taksi-4.jpg",
+    "promo/daily/2026-11-05/13-scenario-taksi-5.jpg",
+    "promo/daily/2026-11-05/13-scenario-taksi-6.jpg",
+    "promo/daily/2026-11-05/13-scenario-taksi-7.jpg"
+   ],
+   "telegram_image": "promo/daily/2026-11-05/13-scenario-taksi-1.jpg",
    "status": "pending"
   },
   {
@@ -1247,6 +1283,24 @@
   },
   {
    "date": "2026-11-09",
+   "time": "13:00",
+   "type": "scenario",
+   "ref": "pijaca",
+   "caption": "На рынке в Сербии: спросить цену, попробовать и поторговаться 🍅\n\nKoliko košta? — Сколько стоит?\nMogu li da probam? — Можно попробовать?\nMože li malo jeftinije? — Можно чуть дешевле?\n\nСохраните 📌 Какой рынок в вашем городе лучший? Пишите в комментариях 👇\nВсе фразы с озвучкой — в бесплатном приложении Srpski, ссылка в профиле · Шпаргалка в Telegram: напишите «рынок» боту @srpski_coach_bot\n\n#сербскийязык #сербия #белград #русскиевсербии #релокация #изучениеязыков",
+   "images": [
+    "promo/daily/2026-11-09/13-scenario-pijaca-1.jpg",
+    "promo/daily/2026-11-09/13-scenario-pijaca-2.jpg",
+    "promo/daily/2026-11-09/13-scenario-pijaca-3.jpg",
+    "promo/daily/2026-11-09/13-scenario-pijaca-4.jpg",
+    "promo/daily/2026-11-09/13-scenario-pijaca-5.jpg",
+    "promo/daily/2026-11-09/13-scenario-pijaca-6.jpg",
+    "promo/daily/2026-11-09/13-scenario-pijaca-7.jpg"
+   ],
+   "telegram_image": "promo/daily/2026-11-09/13-scenario-pijaca-1.jpg",
+   "status": "pending"
+  },
+  {
+   "date": "2026-11-09",
    "time": "18:00",
    "type": "quiz",
    "ref": "9.3|lekar",
@@ -1341,6 +1395,24 @@
     "promo/daily/2026-11-13/10-word-1.jpg"
    ],
    "telegram_image": "promo/daily/2026-11-13/10-word-1.jpg",
+   "status": "pending"
+  },
+  {
+   "date": "2026-11-12",
+   "time": "13:00",
+   "type": "scenario",
+   "ref": "racuni",
+   "caption": "Счета за квартиру в Сербии: что такое Infostan и где платить 🧾\n\nŠta treba da platim? — Что мне нужно оплатить?\nDo kada treba da platim? — До какого числа платить?\nRačun za struju — счёт за электричество\n\nСохраните 📌 Перешлите тому, кто только снял квартиру.\nВсе фразы с озвучкой — в бесплатном приложении Srpski, ссылка в профиле · Шпаргалка в Telegram: напишите «счета» боту @srpski_coach_bot\n\n#сербскийязык #сербия #белград #русскиевсербии #релокация #изучениеязыков",
+   "images": [
+    "promo/daily/2026-11-12/13-scenario-racuni-1.jpg",
+    "promo/daily/2026-11-12/13-scenario-racuni-2.jpg",
+    "promo/daily/2026-11-12/13-scenario-racuni-3.jpg",
+    "promo/daily/2026-11-12/13-scenario-racuni-4.jpg",
+    "promo/daily/2026-11-12/13-scenario-racuni-5.jpg",
+    "promo/daily/2026-11-12/13-scenario-racuni-6.jpg",
+    "promo/daily/2026-11-12/13-scenario-racuni-7.jpg"
+   ],
+   "telegram_image": "promo/daily/2026-11-12/13-scenario-racuni-1.jpg",
    "status": "pending"
   },
   {
