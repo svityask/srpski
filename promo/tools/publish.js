@@ -12,6 +12,9 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '../..');
 const PLAN = path.join(ROOT, 'promo/daily/plan.json');
 const RAW = 'https://raw.githubusercontent.com/svityask/srpski/main/';
+// для Instagram — ссылка с сайта (правильный тип video/mp4, image/jpeg); promo/media на сайт не выкладывается — оттуда только с GitHub
+const SITE = 'https://zdravo.srpski.workers.dev/';
+const pub = (f) => (f.startsWith('promo/media/') ? RAW : SITE) + f;
 const APP_URL = 'https://zdravo.srpski.workers.dev/?src=tg';
 const CHAT = process.env.TG_CHAT || '@srpski_coach';
 // токен IGAA… (вход через Instagram) → graph.instagram.com/me; токен EAA… (Graph API Explorer, системный пользователь) → graph.facebook.com/<id Instagram>
@@ -82,7 +85,7 @@ async function make(p) {
   const res = await fetch(MAKE_HOOK, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({
     caption: p.caption, count: images.length, image: images[0], images,
     media: images.map((u) => ({ media_type: 'IMAGE', image_url: u })), date: p.date, time: p.time, ref: p.ref,
-    kind: p.video ? 'reel' : 'post', video: p.video ? RAW + p.video : '', cover: p.cover ? RAW + p.cover : '',
+    kind: p.kind || (p.video ? 'reel' : 'post'), video: p.video ? pub(p.video) : '', cover: p.cover ? pub(p.cover) : '',
   }) });
   if (!res.ok) throw new Error('Make → ' + res.status + ' ' + (await res.text()).slice(0, 200));
 }
@@ -103,9 +106,14 @@ async function telegram(p, igUrl) {
 
 (async () => {
   // проверка связи с Make: шлём пример поста (карусель из 2 картинок) без публикации в Telegram и без изменения очереди
-  if (['make-test', 'make-last', 'make-ref'].includes(process.env.MODE)) {
+  if (['make-test', 'make-last', 'make-ref', 'make-test-reel'].includes(process.env.MODE)) {
     if (!MAKE_HOOK) { console.log('::error::Нет секрета MAKE_WEBHOOK_URL'); process.exitCode = 1; return; }
     const sample = plan.items.find((x) => (x.images || []).length > 1);
+    // проверка ветки Reels в Make: пример ролика с kind = reel_test (ни одна ветка его не публикует) — чтобы Make увидел поля kind/video/cover
+    if (process.env.MODE === 'make-test-reel') {
+      const r = plan.items.filter((x) => x.type === 'reel' && x.video && !x.video.startsWith('promo/media/')).pop();
+      await make({ ...r, kind: 'reel_test', images: [] }); console.log('Тестовый ролик отправлен в Make (kind = reel_test):', pub(r.video)); return;
+    }
     if (process.env.MODE === 'make-ref') {
       // несколько через запятую («6,7,8») — по порядку, с паузой, чтобы Instagram не счёл это спамом
       const refs = (process.env.REF || '').split(',').map((r) => r.trim()).filter(Boolean);

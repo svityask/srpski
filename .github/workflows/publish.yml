@@ -8,10 +8,10 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'publish — опубликовать ближайший пост сейчас; auto — как по расписанию (так запускает будильник Cloudflare); make-test — только отправить пример в Make; make-last — переотправить в Make последний опубликованный пост; make-ref — отправить в Make пост из поля ref'
+        description: 'publish — опубликовать ближайший пост сейчас; auto — как по расписанию (так запускает будильник Cloudflare); make-test — только отправить пример в Make; make-last — переотправить в Make последний опубликованный пост; make-ref — отправить в Make пост из поля ref; make-test-reel — пример ролика для настройки ветки Reels в Make'
         default: publish
         type: choice
-        options: [publish, auto, make-test, make-last, make-ref]
+        options: [publish, auto, make-test, make-last, make-ref, make-test-reel]
       ref:
         description: 'для make-ref: ref поста (например 5.1|porodica) или номер слова дня (5); можно несколько через запятую: 6,7,8'
         default: ''

@@ -10,7 +10,7 @@ const ROOT = path.resolve(__dirname, '../../..');
 const PLAN = path.join(ROOT, 'promo/daily/plan.json');
 const QUEUE = path.join(ROOT, 'promo/reels/auto-queue.json');
 const VOICE = path.join(ROOT, 'promo/reels/voice/auto.json');
-const OUT = 'promo/media/reels';
+const OUT = 'promo/reels/video';  // на сайте: Instagram скачивает видео по ссылке с типом video/mp4
 global.window = {};
 require(path.join(ROOT, 'js/data.js'));
 const appSrc = fs.readFileSync(path.join(ROOT, 'js/app.js'), 'utf8');
