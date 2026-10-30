@@ -3,7 +3,7 @@
 //   node promo/tools/make_api.js reels <scenarioId>  — добавить в Router ветку kind=reel → Instagram «Create a Reel Post», остальным веткам фильтр kind=post
 // Секреты: MAKE_API_TOKEN (Make → профиль → API access), переменная MAKE_ZONE (eu1/eu2/us1/us2, из адреса Make).
 'use strict';
-const TOKEN = process.env.MAKE_API_TOKEN, ZONE = process.env.MAKE_ZONE || 'eu2';
+const TOKEN = process.env.MAKE_API_TOKEN, ZONE = process.env.MAKE_ZONE || 'eu1';
 if (!TOKEN) { console.log('::error::Нет секрета MAKE_API_TOKEN'); process.exit(1); }
 const API = `https://${ZONE}.make.com/api/v2`;
 const api = async (u, opt = {}) => {

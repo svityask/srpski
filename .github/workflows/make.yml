@@ -16,6 +16,6 @@ jobs:
           node-version: 22
       - env:
           MAKE_API_TOKEN: ${{ secrets.MAKE_API_TOKEN }}
-          MAKE_ZONE: ${{ vars.MAKE_ZONE }}
+          MAKE_ZONE: ${{ vars.MAKE_ZONE || 'eu1' }}
           CMD: ${{ inputs.cmd }}
         run: node promo/tools/make_api.js $CMD
