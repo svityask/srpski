@@ -20,6 +20,15 @@ const walk = (flow, depth, out) => { for (const m of flow || []) {
   const orgs = (await api('/organizations')).organizations || [];
   const scen = [];
   for (const o of orgs) for (const t of ((await api('/teams?organizationId=' + o.id)).teams || [])) scen.push(...((await api('/scenarios?teamId=' + t.id)).scenarios || []));
+  if (cmd === 'template') {  // модули публичного шаблона Make (чтобы взять точные имена модулей и полей)
+    const id = process.argv[3]; let bp;
+    for (const u of [`/templates/public/${id}/blueprint`, `/templates/${id}/blueprint`]) { try { bp = await api(u); break; } catch (e) { console.log(e.message.slice(0, 160)); } }
+    if (!bp) return;
+    const b = bp.response ? bp.response.blueprint || bp.response : bp.blueprint || bp;
+    const all = []; const collect = (fl) => (fl || []).forEach((m) => { all.push(m); (m.routes || []).forEach((r) => collect(r.flow)); }); collect(b.flow);
+    for (const m of all) console.log(`#${m.id} ${m.module} v${m.version} · mapper: ${JSON.stringify(m.mapper || {}).slice(0, 400)} · params: ${Object.keys(m.parameters || {}).join(',')}`);
+    return;
+  }
   if (cmd === 'inspect') {
     for (const s of scen) {
       console.log(`\n=== #${s.id} «${s.name}» ${s.isActive ? 'ВКЛ' : 'выкл'} · hook ${s.hookId || '—'}`);
