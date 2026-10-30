@@ -929,7 +929,10 @@
     "promo/daily/2026-10-31/10-word-1.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-31/10-word-1.jpg",
-   "status": "pending"
+   "status": "published",
+   "instagram_url": null,
+   "telegram_message_id": 76,
+   "published_at": "2026-10-30 10:01"
   },
   {
    "date": "2026-10-30",
