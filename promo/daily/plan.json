@@ -959,7 +959,7 @@
     "promo/daily/2026-10-22/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-22/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "published",
    "quiz": {
     "question": "Что значит «subota»?",
     "options": [
@@ -968,7 +968,10 @@
      "суббота"
     ],
     "correct": 2
-   }
+   },
+   "instagram_url": null,
+   "telegram_message_id": 78,
+   "published_at": "2026-10-30 18:01"
   },
   {
    "date": "2026-10-31",
