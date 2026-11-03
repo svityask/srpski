@@ -1145,7 +1145,7 @@
     "promo/daily/2026-10-24/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-24/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "published",
    "quiz": {
     "question": "Что значит «prodavnica»?",
     "options": [
@@ -1154,7 +1154,10 @@
      "близко"
     ],
     "correct": 0
-   }
+   },
+   "instagram_url": null,
+   "telegram_message_id": 90,
+   "published_at": "2026-11-03 18:03"
   },
   {
    "date": "2026-11-04",
