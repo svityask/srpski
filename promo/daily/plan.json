@@ -1256,7 +1256,7 @@
     "promo/daily/2026-10-25/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-25/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "published",
    "quiz": {
     "question": "Как сказать по-сербски «скидка»?",
     "options": [
@@ -1265,7 +1265,10 @@
      "Imate li manji broj?"
     ],
     "correct": 1
-   }
+   },
+   "instagram_url": null,
+   "telegram_message_id": 97,
+   "published_at": "2026-11-05 18:01"
   },
   {
    "date": "2026-11-06",
