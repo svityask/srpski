@@ -1655,7 +1655,7 @@
     "promo/daily/2026-10-29/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-29/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "published",
    "quiz": {
     "question": "Как сказать по-сербски «Я живу в Белграде»?",
     "options": [
@@ -1664,7 +1664,10 @@
      "Živim u Beogradu"
     ],
     "correct": 2
-   }
+   },
+   "instagram_url": null,
+   "telegram_message_id": 123,
+   "published_at": "2026-11-13 18:01"
   },
   {
    "date": "2026-11-14",
