@@ -1820,7 +1820,7 @@
     "promo/daily/2026-10-31/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-10-31/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "published",
    "quiz": {
     "question": "Как сказать по-сербски «внук»?",
     "options": [
@@ -1829,7 +1829,10 @@
      "unuk"
     ],
     "correct": 2
-   }
+   },
+   "instagram_url": null,
+   "telegram_message_id": null,
+   "published_at": "2026-11-17 18:01"
   },
   {
    "date": "2026-11-18",
