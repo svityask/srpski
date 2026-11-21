@@ -1999,7 +1999,7 @@
     "promo/daily/2026-11-02/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-11-02/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "published",
    "quiz": {
     "question": "Как сказать по-сербски «Есть размер побольше?»?",
     "options": [
@@ -2008,7 +2008,10 @@
      "žut"
     ],
     "correct": 1
-   }
+   },
+   "instagram_url": null,
+   "telegram_message_id": 144,
+   "published_at": "2026-11-21 18:01"
   },
   {
    "date": "2026-11-22",
