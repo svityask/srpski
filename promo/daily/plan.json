@@ -2058,7 +2058,10 @@
     "promo/daily/2026-11-24/10-word-1.jpg"
    ],
    "telegram_image": "promo/daily/2026-11-24/10-word-1.jpg",
-   "status": "pending"
+   "status": "published",
+   "instagram_url": null,
+   "telegram_message_id": 148,
+   "published_at": "2026-11-23 10:01"
   },
   {
    "date": "2026-11-23",
