@@ -2088,7 +2088,7 @@
     "promo/daily/2026-11-03/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-11-03/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "published",
    "quiz": {
     "question": "Что значит «kvar»?",
     "options": [
@@ -2097,7 +2097,10 @@
      "бланк / форма"
     ],
     "correct": 0
-   }
+   },
+   "instagram_url": null,
+   "telegram_message_id": 150,
+   "published_at": "2026-11-23 18:01"
   },
   {
    "date": "2026-11-24",
