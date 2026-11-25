@@ -2177,7 +2177,7 @@
     "promo/daily/2026-11-04/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-11-04/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "published",
    "quiz": {
     "question": "Как сказать по-сербски «отдых»?",
     "options": [
@@ -2186,7 +2186,10 @@
      "krevet"
     ],
     "correct": 1
-   }
+   },
+   "instagram_url": null,
+   "telegram_message_id": 156,
+   "published_at": "2026-11-25 18:01"
   },
   {
    "date": "2026-11-26",
