@@ -2220,7 +2220,10 @@
     "promo/daily/2026-11-05/15-lesson-4.jpg"
    ],
    "telegram_image": "promo/daily/2026-11-05/15-lesson-telegram.jpg",
-   "status": "pending"
+   "status": "published",
+   "instagram_url": null,
+   "telegram_message_id": 159,
+   "published_at": "2026-11-26 18:01"
   },
   {
    "date": "2026-11-27",
