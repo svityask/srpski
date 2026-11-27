@@ -2266,7 +2266,7 @@
     "promo/daily/2026-11-05/18-quiz-2.jpg"
    ],
    "telegram_image": "promo/daily/2026-11-05/18-quiz-telegram.jpg",
-   "status": "pending",
+   "status": "published",
    "quiz": {
     "question": "Что значит «Sve je u redu»?",
     "options": [
@@ -2275,7 +2275,10 @@
      "Да"
     ],
     "correct": 0
-   }
+   },
+   "instagram_url": null,
+   "telegram_message_id": 162,
+   "published_at": "2026-11-27 18:01"
   },
   {
    "date": "2026-11-28",
